@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+src/doc_lineage/__init__.py
+src/doc_lineage.egg-info/PKG-INFO
+src/doc_lineage.egg-info/SOURCES.txt
+src/doc_lineage.egg-info/dependency_links.txt
+src/doc_lineage.egg-info/requires.txt
+src/doc_lineage.egg-info/top_level.txt
+tests/test_dependency_version_alignment.py
+tests/test_main.py
+tests/test_package_identity.py
+tests/test_repo_hygiene.py
