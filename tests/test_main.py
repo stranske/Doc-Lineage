@@ -1,6 +1,6 @@
-"""Tests for my_project module."""
+"""Tests for doc_lineage module."""
 
-from my_project import __version__, add, greet
+from doc_lineage import __version__, add, greet
 
 
 def test_version() -> None:
