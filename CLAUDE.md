@@ -103,3 +103,35 @@ If yes:
 ## Claude-Specific Note
 
 Keep this file materially aligned with `AGENTS.md`. Differences between the two should only be agent-specific execution notes, not different repository rules.
+
+---
+
+# Doc-Lineage — repo-specific context (added 2026-09-04)
+
+## Read this before touching anything
+
+Grounding documents, in priority order:
+
+1. **[The work-environment answers](https://github.com/stranske/Ready/blob/main/research-program/artifacts/work-bundle/INFORMATION-REQUEST-RESPONSE.md)** — what the target environment actually supports, answered by the assistant inside it. This repo exists because of specific facts in that document. Do not design against assumptions when this file has the answer.
+2. This repo's **README.md** — scope, and the boundary between this repo and its siblings.
+3. **docs/contracts/** — the fleet contracts this repo emits or consumes.
+
+## The target environment, as confirmed rather than assumed
+
+- A real local Python interpreter exists there, off the system path, and Excel and Word are driven through Office automation. Command-line tools are a legitimate delivery shape.
+- Static local HTML is in production use, and **local-file deep links to a specific page of a specific document do open**. One-click verification from a derived fact back to its source document is therefore achievable, and it is the standard every output is held to.
+- **WebAssembly is untested there.** Do not add a Pyodide or stlite dependency until the capability probe (Deliverable-Render #4) reports back.
+- Nothing server-hosted or database-backed runs there **today**. That is a current constraint, not a permanent one. Prefer a local-first design when it can meet the goal; when it genuinely cannot, build the hosted design **and** write the accommodation case — the goal, why a local shape cannot reach it, and the specific thing the work IT team would need to provide. Never silently drop a capability because it would need a server.
+- The document corpus there is a synced folder tree, roughly 3,800 PDFs, one folder per manager then per category. **There are no stable document identifiers**, and **a real minority of legal PDFs have no text layer at all** — one recognition pass recovered over twenty documents and five hundred pages that every prior text-based analysis had silently skipped.
+
+## Rules that are not negotiable here
+
+- **Synthetic and public data only.** No proprietary manager material is ever committed, used in a test, or sent anywhere. Fixtures are generated or drawn from public sources with recorded provenance.
+- **Adopt existing field names.** Where a tool already in use at work has a name for something, that name wins even when a better one exists. Section D of the grounding document lists them. Inventing parallel names is the single change most likely to make this repo useless.
+- **One sentinel must never mean two things.** "Not measured" and "measured zero" are different states, and conflating them is how a coverage figure becomes wrong rather than incomplete. Report counts together, including zeros.
+- **Silence is weak evidence.** An absence in a document is a gap to record, never a conclusion to draw.
+- **A gate owes its answers.** Anything that blocks must say what clears it, that the clearing action is possible while it is closed, and what it prints when fully satisfied.
+
+## When writing or acting on an issue here
+
+Cite paths **relative to this repository**. A body citing a working-directory path such as `clones/Doc-Lineage/README.md` is unactionable for an agent that clones this repo, and the fleet's format guard will correctly reject it. If a file does not exist yet, it belongs in Tasks as a file to add, not in the evidence section.
