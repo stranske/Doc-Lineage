@@ -42,7 +42,7 @@ pytest-cov==7.1.0
     # via my-project (pyproject.toml)
 pytokens==0.4.1
     # via black
-ruff==0.16.5
+ruff==0.16.6
     # via my-project (pyproject.toml)
 typing-extensions==4.15.0
     # via mypy
