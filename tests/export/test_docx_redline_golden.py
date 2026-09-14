@@ -1,6 +1,7 @@
 """Semantic golden test against the real python-redlines engine (B2-034)."""
 
 from io import BytesIO
+from subprocess import CalledProcessError
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -44,7 +45,14 @@ def test_tracked_changes_present():
     original = _docx("The fee is five dollars.")
     modified = _docx("The fee is ten dollars.")
 
-    redline = export_docx_redline(original, modified, author="Counsel")
+    try:
+        redline = export_docx_redline(original, modified, author="Counsel")
+    except CalledProcessError as error:
+        # The engine captures its diagnostics; pytest otherwise shows only the
+        # exit code. These inputs are synthetic, so include the native failure.
+        error.add_note(f"Docxodus stdout:\n{error.stdout or '(empty)'}")
+        error.add_note(f"Docxodus stderr:\n{error.stderr or '(empty)'}")
+        raise
 
     with ZipFile(BytesIO(redline)) as package:
         assert package.testzip() is None

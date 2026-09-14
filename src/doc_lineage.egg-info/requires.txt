@@ -1,3 +1,4 @@
+python-redlines[docxodus]==0.3.0
 
 [dev]
 pytest==9.1.1

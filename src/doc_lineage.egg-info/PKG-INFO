@@ -15,6 +15,7 @@ Classifier: Programming Language :: Python :: 3.13
 Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: python-redlines[docxodus]==0.3.0
 Provides-Extra: dev
 Requires-Dist: pytest==9.1.1; extra == "dev"
 Requires-Dist: pytest-cov==7.1.0; extra == "dev"
