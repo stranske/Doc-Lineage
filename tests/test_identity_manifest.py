@@ -46,6 +46,33 @@ def test_duplicate_content_paths_share_stable_id() -> None:
     assert primary["path"] != duplicate["path"]
 
 
+def test_incremental_manifest_tracks_fixture_rename(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    shutil.copytree(FIXTURE_ROOT, library)
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    before = read_manifest(output)
+    old_path = "manager_gamma/consultant_reports/2025/gamma_q1.pdf"
+    new_path = "manager_gamma/consultant_reports/2025/gamma_q1_renamed.pdf"
+    original = json.loads(before[old_path])
+
+    (library / old_path).rename(library / new_path)
+    write_manifest(library, output)
+
+    after = read_manifest(output)
+    assert set(after) == (set(before) - {old_path}) | {new_path}
+    renamed = json.loads(after[new_path])
+    assert renamed["path"] == new_path
+    assert renamed["stable_id"] == original["stable_id"]
+    assert renamed["sha256"] == original["sha256"]
+    for path in before.keys() - {old_path}:
+        assert after[path] == before[path]
+
+    persisted = output.read_bytes()
+    write_manifest(library, output)
+    assert output.read_bytes() == persisted
+
+
 def test_numeric_resupply_records_supersedes_and_evidence() -> None:
     rows = _rows_by_path(FIXTURE_ROOT)
     older = rows["manager_alpha/lpa/2024/001_alpha_terms.pdf"]
