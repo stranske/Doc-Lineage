@@ -400,3 +400,37 @@ def test_conflicting_text_layer_results_are_not_inherited_by_new_path(tmp_path: 
     write_manifest(library, output)
 
     assert json.loads(output.read_text())["text_layer"] == "unknown"
+
+
+@pytest.mark.parametrize("annotation", ["present", "absent"])
+@pytest.mark.parametrize("keep_original", [False, True])
+def test_text_layer_follows_content_to_reused_path(
+    tmp_path: Path, annotation: str, keep_original: bool
+) -> None:
+    library = tmp_path / "library"
+    original = library / "alpha/reports/report.pdf"
+    original.parent.mkdir(parents=True)
+    original.write_bytes(b"examined document")
+    destination = original.with_name("resupplied.pdf")
+    destination.write_bytes(b"different document")
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    rows = [json.loads(line) for line in read_manifest(output).values()]
+    for row in rows:
+        row["text_layer"] = annotation if row["path"].endswith("/report.pdf") else "unknown"
+    output.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    if keep_original:
+        shutil.copyfile(original, destination)
+    else:
+        original.replace(destination)
+
+    write_manifest(library, output)
+
+    updated = [json.loads(line) for line in read_manifest(output).values()]
+    assert len(updated) == (2 if keep_original else 1)
+    assert all(row["stable_id"] == sha256_bytes(b"examined document") for row in updated)
+    assert all(row["sha256"] == row["stable_id"] for row in updated)
+    assert all(row["text_layer"] == annotation for row in updated)
+    persisted = output.read_bytes()
+    write_manifest(library, output)
+    assert output.read_bytes() == persisted
