@@ -95,3 +95,11 @@ node_modules/
 !/.github/scripts/node_modules/**
 
 # END WORKFLOWS STATUS FILES
+
+# Build artifacts: setuptools regenerates these; committing them let a build
+# artifact silently change a dependency pin (ruff 0.16.5 -> 0.16.6) with no
+# matching pyproject.toml change.
+*.egg-info/
+
+# Agent execution bootstrap scratch files, not project content.
+agents/codex-*.md
