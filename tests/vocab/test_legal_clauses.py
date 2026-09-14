@@ -37,6 +37,15 @@ def test_legal_clauses_minimum_keys_and_unique():
         assert map_key == clause["ontology_key"]
         assert clause["source"] in data["sources"]
     assert "legal.withdrawal.notice_days" in clauses
+    assert load_legal_clauses() == data, "Loader must return the complete canonical vocabulary"
+
+
+def test_named_acceptance_gate_rejects_empty_loader(monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "load_legal_clauses", lambda: {})
+    with pytest.raises(
+        AssertionError, match="Loader must return the complete canonical vocabulary"
+    ):
+        test_legal_clauses_minimum_keys_and_unique()
 
 
 def test_loader_is_independent_of_working_directory_and_returns_fresh_data(tmp_path, monkeypatch):
@@ -173,6 +182,7 @@ def test_minimum_count_gate_boundary(tmp_path, monkeypatch, count):
     candidate = tmp_path / "legal-clauses.json"
     candidate.write_text(json.dumps(data), encoding="utf-8")
     monkeypatch.setattr(sys.modules[__name__], "VOCAB_PATH", candidate)
+    monkeypatch.setattr("doc_lineage.vocab.files", lambda package: candidate.parent)
     if count < 20:
         with pytest.raises(AssertionError):
             test_legal_clauses_minimum_keys_and_unique()
