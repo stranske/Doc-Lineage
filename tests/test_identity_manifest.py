@@ -20,6 +20,45 @@ def _rows_by_path(root: Path) -> dict[str, dict[str, object]]:
     return {row.path: json.loads(row.to_json()) for row in build_manifest_rows(root)}
 
 
+@pytest.mark.parametrize(
+    ("content", "digest"),
+    [
+        (b"", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+        (b"\x00\xff\r\n", "e9489f37fb3051e9efa1dc916004d7274e7b63975e3209708947267f2393a9be"),
+    ],
+    ids=["empty", "binary"],
+)
+def test_written_manifest_contains_required_document_metadata(
+    tmp_path: Path, content: bytes, digest: str
+) -> None:
+    library = tmp_path / "library"
+    relative = "manager_alpha/lpa/2024/terms.pdf"
+    document = library / relative
+    document.parent.mkdir(parents=True)
+    document.write_bytes(content)
+    os.utime(document, (1_704_067_200, 1_704_067_200))
+    output = tmp_path / "manifest.jsonl"
+
+    write_manifest(library, output)
+
+    lines = output.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    assert json.loads(lines[0]) == {
+        "stable_id": digest,
+        "sha256": digest,
+        "path": relative,
+        "entity_slug": "manager_alpha",
+        "category": "lpa",
+        "as_of": "2024",
+        "received_at": "2024-01-01T00:00:00+00:00",
+        "bytes": len(content),
+        "mime": "application/pdf",
+        "supersedes": None,
+        "supersession_evidence": None,
+        "text_layer": "unknown",
+    }
+
+
 def test_rename_preserves_stable_id_and_sha256(tmp_path: Path) -> None:
     library = tmp_path / "library"
     doc_dir = library / "manager_alpha" / "lpa" / "2024"
