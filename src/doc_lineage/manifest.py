@@ -88,7 +88,9 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
         for row, prefix, convention in directory_rows:
             groups[normalized_supersession_group(row.path)].append((row, prefix, convention))
         for group in groups.values():
-            numbered = [(row, prefix, convention) for row, prefix, convention in group if prefix is not None]
+            numbered = [
+                (row, prefix, convention) for row, prefix, convention in group if prefix is not None
+            ]
             if len(numbered) < 2:
                 continue
             numbered.sort(key=lambda item: item[1] or 0)
