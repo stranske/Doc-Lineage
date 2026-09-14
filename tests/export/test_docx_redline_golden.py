@@ -6,6 +6,8 @@ from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
 
+import pytest
+
 from doc_lineage.export import export_docx_redline
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -59,13 +61,26 @@ def _docx(text: str) -> bytes:
     return buffer.getvalue()
 
 
-def test_tracked_changes_present(tmp_path, monkeypatch):
+@pytest.fixture
+def engine_cache(tmp_path, monkeypatch):
     # Exercise a fresh extraction without writing to the developer's home cache.
     # Only redirect cache discovery; comparison still uses the bundled engine.
     monkeypatch.setattr(
         "python_redlines.engines.platformdirs.user_cache_dir",
         lambda appname: str(tmp_path / appname),
     )
+
+
+def _visible_text(node, rejected_tag):
+    """Read the paragraph after accepting or rejecting its text revisions."""
+    if node.tag == f"{{{W}}}{rejected_tag}":
+        return ""
+    if node.tag in {f"{{{W}}}t", f"{{{W}}}delText"}:
+        return node.text or ""
+    return "".join(_visible_text(child, rejected_tag) for child in node)
+
+
+def test_tracked_changes_present(engine_cache):
     original = _docx("The fee is five dollars.")
     modified = _docx("The fee is ten dollars.")
 
@@ -97,12 +112,34 @@ def test_tracked_changes_present(tmp_path, monkeypatch):
         assert revision.get(f"{{{W}}}id") is not None
 
     # Accepting/rejecting the revisions must recover the corresponding input.
-    def visible_text(node, rejected_tag):
-        if node.tag == f"{{{W}}}{rejected_tag}":
-            return ""
-        if node.tag in {f"{{{W}}}t", f"{{{W}}}delText"}:
-            return node.text or ""
-        return "".join(visible_text(child, rejected_tag) for child in node)
+    assert _visible_text(document, "del") == "The fee is ten dollars."
+    assert _visible_text(document, "ins") == "The fee is five dollars."
 
-    assert visible_text(document, "del") == "The fee is ten dollars."
-    assert visible_text(document, "ins") == "The fee is five dollars."
+
+@pytest.mark.parametrize(
+    ("original_text", "modified_text", "has_insertions", "has_deletions"),
+    [
+        ("Counsel approves.", "Counsel approves promptly.", True, False),
+        ("Counsel approves promptly.", "Counsel approves.", False, True),
+        ("Counsel approves.", "Counsel approves.", False, False),
+    ],
+    ids=["insertion-only", "deletion-only", "unchanged"],
+)
+def test_revision_round_trip(
+    engine_cache, original_text, modified_text, has_insertions, has_deletions
+):
+    redline = export_docx_redline(_docx(original_text), _docx(modified_text))
+
+    with ZipFile(BytesIO(redline)) as package:
+        assert package.testzip() is None
+        document = ET.fromstring(package.read("word/document.xml"))
+
+    insertions = document.findall(".//w:ins", NS)
+    deletions = document.findall(".//w:del", NS)
+    assert bool(insertions) == has_insertions
+    assert bool(deletions) == has_deletions
+    for revision in insertions + deletions:
+        assert revision.get(f"{{{W}}}author") == "Doc-Lineage"
+        assert revision.get(f"{{{W}}}id") is not None
+    assert _visible_text(document, "del") == modified_text
+    assert _visible_text(document, "ins") == original_text
