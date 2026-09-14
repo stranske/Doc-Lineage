@@ -2,6 +2,8 @@
 
 import json
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -47,9 +49,73 @@ def test_loader_is_independent_of_working_directory_and_returns_fresh_data(tmp_p
 
 
 def test_loader_uses_bundled_resource(monkeypatch):
-    monkeypatch.setattr("doc_lineage.vocab.Path.is_file", lambda self: False)
     monkeypatch.setattr("doc_lineage.vocab.files", lambda package: VOCAB_PATH.parent)
     assert load_legal_clauses() == json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+
+
+def test_installed_wheel_loads_bundled_vocabulary_despite_adjacent_decoy(tmp_path):
+    """Exercise the actual build configuration and resource lookup outside the checkout."""
+    root = VOCAB_PATH.parent.parent
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    for name in ("pyproject.toml", "README.md", "LICENSE"):
+        shutil.copy2(root / name, checkout / name)
+    shutil.copytree(root / "src" / "doc_lineage", checkout / "src" / "doc_lineage")
+    shutil.copytree(root / "vocab", checkout / "vocab")
+    wheels = tmp_path / "wheels"
+    wheels.mkdir()
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys; from setuptools.build_meta import build_wheel; build_wheel(sys.argv[1])",
+            str(wheels),
+        ],
+        cwd=checkout,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    installed = tmp_path / "installed"
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--no-index",
+            "--no-deps",
+            "--target",
+            str(installed),
+            str(next(wheels.glob("*.whl"))),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    shutil.rmtree(checkout)
+    expected = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    for with_decoy in (False, True):
+        if with_decoy:
+            decoy = tmp_path / "vocab" / "legal-clauses.json"
+            decoy.parent.mkdir()
+            decoy.write_text('{"wrong": true}', encoding="utf-8")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-I",
+                "-c",
+                "import sys, json; sys.path.insert(0, sys.argv[1]); "
+                "from doc_lineage.vocab import load_legal_clauses; "
+                "print(json.dumps(load_legal_clauses()))",
+                str(installed),
+            ],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert json.loads(result.stdout) == expected
 
 
 @pytest.mark.parametrize("duplicate_map_key", [False, True], ids=["ontology_value", "map_key"])

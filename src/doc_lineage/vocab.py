@@ -12,11 +12,17 @@ def load_legal_clauses() -> dict[str, Any]:
     The source checkout owns the JSON in ``vocab/``; wheels bundle that same
     directory as ``doc_lineage._vocab``. No working-directory dependency exists.
     """
-    source = Path(__file__).resolve().parents[2] / "vocab" / "legal-clauses.json"
-    if source.is_file():
-        text = source.read_text(encoding="utf-8")
-    else:
-        text = (
-            files("doc_lineage._vocab").joinpath("legal-clauses.json").read_text(encoding="utf-8")
-        )
+    try:
+        resource = files("doc_lineage._vocab").joinpath("legal-clauses.json")
+    except ModuleNotFoundError as exc:
+        module = Path(__file__).resolve()
+        root = module.parents[2]
+        if (
+            exc.name != "doc_lineage._vocab"
+            or module.parent != root / "src" / "doc_lineage"
+            or not (root / "pyproject.toml").is_file()
+        ):
+            raise
+        resource = root / "vocab" / "legal-clauses.json"
+    text = resource.read_text(encoding="utf-8")
     return cast(dict[str, Any], json.loads(text))
