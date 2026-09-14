@@ -23,6 +23,8 @@ def _docx(text: str) -> bytes:
             'ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
             '<Override PartName="/word/document.xml" '
             'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+            '<Override PartName="/word/styles.xml" '
+            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
             "</Types>",
         )
         package.writestr(
@@ -31,6 +33,22 @@ def _docx(text: str) -> bytes:
             '<Relationship Id="rId1" Target="word/document.xml" '
             'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"/>'
             "</Relationships>",
+        )
+        # The pinned Docxodus engine reads StyleDefinitionsPart even for plain
+        # paragraphs. Include it just as a Word-created document would.
+        package.writestr(
+            "word/_rels/document.xml.rels",
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Target="styles.xml" '
+            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"/>'
+            "</Relationships>",
+        )
+        package.writestr(
+            "word/styles.xml",
+            f'<w:styles xmlns:w="{W}">'
+            '<w:style w:type="paragraph" w:default="1" w:styleId="Normal">'
+            '<w:name w:val="Normal"/>'
+            "</w:style></w:styles>",
         )
         package.writestr(
             "word/document.xml",

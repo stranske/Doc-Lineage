@@ -1,5 +1,39 @@
 # PR #22 autofix diagnosis
 
+## Attempt 2: missing styles part in the synthetic fixture
+
+Gate run: https://github.com/stranske/Doc-Lineage/actions/runs/34802722408
+Head: e5c46fa0dca61486d2a8400a429a3c7ef7997c30
+
+The new diagnostics in jobs 103848552172 (3.12) and 103848552181 (3.13)
+both expose `Error: Value cannot be null. (Parameter 'part')` from Docxodus
+0.3.0. Each job has one failing golden test and 14 passing tests; coverage
+is 100%. This is a native comparison failure, not a finalization defect.
+
+The synthetic DOCX omitted `word/styles.xml`. Upstream comparison code reads
+`StyleDefinitionsPart.GetXDocument()` without checking for a missing part:
+https://github.com/JSv4/Docxodus/blob/main/Docxodus/WmlComparer.cs
+(see `CopyMissingStylesFromOneDocToAnother` and `AddFootnotesEndnotesStyles`).
+This is the likely cause of the null-part failure; the native error does not
+include a stack trace identifying the exact call.
+
+Added a minimal Normal paragraph style, its content-type declaration, and the
+document relationship to both synthetic inputs. All existing semantic redline
+assertions remain in place. No production or workflow changes were needed.
+
+Validation: all 15 tests pass with 100% coverage using
+`XDG_CACHE_HOME=/tmp/doc-lineage-autofix-cache python -m pytest -q`.
+Ruff, Black, and `git diff --check` pass. Local Python is 3.14.7 and the
+installed native engine is still 1.0.0. Installing 0.3.0 into an isolated
+temporary directory failed (no matching distribution available in this
+environment), so the fix needs confirmation on CI Python 3.12/3.13 with the
+locked engine. The smallest check is
+`python -m pytest tests/export/test_docx_redline_golden.py -q`.
+
+PR #22 was verified open and ready (`draft=false`) at the head above.
+
+## Previous attempt
+
 Gate run: https://github.com/stranske/Doc-Lineage/actions/runs/34802341248
 Head: d1a738ec2fc6c6c23eb256700aaeb522bd48a0fc
 
