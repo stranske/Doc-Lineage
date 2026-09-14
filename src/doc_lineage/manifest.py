@@ -189,6 +189,7 @@ def write_manifest(root: Path, output_path: Path) -> None:
             if (
                 previous_payload.get("stable_id") == row.stable_id
                 and previous_payload.get("sha256") == row.sha256
+                and isinstance(previous_payload.get("text_layer"), str)
                 and previous_payload.get("text_layer") in TEXT_LAYER_VALUES
             ):
                 serialized = replace(row, text_layer=previous_payload["text_layer"]).to_json()

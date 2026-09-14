@@ -251,7 +251,8 @@ def test_text_layer_annotation_survives_unchanged_content(tmp_path: Path, annota
     assert json.loads(output.read_text())["text_layer"] == "unknown"
 
 
-def test_invalid_prior_text_layer_is_reset(tmp_path: Path) -> None:
+@pytest.mark.parametrize("annotation", ["not-a-state", None, False, 1, [], {}])
+def test_invalid_prior_text_layer_is_reset(tmp_path: Path, annotation: object) -> None:
     library = tmp_path / "library"
     doc = library / "alpha/reports/report.pdf"
     doc.parent.mkdir(parents=True)
@@ -259,7 +260,7 @@ def test_invalid_prior_text_layer_is_reset(tmp_path: Path) -> None:
     output = tmp_path / "manifest.jsonl"
     write_manifest(library, output)
     payload = json.loads(output.read_text())
-    payload["text_layer"] = "not-a-state"
+    payload["text_layer"] = annotation
     output.write_text(json.dumps(payload) + "\n")
     write_manifest(library, output)
     assert json.loads(output.read_text())["text_layer"] == "unknown"
