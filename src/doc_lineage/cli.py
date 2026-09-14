@@ -10,7 +10,7 @@ from doc_lineage.export import export_docx_redline
 
 @click.group()
 @click.version_option(package_name="doc_lineage")
-def cli():
+def cli() -> None:
     """Document lineage and blackline engine."""
     pass
 
@@ -46,7 +46,9 @@ def cli():
     default=False,
     help="Generate a blackline (tracked changes) comparison.",
 )
-def export_docx(original, modified, output, author, blackline):
+def export_docx(
+    original: Path, modified: Path, output: Path | None, author: str, blackline: bool
+) -> None:
     """Export DOCX comparison with tracked changes."""
     if not blackline:
         click.echo("Error: --blackline flag is required for export-docx", err=True)
@@ -67,7 +69,7 @@ def export_docx(original, modified, output, author, blackline):
         sys.stdout.buffer.write(redline)
 
 
-def main():
+def main() -> None:
     """Entry point for the doc-lineage CLI."""
     cli()
 

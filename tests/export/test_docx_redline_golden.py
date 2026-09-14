@@ -72,7 +72,7 @@ def engine_cache(tmp_path, monkeypatch):
     )
 
 
-def _visible_text(node, rejected_tag):
+def _visible_text(node: ET.Element, rejected_tag: str) -> str:
     """Read the paragraph after accepting or rejecting its text revisions."""
     if node.tag == f"{{{W}}}{rejected_tag}":
         return ""
@@ -81,7 +81,7 @@ def _visible_text(node, rejected_tag):
     return "".join(_visible_text(child, rejected_tag) for child in node)
 
 
-def test_tracked_changes_present(engine_cache):
+def test_tracked_changes_present(engine_cache: None) -> None:
     original = _docx("The fee is five dollars.")
     modified = _docx("The fee is ten dollars.")
 
