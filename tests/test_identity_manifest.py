@@ -187,3 +187,50 @@ def test_invalid_prior_text_layer_is_reset(tmp_path: Path) -> None:
     output.write_text(json.dumps(payload) + "\n")
     write_manifest(library, output)
     assert json.loads(output.read_text())["text_layer"] == "unknown"
+
+
+@pytest.mark.parametrize("separator", ["_", "-", "."])
+def test_numeric_resupply_links_unnumbered_original_and_orders_numerically(
+    tmp_path: Path, separator: str
+) -> None:
+    directory = tmp_path / "alpha/reports/2024"
+    directory.mkdir(parents=True)
+    versions = ["report.pdf", f"2{separator}report.pdf", f"10{separator}report.pdf"]
+    for filename in reversed(versions):
+        (directory / filename).write_bytes(filename.encode())
+
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(tmp_path, output)
+    rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+    assert rows[versions[0]]["supersedes"] is None
+    assert rows[versions[0]]["supersession_evidence"] is None
+    for older, newer in zip(versions, versions[1:], strict=False):
+        assert rows[newer]["supersedes"] == rows[older]["stable_id"]
+        assert rows[newer]["supersession_evidence"] == "numeric_prefix_separator"
+
+
+@pytest.mark.parametrize("duplicate_content", [False, True])
+def test_equal_numeric_prefixes_do_not_invent_version_order(
+    tmp_path: Path, duplicate_content: bool
+) -> None:
+    directory = tmp_path / "alpha/reports"
+    directory.mkdir(parents=True)
+    documents = {
+        "report.pdf": b"original",
+        "1_report.pdf": b"first",
+        "01-report.pdf": b"first" if duplicate_content else b"conflicting",
+        "2_report.pdf": b"second",
+    }
+    for filename, content in documents.items():
+        (directory / filename).write_bytes(content)
+    rows = {Path(row.path).name: row for row in build_manifest_rows(tmp_path)}
+    assert rows["report.pdf"].supersedes is None
+    for filename in ("1_report.pdf", "01-report.pdf", "2_report.pdf"):
+        row = rows[filename]
+        if duplicate_content:
+            expected = b"first" if filename == "2_report.pdf" else b"original"
+            assert row.supersedes == sha256_bytes(expected)
+            assert row.supersession_evidence == "numeric_prefix_separator"
+        else:
+            assert row.supersedes is None
+            assert row.supersession_evidence is None

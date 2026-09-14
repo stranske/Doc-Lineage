@@ -75,6 +75,11 @@ def _iter_documents(root: Path) -> list[Path]:
 
 
 def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
+    """Link increasing numeric prefixes, treating an unnumbered file as the original.
+
+    Equal prefixes do not establish an order. If a rank has conflicting contents,
+    leave links to and from that rank unset rather than choosing by path order.
+    """
     by_directory: dict[Path, list[tuple[ManifestRow, int | None, str | None]]] = defaultdict(list)
     for row in rows:
         path = Path(row.path)
@@ -88,20 +93,20 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
         for row, prefix, convention in directory_rows:
             groups[normalized_supersession_group(row.path)].append((row, prefix, convention))
         for group in groups.values():
-            numbered = [
-                (row, prefix, convention) for row, prefix, convention in group if prefix is not None
-            ]
-            if len(numbered) < 2:
-                continue
-            numbered.sort(key=lambda item: item[1] or 0)
-            for idx in range(1, len(numbered)):
-                older_row, _older_prefix, _older_conv = numbered[idx - 1]
-                newer_row, _newer_prefix, newer_conv = numbered[idx]
-                if newer_row.stable_id == older_row.stable_id:
+            ranks: dict[int, list[tuple[ManifestRow, str | None]]] = defaultdict(list)
+            for row, prefix, convention in group:
+                ranks[prefix if prefix is not None else -1].append((row, convention))
+            ordered_ranks = sorted(ranks)
+            for older_rank, newer_rank in zip(ordered_ranks, ordered_ranks[1:], strict=False):
+                older_ids = {row.stable_id for row, _ in ranks[older_rank]}
+                newer_ids = {row.stable_id for row, _ in ranks[newer_rank]}
+                if len(older_ids) != 1 or len(newer_ids) != 1 or older_ids == newer_ids:
                     continue
-                superseded_by[newer_row.path] = older_row.stable_id
-                if newer_conv:
-                    evidence_by_target[newer_row.path] = newer_conv
+                older_id = next(iter(older_ids))
+                for newer_row, newer_conv in ranks[newer_rank]:
+                    superseded_by[newer_row.path] = older_id
+                    if newer_conv:
+                        evidence_by_target[newer_row.path] = newer_conv
 
     updated: list[ManifestRow] = []
     for row in rows:
