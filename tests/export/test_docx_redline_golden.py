@@ -1,0 +1,76 @@
+"""Semantic golden test against the real python-redlines engine (B2-034)."""
+
+from io import BytesIO
+from xml.etree import ElementTree as ET
+from xml.sax.saxutils import escape
+from zipfile import ZIP_DEFLATED, ZipFile
+
+from doc_lineage.export import export_docx_redline
+
+W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+NS = {"w": W}
+
+
+def _docx(text: str) -> bytes:
+    """Build a minimal synthetic Word package without binary fixtures."""
+    buffer = BytesIO()
+    with ZipFile(buffer, "w", ZIP_DEFLATED) as package:
+        package.writestr(
+            "[Content_Types].xml",
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            '<Default Extension="rels" '
+            'ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            '<Override PartName="/word/document.xml" '
+            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+            "</Types>",
+        )
+        package.writestr(
+            "_rels/.rels",
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Target="word/document.xml" '
+            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"/>'
+            "</Relationships>",
+        )
+        package.writestr(
+            "word/document.xml",
+            f'<w:document xmlns:w="{W}"><w:body><w:p><w:r>'
+            f'<w:t xml:space="preserve">{escape(text)}</w:t>'
+            "</w:r></w:p><w:sectPr/></w:body></w:document>",
+        )
+    return buffer.getvalue()
+
+
+def test_tracked_changes_present():
+    original = _docx("The fee is five dollars.")
+    modified = _docx("The fee is ten dollars.")
+
+    redline = export_docx_redline(original, modified, author="Counsel")
+
+    with ZipFile(BytesIO(redline)) as package:
+        assert package.testzip() is None
+        document = ET.fromstring(package.read("word/document.xml"))
+
+    insertions = document.findall(".//w:ins", NS)
+    deletions = document.findall(".//w:del", NS)
+    assert insertions, "Expected native Word insertion markup"
+    assert deletions, "Expected native Word deletion markup"
+    assert "ten" in "".join(
+        node.text or "" for ins in insertions for node in ins.findall(".//w:t", NS)
+    )
+    assert "five" in "".join(
+        node.text or "" for deletion in deletions for node in deletion.findall(".//w:delText", NS)
+    )
+    for revision in insertions + deletions:
+        assert revision.get(f"{{{W}}}author") == "Counsel"
+        assert revision.get(f"{{{W}}}id") is not None
+
+    # Accepting/rejecting the revisions must recover the corresponding input.
+    def visible_text(node, rejected_tag):
+        if node.tag == f"{{{W}}}{rejected_tag}":
+            return ""
+        if node.tag in {f"{{{W}}}t", f"{{{W}}}delText"}:
+            return node.text or ""
+        return "".join(visible_text(child, rejected_tag) for child in node)
+
+    assert visible_text(document, "del") == "The fee is ten dollars."
+    assert visible_text(document, "ins") == "The fee is five dollars."
