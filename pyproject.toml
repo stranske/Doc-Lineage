@@ -27,6 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "setuptools==82.0.1",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "ruff==0.16.7",
@@ -41,8 +42,12 @@ Repository = "https://github.com/stranske/Template"
 [project.entry-points."console_scripts"]
 doc-lineage = "doc_lineage.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["doc_lineage", "doc_lineage._vocab"]
+package-dir = {"" = "src", "doc_lineage._vocab" = "vocab"}
+
+[tool.setuptools.package-data]
+"doc_lineage._vocab" = ["legal-clauses.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
