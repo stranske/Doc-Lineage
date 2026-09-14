@@ -59,7 +59,13 @@ def _docx(text: str) -> bytes:
     return buffer.getvalue()
 
 
-def test_tracked_changes_present():
+def test_tracked_changes_present(tmp_path, monkeypatch):
+    # Exercise a fresh extraction without writing to the developer's home cache.
+    # Only redirect cache discovery; comparison still uses the bundled engine.
+    monkeypatch.setattr(
+        "python_redlines.engines.platformdirs.user_cache_dir",
+        lambda appname: str(tmp_path / appname),
+    )
     original = _docx("The fee is five dollars.")
     modified = _docx("The fee is ten dollars.")
 

@@ -1,5 +1,27 @@
 # PR #22 autofix diagnosis
 
+## Keepalive: isolate the golden test's engine cache
+
+The named test initially failed because the default home cache is read-only in
+this runner. It now redirects python-redlines' cache discovery into pytest's
+temporary directory. The real bundled engine still extracts and compares the
+synthetic documents, and all tracked-change assertions remain intact.
+
+Validation: `pytest -m 'not slow'` passes all 15 tests, including
+`tests/export/test_docx_redline_golden.py::test_tracked_changes_present`, with
+100% source coverage. This run uses Python 3.14.7, python-redlines 0.3.0, and
+python-redlines-docxodus 1.0.0. Confirmation with CI's locked native engine 0.3.0
+remains outstanding; the acceptance checkbox is not closed on this evidence.
+The remaining “Surfaced by B2-034” item does not specify a verifiable action.
+
+Black's full repository check passed (78 files unchanged) with one worker and
+an event-loop heartbeat to work around stalled sandbox socket notifications.
+Ruff and `git diff --check` also passed. Committing was attempted but blocked:
+Git could not create `.git/index.lock` because `.git` is read-only.
+
+GitHub access failed (`error connecting to api.github.com`), so this run could
+not update the PR checklist or verify its current ready-for-review state.
+
 ## Attempt 2: missing styles part in the synthetic fixture
 
 Gate run: https://github.com/stranske/Doc-Lineage/actions/runs/34802722408
