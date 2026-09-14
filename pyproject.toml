@@ -3,9 +3,9 @@ requires = ["setuptools>=82.0.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "my-project"
+name = "doc-lineage"
 version = "0.1.0"
-description = "Template Python project with stranske/Workflows CI integration"
+description = "Document lineage: identity, extraction with page pointers, and version and family comparison for recurring investment documents"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
@@ -26,7 +26,7 @@ dependencies = []
 dev = [
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
-    "ruff==0.16.5",
+    "ruff==0.16.7",
     "mypy==2.3.1",
     "black==26.5.1",
 ]
@@ -79,7 +79,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["my_project", "tools"]
+known-first-party = ["doc_lineage", "tools"]
 
 [tool.mypy]
 python_version = "3.12"
