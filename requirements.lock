@@ -48,5 +48,6 @@ pytokens==0.4.1
     # via black
 ruff==0.16.7
     # via my-project (pyproject.toml)
+setuptools==82.0.1
 typing-extensions==4.16.0
     # via mypy

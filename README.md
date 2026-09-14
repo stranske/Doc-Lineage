@@ -2,7 +2,7 @@
 
 Document lineage and blackline engine for recurring investment documents.
 
-**Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope, architecture and first issues arrive from research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). Until then this repo carries only the Workflows consumer scaffold.
+**Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope, architecture and first issues arrive from research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). The initial legal clause vocabulary and Python loader are available; the document processing engine remains to be implemented.
 
 ## Intent
 
@@ -15,7 +15,9 @@ Document lineage and blackline engine for recurring investment documents.
 
 ## Interoperability
 
-Identifiers and evidence objects follow the fleet conventions in `docs/contracts/` (`run-contract/v1`, `evidence-object/v1`, identity-map conventions). Document-type and clause vocabularies will be published as data files so sibling repos (`Inv-Man-Intake`, `Manager-Database`, `Pension-Data`) can adopt the same names.
+Identifiers and evidence objects follow the fleet conventions in `docs/contracts/` (`run-contract/v1`, `evidence-object/v1`, identity-map conventions). The versioned [legal clause vocabulary](vocab/legal-clauses.json) publishes 25 stable `ontology_key` values so sibling repos (`Inv-Man-Intake`, `Manager-Database`, `Pension-Data`) can adopt the same names. Load the full document with `from doc_lineage.vocab import load_legal_clauses` and `load_legal_clauses()`.
+
+The keys adapt topics from [ILPA Principles 3.0](https://ilpa.org/wp-content/uploads/2019/06/ILPA-Principles-3.0_2019.pdf) and [CUAD v1](https://www.atticusprojectai.org/cuad/) (CC BY 4.0), with withdrawal fields supplied by the B2 owner default. Each entry records its source. `non_authoritative: false` identifies the canonical project vocabulary; these are project-defined identifiers, not identifiers issued by ILPA or CUAD or recommended contract terms.
 
 ## Scope, fixed 2026-09-04 by the work-environment inventory
 

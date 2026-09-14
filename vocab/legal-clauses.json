@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "non_authoritative": false,
+  "description": "Canonical Doc-Lineage identifiers; project-defined adaptations of public clause topics, not source-issued identifiers or recommended contract terms.",
+  "sources": {
+    "ILPA": {
+      "title": "ILPA Principles 3.0",
+      "url": "https://ilpa.org/wp-content/uploads/2019/06/ILPA-Principles-3.0_2019.pdf"
+    },
+    "CUAD": {
+      "title": "Contract Understanding Atticus Dataset v1",
+      "url": "https://www.atticusprojectai.org/cuad/",
+      "license": "CC BY 4.0"
+    },
+    "owner_default": {
+      "title": "B2 owner default: withdrawal tracking for R1"
+    }
+  },
+  "clauses": {
+    "legal.fees.management_rate": {
+      "ontology_key": "legal.fees.management_rate",
+      "label": "Management fee rate",
+      "source": "ILPA"
+    },
+    "legal.fees.management_basis": {
+      "ontology_key": "legal.fees.management_basis",
+      "label": "Management fee calculation basis",
+      "source": "ILPA"
+    },
+    "legal.fees.offsets": {
+      "ontology_key": "legal.fees.offsets",
+      "label": "Management fee offsets",
+      "source": "ILPA"
+    },
+    "legal.expenses.fund_allocation": {
+      "ontology_key": "legal.expenses.fund_allocation",
+      "label": "Allocation of fund expenses",
+      "source": "ILPA"
+    },
+    "legal.economics.carried_interest": {
+      "ontology_key": "legal.economics.carried_interest",
+      "label": "Carried interest",
+      "source": "ILPA"
+    },
+    "legal.economics.preferred_return": {
+      "ontology_key": "legal.economics.preferred_return",
+      "label": "Preferred return",
+      "source": "ILPA"
+    },
+    "legal.economics.clawback": {
+      "ontology_key": "legal.economics.clawback",
+      "label": "Return of excess carried interest",
+      "source": "ILPA"
+    },
+    "legal.economics.gp_commitment": {
+      "ontology_key": "legal.economics.gp_commitment",
+      "label": "General partner capital commitment",
+      "source": "ILPA"
+    },
+    "legal.fund.term": {
+      "ontology_key": "legal.fund.term",
+      "label": "Fund duration and extensions",
+      "source": "ILPA"
+    },
+    "legal.fund.investment_period": {
+      "ontology_key": "legal.fund.investment_period",
+      "label": "Investment period",
+      "source": "ILPA"
+    },
+    "legal.governance.key_person": {
+      "ontology_key": "legal.governance.key_person",
+      "label": "Key person provisions",
+      "source": "ILPA"
+    },
+    "legal.governance.gp_removal": {
+      "ontology_key": "legal.governance.gp_removal",
+      "label": "General partner removal",
+      "source": "ILPA"
+    },
+    "legal.governance.lpac": {
+      "ontology_key": "legal.governance.lpac",
+      "label": "Limited partner advisory committee",
+      "source": "ILPA"
+    },
+    "legal.governance.conflicts": {
+      "ontology_key": "legal.governance.conflicts",
+      "label": "Conflict approval provisions",
+      "source": "ILPA"
+    },
+    "legal.reporting.financial_statements": {
+      "ontology_key": "legal.reporting.financial_statements",
+      "label": "Financial reporting obligations",
+      "source": "ILPA"
+    },
+    "legal.withdrawal.notice_days": {
+      "ontology_key": "legal.withdrawal.notice_days",
+      "label": "Withdrawal notice period in days",
+      "source": "owner_default"
+    },
+    "legal.withdrawal.gates": {
+      "ontology_key": "legal.withdrawal.gates",
+      "label": "Limits on withdrawals",
+      "source": "owner_default"
+    },
+    "legal.withdrawal.suspension": {
+      "ontology_key": "legal.withdrawal.suspension",
+      "label": "Suspension of withdrawals",
+      "source": "owner_default"
+    },
+    "legal.governing_law.jurisdiction": {
+      "ontology_key": "legal.governing_law.jurisdiction",
+      "label": "Governing law",
+      "source": "CUAD"
+    },
+    "legal.transfer.assignment": {
+      "ontology_key": "legal.transfer.assignment",
+      "label": "Restrictions on assignment",
+      "source": "CUAD"
+    },
+    "legal.termination.notice_period": {
+      "ontology_key": "legal.termination.notice_period",
+      "label": "Notice period for termination",
+      "source": "CUAD"
+    },
+    "legal.termination.convenience": {
+      "ontology_key": "legal.termination.convenience",
+      "label": "Termination without cause",
+      "source": "CUAD"
+    },
+    "legal.renewal.term": {
+      "ontology_key": "legal.renewal.term",
+      "label": "Renewal term",
+      "source": "CUAD"
+    },
+    "legal.liability.cap": {
+      "ontology_key": "legal.liability.cap",
+      "label": "Limitation of liability",
+      "source": "CUAD"
+    },
+    "legal.rights.most_favored_nation": {
+      "ontology_key": "legal.rights.most_favored_nation",
+      "label": "Most favored nation rights",
+      "source": "CUAD"
+    }
+  }
+}
