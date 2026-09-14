@@ -45,8 +45,11 @@ def parse_path_parts(root: Path, file_path: Path) -> tuple[str, str, str]:
 
 
 def _parse_as_of(intermediate_parts: tuple[str, ...], filename: str) -> str:
-    if intermediate_parts and YEAR_PATTERN.fullmatch(intermediate_parts[-1]):
-        return intermediate_parts[-1]
+    # Archive and other organizational folders do not erase the document year.
+    # The nearest year directory retains precedence over filename metadata.
+    for part in reversed(intermediate_parts):
+        if YEAR_PATTERN.fullmatch(part):
+            return part
 
     stem = Path(filename).stem
     year_match = re.search(r"(20\d{2})", stem)
