@@ -20,7 +20,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["python-redlines[docxodus]==0.3.0"]
+dependencies = [
+    "python-redlines[docxodus]==0.3.0",
+    "click>=8.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -34,6 +37,9 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/stranske/Template"
 Repository = "https://github.com/stranske/Template"
+
+[project.entry-points."console_scripts"]
+doc-lineage = "doc_lineage.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
