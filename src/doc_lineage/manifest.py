@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import mimetypes
 from collections import defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -97,14 +97,16 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
             for idx in range(1, len(numbered)):
                 older_row, _older_prefix, _older_conv = numbered[idx - 1]
                 newer_row, _newer_prefix, newer_conv = numbered[idx]
-                superseded_by[newer_row.stable_id] = older_row.stable_id
+                if newer_row.stable_id == older_row.stable_id:
+                    continue
+                superseded_by[newer_row.path] = older_row.stable_id
                 if newer_conv:
-                    evidence_by_target[newer_row.stable_id] = newer_conv
+                    evidence_by_target[newer_row.path] = newer_conv
 
     updated: list[ManifestRow] = []
     for row in rows:
-        supersedes = superseded_by.get(row.stable_id)
-        evidence = evidence_by_target.get(row.stable_id)
+        supersedes = superseded_by.get(row.path)
+        evidence = evidence_by_target.get(row.path)
         updated.append(
             ManifestRow(
                 stable_id=row.stable_id,
@@ -165,6 +167,10 @@ def read_manifest(path: Path) -> dict[str, str]:
 
 def write_manifest(root: Path, output_path: Path) -> None:
     """Write an incremental manifest, preserving unchanged rows byte-for-byte."""
+    root = root.resolve()
+    output_path = output_path.resolve()
+    if output_path.is_relative_to(root) and output_path.suffix.lower() in DOCUMENT_SUFFIXES:
+        raise ValueError("manifest output must not be a document path inside the input root")
     rows = build_manifest_rows(root)
     previous_lines = read_manifest(output_path)
     output_lines: list[str] = []
@@ -173,6 +179,12 @@ def write_manifest(root: Path, output_path: Path) -> None:
         previous = previous_lines.get(row.path)
         if previous is not None:
             previous_payload = json.loads(previous)
+            if (
+                previous_payload.get("stable_id") == row.stable_id
+                and previous_payload.get("sha256") == row.sha256
+                and previous_payload.get("text_layer") in TEXT_LAYER_VALUES
+            ):
+                serialized = replace(row, text_layer=previous_payload["text_layer"]).to_json()
             current_payload = json.loads(serialized)
             if previous_payload == current_payload:
                 serialized = previous

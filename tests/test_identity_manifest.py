@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
 import pytest
@@ -76,7 +77,7 @@ def test_build_manifest_script_entry_point(tmp_path: Path) -> None:
 
     result = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "scripts/build_manifest.py",
             str(library),
             "--output",
@@ -92,25 +93,6 @@ def test_build_manifest_script_entry_point(tmp_path: Path) -> None:
     assert len(lines) >= 5
     payload = json.loads(lines[0])
     assert payload["text_layer"] == "unknown"
-
-
-def test_deliberate_break_path_based_stable_id_fails_rename_test(tmp_path: Path) -> None:
-    """Deliberate-break gate: path-derived stable_id must fail the rename invariant."""
-
-    def path_based_stable_id(content: bytes, path: Path) -> str:
-        return sha256_bytes(str(path).encode("utf-8"))
-
-    library = tmp_path / "library"
-    doc_dir = library / "manager_alpha" / "lpa" / "2024"
-    doc_dir.mkdir(parents=True)
-    original = doc_dir / "001_terms.pdf"
-    original.write_bytes(b"rename-me")
-    before = path_based_stable_id(original.read_bytes(), original)
-    renamed = doc_dir / "001_terms_renamed.pdf"
-    original.rename(renamed)
-    after = path_based_stable_id(renamed.read_bytes(), renamed)
-    with pytest.raises(AssertionError):
-        assert after == before
 
 
 def test_content_based_stable_id_passes_rename_test(tmp_path: Path) -> None:
@@ -134,3 +116,74 @@ def test_incremental_manifest_preserves_unchanged_lines(tmp_path: Path) -> None:
     preserved = read_manifest(output)
     write_manifest(library, output)
     assert read_manifest(output) == preserved
+
+
+def test_supersession_is_path_scoped_with_duplicate_content(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    docs = {
+        "alpha/reports/001_report.pdf": b"old",
+        "alpha/reports/002_report.pdf": b"new",
+        "beta/reports/copy.pdf": b"new",
+        "gamma/reports/001_report.pdf": b"same",
+        "gamma/reports/002_report.pdf": b"same",
+    }
+    for relative, content in docs.items():
+        path = library / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    rows = _rows_by_path(library)
+    assert rows["alpha/reports/002_report.pdf"]["supersedes"] == sha256_bytes(b"old")
+    assert (
+        rows["alpha/reports/002_report.pdf"]["supersession_evidence"] == "numeric_prefix_separator"
+    )
+    for relative in docs.keys() - {"alpha/reports/002_report.pdf"}:
+        assert rows[relative]["supersedes"] is None
+        assert rows[relative]["supersession_evidence"] is None
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_document_output_inside_library_is_rejected(tmp_path: Path, existing: bool) -> None:
+    library = tmp_path / "library"
+    library.mkdir()
+    output = library / "manifest.txt"
+    if existing:
+        output.write_bytes(b"original document")
+    with pytest.raises(ValueError, match="output.*document"):
+        write_manifest(library, output)
+    if existing:
+        assert output.read_bytes() == b"original document"
+    else:
+        assert not output.exists()
+
+
+@pytest.mark.parametrize("annotation", ["present", "absent"])
+def test_text_layer_annotation_survives_unchanged_content(tmp_path: Path, annotation: str) -> None:
+    library = tmp_path / "library"
+    doc = library / "alpha/reports/report.pdf"
+    doc.parent.mkdir(parents=True)
+    doc.write_bytes(b"original")
+    output = library / "manifest.jsonl"
+    write_manifest(library, output)
+    payload = json.loads(output.read_text())
+    payload["text_layer"] = annotation
+    annotated = json.dumps(payload) + "\n"
+    output.write_text(annotated)
+    write_manifest(library, output)
+    assert output.read_text() == annotated
+    doc.write_bytes(b"changed")
+    write_manifest(library, output)
+    assert json.loads(output.read_text())["text_layer"] == "unknown"
+
+
+def test_invalid_prior_text_layer_is_reset(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    doc = library / "alpha/reports/report.pdf"
+    doc.parent.mkdir(parents=True)
+    doc.write_bytes(b"original")
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    payload = json.loads(output.read_text())
+    payload["text_layer"] = "not-a-state"
+    output.write_text(json.dumps(payload) + "\n")
+    write_manifest(library, output)
+    assert json.loads(output.read_text())["text_layer"] == "unknown"
