@@ -69,3 +69,44 @@ def test_uniqueness_gate_rejects_duplicates(tmp_path, monkeypatch, duplicate_map
     message = "Duplicate JSON map key" if duplicate_map_key else "Duplicate ontology_key values"
     with pytest.raises(AssertionError, match=message):
         test_legal_clauses_minimum_keys_and_unique()
+
+
+@pytest.mark.parametrize("count", [19, 20], ids=["below_minimum", "at_minimum"])
+def test_minimum_count_gate_boundary(tmp_path, monkeypatch, count):
+    data = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    required_key = "legal.withdrawal.notice_days"
+    other_keys = [key for key in data["clauses"] if key != required_key]
+    keys = [required_key, *other_keys[: count - 1]]
+    data["clauses"] = {key: data["clauses"][key] for key in keys}
+    candidate = tmp_path / "legal-clauses.json"
+    candidate.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "VOCAB_PATH", candidate)
+    if count < 20:
+        with pytest.raises(AssertionError):
+            test_legal_clauses_minimum_keys_and_unique()
+    else:
+        test_legal_clauses_minimum_keys_and_unique()
+
+
+@pytest.mark.parametrize(
+    "invalid_key",
+    [
+        "legal.notice_days",
+        "other.withdrawal.notice_days",
+        "legal.Withdrawal.notice_days",
+        "legal.withdrawal.notice-days",
+        "legal.withdrawal.1notice",
+        "legal.withdrawal.notice_days\n",
+    ],
+)
+def test_ontology_key_pattern_gate_rejects_invalid_keys(tmp_path, monkeypatch, invalid_key):
+    data = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    original_key = next(key for key in data["clauses"] if key != "legal.withdrawal.notice_days")
+    clause = data["clauses"].pop(original_key)
+    clause["ontology_key"] = invalid_key
+    data["clauses"][invalid_key] = clause
+    candidate = tmp_path / "legal-clauses.json"
+    candidate.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "VOCAB_PATH", candidate)
+    with pytest.raises(AssertionError):
+        test_legal_clauses_minimum_keys_and_unique()
