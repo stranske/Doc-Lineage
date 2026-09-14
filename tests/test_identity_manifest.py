@@ -46,6 +46,42 @@ def test_duplicate_content_paths_share_stable_id() -> None:
     assert primary["path"] != duplicate["path"]
 
 
+def test_incremental_copy_and_removal_preserve_identity(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    shutil.copytree(FIXTURE_ROOT, library)
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    before = read_manifest(output)
+    source = "manager_gamma/consultant_reports/2025/gamma_q1.pdf"
+    duplicate = "manager_gamma/consultant_reports/2025/archive/resupplied.pdf"
+    original = json.loads(before[source])
+    (library / duplicate).parent.mkdir(parents=True)
+    shutil.copyfile(library / source, library / duplicate)
+
+    write_manifest(library, output)
+
+    copied = read_manifest(output)
+    assert set(copied) == set(before) | {duplicate}
+    for path, line in before.items():
+        assert copied[path] == line
+    copy_row = json.loads(copied[duplicate])
+    assert copy_row["path"] == duplicate
+    assert copy_row["sha256"] == original["sha256"]
+    assert copy_row["stable_id"] == original["stable_id"]
+    assert {json.loads(line)["stable_id"] for line in copied.values()} == {
+        json.loads(line)["stable_id"] for line in before.values()
+    }
+
+    (library / source).unlink()
+    write_manifest(library, output)
+
+    remaining = read_manifest(output)
+    assert remaining == {path: line for path, line in copied.items() if path != source}
+    persisted = output.read_bytes()
+    write_manifest(library, output)
+    assert output.read_bytes() == persisted
+
+
 def test_incremental_manifest_tracks_fixture_rename(tmp_path: Path) -> None:
     library = tmp_path / "library"
     shutil.copytree(FIXTURE_ROOT, library)
