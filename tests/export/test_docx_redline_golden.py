@@ -130,6 +130,35 @@ def test_golden_rejects_unmarked_output(monkeypatch, returned_input):
 
 
 @pytest.mark.parametrize(
+    ("removed_tag", "expected_error"),
+    [("ins", "insertion"), ("del", "deletion")],
+)
+def test_golden_rejects_partial_markup(engine_cache, monkeypatch, removed_tag, expected_error):
+    """Either missing revision kind must fail, even if the other survives."""
+    real_export = export_docx_redline
+
+    def export_with_missing_revisions(original, modified, *, author):
+        redline = real_export(original, modified, author=author)
+        buffer = BytesIO()
+        with ZipFile(BytesIO(redline)) as source, ZipFile(buffer, "w", ZIP_DEFLATED) as output:
+            for entry in source.infolist():
+                content = source.read(entry.filename)
+                if entry.filename == "word/document.xml":
+                    document = ET.fromstring(content)
+                    revisions = document.findall(f".//w:{removed_tag}", NS)
+                    assert revisions, "Mutation requires real tracked changes"
+                    for revision in revisions:
+                        revision.tag = f"{{{W}}}customXml"
+                    content = ET.tostring(document)
+                output.writestr(entry, content)
+        return buffer.getvalue()
+
+    monkeypatch.setattr(sys.modules[__name__], "export_docx_redline", export_with_missing_revisions)
+    with pytest.raises(AssertionError, match=f"Expected native Word {expected_error} markup"):
+        test_tracked_changes_present(engine_cache)
+
+
+@pytest.mark.parametrize(
     ("original_text", "modified_text", "has_insertions", "has_deletions"),
     [
         ("Counsel approves.", "Counsel approves promptly.", True, False),
