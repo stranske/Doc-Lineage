@@ -35,8 +35,12 @@ dev = [
 Homepage = "https://github.com/stranske/Template"
 Repository = "https://github.com/stranske/Template"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["doc_lineage", "doc_lineage._vocab"]
+package-dir = {"" = "src", "doc_lineage._vocab" = "vocab"}
+
+[tool.setuptools.package-data]
+"doc_lineage._vocab" = ["legal-clauses.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
