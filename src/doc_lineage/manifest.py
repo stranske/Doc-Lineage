@@ -134,6 +134,8 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
 def build_manifest_rows(root: Path) -> list[ManifestRow]:
     """Scan ``root`` and return sorted manifest rows."""
     root = root.resolve()
+    if not root.is_dir():
+        raise ValueError(f"library root must be an existing directory: {root}")
     rows: list[ManifestRow] = []
     for file_path in _iter_documents(root):
         identity = compute_identity(root, file_path)

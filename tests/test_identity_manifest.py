@@ -146,6 +146,27 @@ def test_incremental_manifest_preserves_unchanged_lines(tmp_path: Path) -> None:
     assert read_manifest(output) == preserved
 
 
+@pytest.mark.parametrize("root_is_file", [False, True])
+def test_invalid_library_root_preserves_existing_manifest(
+    tmp_path: Path, root_is_file: bool
+) -> None:
+    library = tmp_path / "library"
+    shutil.copytree(FIXTURE_ROOT, library)
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    original = output.read_bytes()
+    library.rename(tmp_path / "moved_library")
+    if root_is_file:
+        library.write_bytes(b"not a directory")
+
+    with pytest.raises(ValueError, match="root must be an existing directory"):
+        write_manifest(library, output)
+
+    assert output.read_bytes() == original
+    with pytest.raises(ValueError, match="root must be an existing directory"):
+        build_manifest_rows(library)
+
+
 def test_supersession_is_path_scoped_with_duplicate_content(tmp_path: Path) -> None:
     library = tmp_path / "library"
     docs = {
