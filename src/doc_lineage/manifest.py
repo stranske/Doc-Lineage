@@ -198,6 +198,8 @@ def write_manifest(root: Path, output_path: Path) -> None:
     content = "\n".join(output_lines)
     if output_lines:
         content += "\n"
+    if output_path.exists() and output_path.read_bytes() == content.encode("utf-8"):
+        return
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(content, encoding="utf-8")
 

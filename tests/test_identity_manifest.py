@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -67,6 +68,33 @@ def test_second_run_is_byte_identical(tmp_path: Path) -> None:
     write_manifest(library, output)
     second = output.read_bytes()
     assert first == second
+
+
+@pytest.mark.parametrize("empty_library", [False, True])
+def test_unchanged_manifest_is_not_rewritten(tmp_path: Path, empty_library: bool) -> None:
+    library = tmp_path / "library"
+    if empty_library:
+        library.mkdir()
+    else:
+        shutil.copytree(FIXTURE_ROOT, library)
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    original = output.read_bytes()
+    # Use a fixed old timestamp so the check does not depend on clock resolution.
+    os.utime(output, ns=(1_000_000_000, 1_000_000_000))
+    previous_mtime = output.stat().st_mtime_ns
+
+    write_manifest(library, output)
+
+    assert output.read_bytes() == original
+    assert output.stat().st_mtime_ns == previous_mtime
+
+    added = library / "new_manager/reports/new.pdf"
+    added.parent.mkdir(parents=True)
+    added.write_bytes(b"new document")
+    write_manifest(library, output)
+    assert output.read_bytes() != original
+    assert "new_manager/reports/new.pdf" in read_manifest(output)
 
 
 def test_build_manifest_script_entry_point(tmp_path: Path) -> None:
