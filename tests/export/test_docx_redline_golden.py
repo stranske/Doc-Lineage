@@ -1,5 +1,6 @@
 """Semantic golden test against the real python-redlines engine (B2-034)."""
 
+import sys
 from io import BytesIO
 from subprocess import CalledProcessError
 from xml.etree import ElementTree as ET
@@ -114,6 +115,18 @@ def test_tracked_changes_present(engine_cache):
     # Accepting/rejecting the revisions must recover the corresponding input.
     assert _visible_text(document, "del") == "The fee is ten dollars."
     assert _visible_text(document, "ins") == "The fee is five dollars."
+
+
+@pytest.mark.parametrize("returned_input", ["original", "modified"])
+def test_golden_rejects_unmarked_output(monkeypatch, returned_input):
+    """Keep the deliberate-break gate reproducible without changing production code."""
+
+    def export_without_markup(original, modified, *, author):
+        return original if returned_input == "original" else modified
+
+    monkeypatch.setattr(sys.modules[__name__], "export_docx_redline", export_without_markup)
+    with pytest.raises(AssertionError, match="Expected native Word insertion markup"):
+        test_tracked_changes_present(engine_cache=None)
 
 
 @pytest.mark.parametrize(
