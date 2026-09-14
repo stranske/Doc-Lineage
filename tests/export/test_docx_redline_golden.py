@@ -164,8 +164,9 @@ def test_golden_rejects_partial_markup(engine_cache, monkeypatch, removed_tag, e
         ("Counsel approves.", "Counsel approves promptly.", True, False),
         ("Counsel approves promptly.", "Counsel approves.", False, True),
         ("Counsel approves.", "Counsel approves.", False, False),
+        ("Café & Co. owes <€50>.", "Café & Co. owes <€75>.", True, True),
     ],
-    ids=["insertion-only", "deletion-only", "unchanged"],
+    ids=["insertion-only", "deletion-only", "unchanged", "unicode-and-xml-characters"],
 )
 def test_revision_round_trip(
     engine_cache, original_text, modified_text, has_insertions, has_deletions
