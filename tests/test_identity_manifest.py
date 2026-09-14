@@ -156,6 +156,39 @@ def test_numeric_resupply_records_supersedes_and_evidence() -> None:
     assert newer["supersession_evidence"] == "numeric_prefix_separator"
 
 
+@pytest.mark.parametrize("duplicate_original", [False, True])
+def test_identical_resupplies_preserve_prior_distinct_identity(
+    tmp_path: Path, duplicate_original: bool
+) -> None:
+    directory = tmp_path / "alpha/reports"
+    directory.mkdir(parents=True)
+    documents = {
+        "report.pdf": b"original",
+        "1_report.pdf": b"original" if duplicate_original else b"revision",
+        "2_report.pdf": b"original" if duplicate_original else b"revision",
+        "3_report.pdf": b"original" if duplicate_original else b"revision",
+        "4_report.pdf": b"final revision",
+    }
+    for filename, content in documents.items():
+        (directory / filename).write_bytes(content)
+    output = tmp_path / "manifest.jsonl"
+
+    write_manifest(tmp_path, output)
+
+    rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+    for filename in ("1_report.pdf", "2_report.pdf", "3_report.pdf"):
+        row = rows[filename]
+        assert row["supersedes"] == (None if duplicate_original else sha256_bytes(b"original"))
+        assert row["supersession_evidence"] == (
+            None if duplicate_original else "numeric_prefix_separator"
+        )
+    assert rows["4_report.pdf"]["supersedes"] == sha256_bytes(documents["3_report.pdf"])
+    assert all(row["supersedes"] != row["stable_id"] for row in rows.values())
+    persisted = output.read_bytes()
+    write_manifest(tmp_path, output)
+    assert output.read_bytes() == persisted
+
+
 def test_text_layer_defaults_to_unknown() -> None:
     rows = _rows_by_path(FIXTURE_ROOT)
     assert all(row["text_layer"] == "unknown" for row in rows.values())

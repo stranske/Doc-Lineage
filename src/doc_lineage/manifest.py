@@ -100,9 +100,16 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
             for older_rank, newer_rank in zip(ordered_ranks, ordered_ranks[1:], strict=False):
                 older_ids = {row.stable_id for row, _ in ranks[older_rank]}
                 newer_ids = {row.stable_id for row, _ in ranks[newer_rank]}
-                if len(older_ids) != 1 or len(newer_ids) != 1 or older_ids == newer_ids:
+                if len(older_ids) != 1 or len(newer_ids) != 1:
                     continue
                 older_id = next(iter(older_ids))
+                if older_ids == newer_ids:
+                    # A byte-identical re-supply retains the prior version link;
+                    # it must not supersede its own content identity.
+                    predecessor = superseded_by.get(ranks[older_rank][0][0].path)
+                    if predecessor is None:
+                        continue
+                    older_id = predecessor
                 for newer_row, newer_conv in ranks[newer_rank]:
                     superseded_by[newer_row.path] = older_id
                     if newer_conv:
