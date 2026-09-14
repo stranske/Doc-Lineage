@@ -224,6 +224,34 @@ def test_build_manifest_script_entry_point(tmp_path: Path) -> None:
     payload = json.loads(lines[0])
     assert payload["text_layer"] == "unknown"
 
+    before = read_manifest(output)
+    old_path = "manager_gamma/consultant_reports/2025/gamma_q1.pdf"
+    new_path = "manager_gamma/consultant_reports/2025/renamed.pdf"
+    copy_path = "manager_gamma/consultant_reports/2025/copy.pdf"
+    original = json.loads(before[old_path])
+    (library / old_path).rename(library / new_path)
+    shutil.copyfile(library / new_path, library / copy_path)
+
+    subprocess.run(result.args, check=True, capture_output=True, text=True)
+
+    after = read_manifest(output)
+    assert set(after) == (set(before) - {old_path}) | {new_path, copy_path}
+    for path in (new_path, copy_path):
+        row = json.loads(after[path])
+        assert row["path"] == path
+        assert row["stable_id"] == original["stable_id"]
+        assert row["sha256"] == original["sha256"]
+        assert row["text_layer"] == "unknown"
+    for path in before.keys() - {old_path}:
+        assert after[path] == before[path]
+
+    persisted = output.read_bytes()
+    os.utime(output, ns=(1_000_000_000, 1_000_000_000))
+    previous_mtime = output.stat().st_mtime_ns
+    subprocess.run(result.args, check=True, capture_output=True, text=True)
+    assert output.read_bytes() == persisted
+    assert output.stat().st_mtime_ns == previous_mtime
+
 
 def test_content_based_stable_id_passes_rename_test(tmp_path: Path) -> None:
     library = tmp_path / "library"
