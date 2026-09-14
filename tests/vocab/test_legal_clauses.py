@@ -14,16 +14,7 @@ from doc_lineage.vocab import load_legal_clauses
 VOCAB_PATH = Path(__file__).resolve().parents[2] / "vocab" / "legal-clauses.json"
 
 
-def _unique_object(pairs):
-    result = {}
-    for key, value in pairs:
-        assert key not in result, f"Duplicate JSON map key: {key}"
-        result[key] = value
-    return result
-
-
-def test_legal_clauses_minimum_keys_and_unique():
-    data = json.loads(VOCAB_PATH.read_text(encoding="utf-8"), object_pairs_hook=_unique_object)
+def _assert_vocabulary(data):
     assert data["schema_version"] == "1.0.0"
     assert data["version"] == "1.0.0"
     assert data["non_authoritative"] is False
@@ -37,20 +28,16 @@ def test_legal_clauses_minimum_keys_and_unique():
         assert map_key == clause["ontology_key"]
         assert clause["source"] in data["sources"]
     assert "legal.withdrawal.notice_days" in clauses
-    assert load_legal_clauses() == data, "Loader must return the complete canonical vocabulary"
 
 
-def test_named_acceptance_gate_rejects_empty_loader(monkeypatch):
-    monkeypatch.setattr(sys.modules[__name__], "load_legal_clauses", lambda: {})
-    with pytest.raises(
-        AssertionError, match="Loader must return the complete canonical vocabulary"
-    ):
-        test_legal_clauses_minimum_keys_and_unique()
+def test_legal_clauses_minimum_keys_and_unique():
+    _assert_vocabulary(load_legal_clauses())
 
 
 def test_loader_is_independent_of_working_directory_and_returns_fresh_data(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    expected = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    expected = load_legal_clauses()
+    _assert_vocabulary(expected)
     loaded = load_legal_clauses()
     assert loaded == expected
     loaded["clauses"].clear()
@@ -58,6 +45,7 @@ def test_loader_is_independent_of_working_directory_and_returns_fresh_data(tmp_p
 
 
 def test_loader_uses_bundled_resource(monkeypatch):
+    _assert_vocabulary(load_legal_clauses())
     monkeypatch.setattr("doc_lineage.vocab.files", lambda package: VOCAB_PATH.parent)
     assert load_legal_clauses() == json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
 
@@ -65,6 +53,7 @@ def test_loader_uses_bundled_resource(monkeypatch):
 @pytest.mark.parametrize("failure", ["dependency", "installed_layout", "missing_project"])
 def test_loader_does_not_hide_resource_import_failures(tmp_path, monkeypatch, failure):
     """Only a source checkout with an absent resource package may use the fallback."""
+    _assert_vocabulary(load_legal_clauses())
     root = tmp_path / "project"
     package_dir = root / ("site-packages" if failure == "installed_layout" else "src")
     module = package_dir / "doc_lineage" / "vocab.py"
@@ -129,7 +118,8 @@ def test_installed_wheel_loads_bundled_vocabulary_despite_adjacent_decoy(tmp_pat
         text=True,
     )
     shutil.rmtree(checkout)
-    expected = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    expected = load_legal_clauses()
+    _assert_vocabulary(expected)
     for with_decoy in (False, True):
         if with_decoy:
             decoy = tmp_path / "vocab" / "legal-clauses.json"
@@ -156,7 +146,8 @@ def test_installed_wheel_loads_bundled_vocabulary_despite_adjacent_decoy(tmp_pat
 @pytest.mark.parametrize("duplicate_map_key", [False, True], ids=["ontology_value", "map_key"])
 def test_uniqueness_gate_rejects_duplicates(tmp_path, monkeypatch, duplicate_map_key):
     """Keep the deliberate-break acceptance gate reproducible without editing source data."""
-    data = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    data = load_legal_clauses()
+    _assert_vocabulary(data)
     clauses = list(data["clauses"].values())
     first_key = clauses[0]["ontology_key"]
     second_key = clauses[1]["ontology_key"]
@@ -166,22 +157,23 @@ def test_uniqueness_gate_rejects_duplicates(tmp_path, monkeypatch, duplicate_map
         text = text.replace(json.dumps(second_key), json.dumps(first_key), 1)
     broken_vocab = tmp_path / "legal-clauses.json"
     broken_vocab.write_text(text, encoding="utf-8")
-    monkeypatch.setattr(sys.modules[__name__], "VOCAB_PATH", broken_vocab)
+    monkeypatch.setattr("doc_lineage.vocab.files", lambda package: broken_vocab.parent)
     message = "Duplicate JSON map key" if duplicate_map_key else "Duplicate ontology_key values"
-    with pytest.raises(AssertionError, match=message):
+    error = ValueError if duplicate_map_key else AssertionError
+    with pytest.raises(error, match=message):
         test_legal_clauses_minimum_keys_and_unique()
 
 
 @pytest.mark.parametrize("count", [19, 20], ids=["below_minimum", "at_minimum"])
 def test_minimum_count_gate_boundary(tmp_path, monkeypatch, count):
-    data = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    data = load_legal_clauses()
+    _assert_vocabulary(data)
     required_key = "legal.withdrawal.notice_days"
     other_keys = [key for key in data["clauses"] if key != required_key]
     keys = [required_key, *other_keys[: count - 1]]
     data["clauses"] = {key: data["clauses"][key] for key in keys}
     candidate = tmp_path / "legal-clauses.json"
     candidate.write_text(json.dumps(data), encoding="utf-8")
-    monkeypatch.setattr(sys.modules[__name__], "VOCAB_PATH", candidate)
     monkeypatch.setattr("doc_lineage.vocab.files", lambda package: candidate.parent)
     if count < 20:
         with pytest.raises(AssertionError):
@@ -202,13 +194,14 @@ def test_minimum_count_gate_boundary(tmp_path, monkeypatch, count):
     ],
 )
 def test_ontology_key_pattern_gate_rejects_invalid_keys(tmp_path, monkeypatch, invalid_key):
-    data = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    data = load_legal_clauses()
+    _assert_vocabulary(data)
     original_key = next(key for key in data["clauses"] if key != "legal.withdrawal.notice_days")
     clause = data["clauses"].pop(original_key)
     clause["ontology_key"] = invalid_key
     data["clauses"][invalid_key] = clause
     candidate = tmp_path / "legal-clauses.json"
     candidate.write_text(json.dumps(data), encoding="utf-8")
-    monkeypatch.setattr(sys.modules[__name__], "VOCAB_PATH", candidate)
+    monkeypatch.setattr("doc_lineage.vocab.files", lambda package: candidate.parent)
     with pytest.raises(AssertionError):
         test_legal_clauses_minimum_keys_and_unique()

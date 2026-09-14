@@ -6,6 +6,16 @@ from pathlib import Path
 from typing import Any, cast
 
 
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Reject duplicate map keys instead of silently discarding vocabulary entries."""
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"Duplicate JSON map key: {key}")
+        result[key] = value
+    return result
+
+
 def load_legal_clauses() -> dict[str, Any]:
     """Return a fresh vocabulary document, including metadata and the clauses map.
 
@@ -25,4 +35,4 @@ def load_legal_clauses() -> dict[str, Any]:
             raise
         resource = root / "vocab" / "legal-clauses.json"
     text = resource.read_text(encoding="utf-8")
-    return cast(dict[str, Any], json.loads(text))
+    return cast(dict[str, Any], json.loads(text, object_pairs_hook=_unique_object))
