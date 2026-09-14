@@ -53,6 +53,32 @@ def test_loader_uses_bundled_resource(monkeypatch):
     assert load_legal_clauses() == json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
 
 
+@pytest.mark.parametrize("failure", ["dependency", "installed_layout", "missing_project"])
+def test_loader_does_not_hide_resource_import_failures(tmp_path, monkeypatch, failure):
+    """Only a source checkout with an absent resource package may use the fallback."""
+    root = tmp_path / "project"
+    package_dir = root / ("site-packages" if failure == "installed_layout" else "src")
+    module = package_dir / "doc_lineage" / "vocab.py"
+    module.parent.mkdir(parents=True)
+    module.touch()
+    if failure != "missing_project":
+        (root / "pyproject.toml").touch()
+    decoy = root / "vocab" / "legal-clauses.json"
+    decoy.parent.mkdir()
+    decoy.write_text('{"wrong": true}', encoding="utf-8")
+    missing = "resource_dependency" if failure == "dependency" else "doc_lineage._vocab"
+    error = ModuleNotFoundError(f"No module named {missing!r}", name=missing)
+
+    def unavailable_resource(package):
+        raise error
+
+    monkeypatch.setattr("doc_lineage.vocab.__file__", str(module))
+    monkeypatch.setattr("doc_lineage.vocab.files", unavailable_resource)
+    with pytest.raises(ModuleNotFoundError) as caught:
+        load_legal_clauses()
+    assert caught.value is error
+
+
 def test_installed_wheel_loads_bundled_vocabulary_despite_adjacent_decoy(tmp_path):
     """Exercise the actual build configuration and resource lookup outside the checkout."""
     root = VOCAB_PATH.parent.parent
