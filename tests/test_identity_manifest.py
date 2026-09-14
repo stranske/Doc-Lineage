@@ -347,3 +347,56 @@ def test_equal_numeric_prefixes_do_not_invent_version_order(
         else:
             assert row.supersedes is None
             assert row.supersession_evidence is None
+
+
+@pytest.mark.parametrize("annotation", ["present", "absent"])
+@pytest.mark.parametrize("keep_original", [False, True])
+def test_text_layer_follows_content_to_new_path(
+    tmp_path: Path, annotation: str, keep_original: bool
+) -> None:
+    library = tmp_path / "library"
+    original = library / "alpha/reports/report.pdf"
+    original.parent.mkdir(parents=True)
+    original.write_bytes(b"examined document")
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    payload = json.loads(output.read_text())
+    payload["text_layer"] = annotation
+    output.write_text(json.dumps(payload) + "\n")
+    renamed = original.with_name("resupplied.pdf")
+    if keep_original:
+        shutil.copyfile(original, renamed)
+    else:
+        original.rename(renamed)
+
+    write_manifest(library, output)
+
+    rows = [json.loads(line) for line in read_manifest(output).values()]
+    assert len(rows) == (2 if keep_original else 1)
+    assert all(row["stable_id"] == payload["stable_id"] for row in rows)
+    assert all(row["text_layer"] == annotation for row in rows)
+    persisted = output.read_bytes()
+    write_manifest(library, output)
+    assert output.read_bytes() == persisted
+
+
+def test_conflicting_text_layer_results_are_not_inherited_by_new_path(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    original = library / "alpha/reports/report.pdf"
+    original.parent.mkdir(parents=True)
+    original.write_bytes(b"examined document")
+    duplicate = original.with_name("copy.pdf")
+    shutil.copyfile(original, duplicate)
+    output = tmp_path / "manifest.jsonl"
+    write_manifest(library, output)
+    rows = [json.loads(line) for line in read_manifest(output).values()]
+    for row, annotation in zip(rows, ["present", "absent"], strict=True):
+        row["text_layer"] = annotation
+    output.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    renamed = original.with_name("renamed.pdf")
+    original.rename(renamed)
+    duplicate.unlink()
+
+    write_manifest(library, output)
+
+    assert json.loads(output.read_text())["text_layer"] == "unknown"

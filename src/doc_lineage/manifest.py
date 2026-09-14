@@ -180,10 +180,27 @@ def write_manifest(root: Path, output_path: Path) -> None:
         raise ValueError("manifest output must not be a document path inside the input root")
     rows = build_manifest_rows(root)
     previous_lines = read_manifest(output_path)
+    # Text checks describe bytes, so a new path can reuse an unambiguous result.
+    annotations_by_identity: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for line in previous_lines.values():
+        payload = json.loads(line)
+        stable_id, digest = payload.get("stable_id"), payload.get("sha256")
+        annotation = payload.get("text_layer")
+        if (
+            isinstance(stable_id, str)
+            and isinstance(digest, str)
+            and isinstance(annotation, str)
+            and annotation in {"present", "absent"}
+        ):
+            annotations_by_identity[(stable_id, digest)].add(annotation)
     output_lines: list[str] = []
     for row in rows:
         serialized = row.to_json()
         previous = previous_lines.get(row.path)
+        if previous is None:
+            annotations = annotations_by_identity.get((row.stable_id, row.sha256), set())
+            if len(annotations) == 1:
+                serialized = replace(row, text_layer=next(iter(annotations))).to_json()
         if previous is not None:
             previous_payload = json.loads(previous)
             if (
