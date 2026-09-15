@@ -8,7 +8,6 @@ from typing import Any
 
 from doc_lineage.schema._finite import (
     require_finite_int,
-    require_finite_number,
     require_nonnegative_number,
 )
 from doc_lineage.schema.enums import MaterialityTier, SegmentClassification, TextBasis
