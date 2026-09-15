@@ -1,0 +1,16 @@
+"""Shared validation helpers for numeric ledger fields."""
+
+from __future__ import annotations
+
+import math
+from typing import Any
+
+
+def require_finite_number(value: Any, field_name: str) -> float:
+    """Reject non-finite numbers at validation time."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{field_name} must be a finite number")
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError(f"{field_name} must be finite")
+    return number

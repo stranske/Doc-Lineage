@@ -1,0 +1,24 @@
+{
+  "change_ledger": {
+    "doc_type": "legal_filing",
+    "transition": "2023_to_2024",
+    "canonical_section": "investment_restrictions",
+    "subsection": "leverage",
+    "item": "max_leverage",
+    "page_new": 44,
+    "change_type": "policy_change",
+    "tier": "T1",
+    "topic": "leverage cap",
+    "prior_text": "2.0x",
+    "current_text": "1.5x"
+  },
+  "material_ledger": {
+    "date": "2024-03-15",
+    "tier": "T1",
+    "theme": "risk_controls",
+    "category": "leverage",
+    "change": "maximum leverage reduced",
+    "From": "2.0x",
+    "To": "1.5x"
+  }
+}

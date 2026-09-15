@@ -2,8 +2,12 @@
 #    uv pip compile pyproject.toml --extra=dev --universal --output-file=requirements.lock
 ast-serialize==0.6.0
     # via mypy
+attrs==26.1.0
+    # via
+    #   jsonschema
+    #   referencing
 black==26.5.1
-    # via my-project (pyproject.toml)
+    # via doc-lineage (pyproject.toml)
 click==8.4.2
     # via black
 colorama==0.4.6 ; sys_platform == 'win32'
@@ -14,10 +18,14 @@ coverage==7.16.0
     # via pytest-cov
 iniconfig==2.3.0
     # via pytest
+jsonschema==4.22.0
+    # via doc-lineage (pyproject.toml)
+jsonschema-specifications==2025.9.1
+    # via jsonschema
 librt==0.13.0 ; platform_python_implementation != 'PyPy'
     # via mypy
 mypy==2.3.1
-    # via my-project (pyproject.toml)
+    # via doc-lineage (pyproject.toml)
 mypy-extensions==1.1.0
     # via
     #   black
@@ -40,14 +48,25 @@ pygments==2.20.0
     # via pytest
 pytest==9.1.1
     # via
-    #   my-project (pyproject.toml)
+    #   doc-lineage (pyproject.toml)
     #   pytest-cov
 pytest-cov==7.1.0
-    # via my-project (pyproject.toml)
+    # via doc-lineage (pyproject.toml)
 pytokens==0.4.1
     # via black
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+rpds-py==2026.6.3
+    # via
+    #   jsonschema
+    #   referencing
 ruff==0.16.7
-    # via my-project (pyproject.toml)
+    # via doc-lineage (pyproject.toml)
 setuptools==82.0.1
+    # via doc-lineage (pyproject.toml)
 typing-extensions==4.16.0
-    # via mypy
+    # via
+    #   mypy
+    #   referencing
