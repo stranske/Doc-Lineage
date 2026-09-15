@@ -20,7 +20,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = []
+dependencies = [
+    "python-redlines[docxodus]==0.3.0",
+    "click>=8.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -35,6 +38,9 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/stranske/Template"
 Repository = "https://github.com/stranske/Template"
+
+[project.entry-points."console_scripts"]
+doc-lineage = "doc_lineage.cli:main"
 
 [tool.setuptools]
 packages = ["doc_lineage", "doc_lineage._vocab"]
@@ -98,6 +104,10 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "python_redlines.*"
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "tests.*"

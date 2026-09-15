@@ -34,6 +34,10 @@ pluggy==1.6.0
     #   pytest-cov
 pygments==2.19.2
     # via pytest
+python-redlines==0.3.0
+    # via doc-lineage (pyproject.toml)
+python-redlines-docxodus==0.3.0
+    # via python-redlines
 pytest==9.1.1
     # via
     #   my-project (pyproject.toml)
