@@ -1,9 +1,9 @@
 """Closed vocabularies adopted from the existing work-environment tools."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class SegmentClassification(str, Enum):
+class SegmentClassification(StrEnum):
     """Segment tier labels used by both comparison tools."""
 
     VERBATIM = "VERBATIM"
@@ -13,7 +13,7 @@ class SegmentClassification(str, Enum):
     DROPPED = "DROPPED"
 
 
-class MaterialityTier(str, Enum):
+class MaterialityTier(StrEnum):
     """Materiality tiers: T1 decision-relevant, T2 factual refresh, T3 cosmetic."""
 
     T1 = "T1"
@@ -21,7 +21,7 @@ class MaterialityTier(str, Enum):
     T3 = "T3"
 
 
-class TextBasis(str, Enum):
+class TextBasis(StrEnum):
     """Whether continuity percentages were computed from native, OCR, or mixed text."""
 
     NATIVE = "native"

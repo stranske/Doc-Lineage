@@ -7,6 +7,7 @@ import math
 from pathlib import Path
 
 import pytest
+from jsonschema import ValidationError
 
 from doc_lineage.schema import (
     ChangeLedgerRow,

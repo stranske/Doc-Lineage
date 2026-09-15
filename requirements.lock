@@ -26,6 +26,8 @@ librt==0.13.0 ; platform_python_implementation != 'PyPy'
     # via mypy
 mypy==2.3.1
     # via doc-lineage (pyproject.toml)
+types-jsonschema==4.23.0.20241208
+    # via doc-lineage (pyproject.toml)
 mypy-extensions==1.1.0
     # via
     #   black
