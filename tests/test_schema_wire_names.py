@@ -7,7 +7,6 @@ import math
 from pathlib import Path
 
 import pytest
-from jsonschema import ValidationError
 
 from doc_lineage.schema import (
     ChangeLedgerRow,
@@ -74,7 +73,9 @@ def test_non_finite_percentage_rejected() -> None:
 
 
 def test_consultant_report_fixture_validates() -> None:
-    bundle = json.loads((FIXTURES / "consultant_report_transition.json").read_text(encoding="utf-8"))
+    bundle = json.loads(
+        (FIXTURES / "consultant_report_transition.json").read_text(encoding="utf-8")
+    )
     validate_record("change_ledger", bundle["change_ledger"])
     validate_record("continuity_ledger", bundle["continuity_ledger"])
     ChangeLedgerRow.from_wire(bundle["change_ledger"])
@@ -117,4 +118,6 @@ def test_deliberate_break_carry_forward_pct_name_fails_wire_name_gate() -> None:
     assert "carry_forward_pct" not in broken["properties"]
     assert "carryforward_pct" in broken["properties"]
     with pytest.raises(AssertionError):
-        assert tuple(sorted(broken["properties"])) == tuple(sorted(WIRE_FIELDS["continuity_ledger"]))
+        assert tuple(sorted(broken["properties"])) == tuple(
+            sorted(WIRE_FIELDS["continuity_ledger"])
+        )
