@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, fields
+from enum import Enum
 from typing import Any
 
-from doc_lineage.schema._finite import require_finite_number
+from doc_lineage.schema._finite import require_finite_int, require_finite_number
 from doc_lineage.schema.enums import MaterialityTier, SegmentClassification, TextBasis
 
 WIRE_FIELDS: dict[str, tuple[str, ...]] = {
@@ -86,7 +87,7 @@ WIRE_FIELDS: dict[str, tuple[str, ...]] = {
 }
 
 
-def _validate_enum(value: str, enum_cls: type, field_name: str) -> str:
+def _validate_enum(value: str, enum_cls: type[Enum], field_name: str) -> str:
     try:
         enum_cls(value)
     except ValueError:
@@ -145,11 +146,33 @@ class ContinuityLedgerRow:
     text_basis: str
 
     def __post_init__(self) -> None:
+        _validate_enum(self.status, SegmentClassification, "status")
+        object.__setattr__(
+            self,
+            "words_current",
+            require_finite_int(self.words_current, "words_current"),
+        )
         for name in (
             "carry_forward_pct",
             "refresh_pct",
         ):
             object.__setattr__(self, name, require_finite_number(getattr(self, name), name))
+        for name in (
+            "verbatim_words",
+            "near_verbatim_words",
+            "revised_words",
+            "new_words",
+            "dropped_words",
+            "segments_verbatim",
+            "segments_near",
+            "segments_revised",
+            "segments_new",
+            "segments_dropped",
+            "segments_cosmetic",
+            "new_items",
+            "dropped_items",
+        ):
+            object.__setattr__(self, name, require_finite_int(getattr(self, name), name))
         _validate_enum(self.text_basis, TextBasis, "text_basis")
 
     def to_wire(self) -> dict[str, Any]:
@@ -170,6 +193,14 @@ class PersistenceLedgerRow:
     last_seen: str
     words: int
     text: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "consecutive_years_unchanged",
+            require_finite_int(self.consecutive_years_unchanged, "consecutive_years_unchanged"),
+        )
+        object.__setattr__(self, "words", require_finite_int(self.words, "words"))
 
     def to_wire(self) -> dict[str, Any]:
         return asdict(self)

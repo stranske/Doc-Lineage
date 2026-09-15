@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stranske/Doc-Lineage/schemas/stale_flag_ledger.schema.json",
+  "title": "stale_flag_ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "doc_type",
+    "canonical_section",
+    "item",
+    "consecutive_years_unchanged",
+    "first_seen",
+    "last_seen",
+    "words",
+    "text",
+    "report_year",
+    "flag"
+  ],
+  "properties": {
+    "doc_type": { "type": "string" },
+    "canonical_section": { "type": "string" },
+    "item": { "type": "string" },
+    "consecutive_years_unchanged": { "type": "integer" },
+    "first_seen": { "type": "string" },
+    "last_seen": { "type": "string" },
+    "words": { "type": "integer" },
+    "text": { "type": "string" },
+    "report_year": { "type": "integer" },
+    "flag": { "type": "string" }
+  }
+}

@@ -12,6 +12,7 @@ from doc_lineage.schema import (
     ChangeLedgerRow,
     ContinuityLedgerRow,
     MaterialLedgerRow,
+    PersistenceLedgerRow,
     load_schema,
     validate_record,
 )
@@ -42,6 +43,34 @@ def test_segment_vocabulary_rejects_unknown_value() -> None:
 def test_materiality_tier_rejects_unknown_value() -> None:
     with pytest.raises(ValueError, match="T4"):
         MaterialityTier("T4")
+
+
+def test_validate_record_rejects_non_finite_percentages() -> None:
+    payload = {
+        "doc_type": "consultant_report",
+        "transition": "2024_to_2025",
+        "canonical_section": "overview",
+        "status": "REVISED",
+        "words_current": 10,
+        "carry_forward_pct": math.nan,
+        "refresh_pct": 0.0,
+        "verbatim_words": 1,
+        "near_verbatim_words": 1,
+        "revised_words": 1,
+        "new_words": 1,
+        "dropped_words": 0,
+        "segments_verbatim": 1,
+        "segments_near": 0,
+        "segments_revised": 0,
+        "segments_new": 0,
+        "segments_dropped": 0,
+        "segments_cosmetic": 0,
+        "new_items": 0,
+        "dropped_items": 0,
+        "text_basis": "native",
+    }
+    with pytest.raises(ValueError, match="finite"):
+        validate_record("continuity_ledger", payload)
 
 
 def test_non_finite_percentage_rejected() -> None:
@@ -88,6 +117,37 @@ def test_legal_filing_fixture_validates() -> None:
     validate_record("material_ledger", bundle["material_ledger"])
     ChangeLedgerRow.from_wire(bundle["change_ledger"])
     MaterialLedgerRow.from_wire(bundle["material_ledger"])
+
+
+def test_persistence_ledger_fixture_validates() -> None:
+    payload = {
+        "doc_type": "consultant_report",
+        "canonical_section": "portfolio_overview",
+        "item": "equity_weight",
+        "consecutive_years_unchanged": 3,
+        "first_seen": "2022",
+        "last_seen": "2025",
+        "words": 42,
+        "text": "unchanged allocation language",
+    }
+    validate_record("persistence_ledger", payload)
+    PersistenceLedgerRow.from_wire(payload)
+
+
+def test_persistence_ledger_rejects_extra_fields() -> None:
+    payload = {
+        "doc_type": "consultant_report",
+        "canonical_section": "portfolio_overview",
+        "item": "equity_weight",
+        "consecutive_years_unchanged": 3,
+        "first_seen": "2022",
+        "last_seen": "2025",
+        "words": 42,
+        "text": "unchanged allocation language",
+        "unexpected": True,
+    }
+    with pytest.raises(ValidationError):
+        validate_record("persistence_ledger", payload)
 
 
 def test_material_ledger_round_trip_preserves_from_to_wire_names() -> None:
