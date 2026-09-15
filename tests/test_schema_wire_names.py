@@ -74,6 +74,55 @@ def test_validate_record_rejects_non_finite_percentages() -> None:
         validate_record("continuity_ledger", payload)
 
 
+def test_negative_percentage_rejected_in_row_and_validate_record() -> None:
+    payload = {
+        "doc_type": "consultant_report",
+        "transition": "2024_to_2025",
+        "canonical_section": "overview",
+        "status": "REVISED",
+        "words_current": 10,
+        "carry_forward_pct": -1.0,
+        "refresh_pct": 0.0,
+        "verbatim_words": 1,
+        "near_verbatim_words": 1,
+        "revised_words": 1,
+        "new_words": 1,
+        "dropped_words": 0,
+        "segments_verbatim": 1,
+        "segments_near": 0,
+        "segments_revised": 0,
+        "segments_new": 0,
+        "segments_dropped": 0,
+        "segments_cosmetic": 0,
+        "new_items": 0,
+        "dropped_items": 0,
+        "text_basis": "native",
+    }
+    with pytest.raises(ValueError, match="nonnegative"):
+        ContinuityLedgerRow.from_wire(payload)
+    with pytest.raises(ValueError, match="nonnegative"):
+        ContinuityLedgerRow(**payload)
+    payload["carry_forward_pct"] = 0.0
+    payload["refresh_pct"] = -0.5
+    with pytest.raises(ValueError, match="nonnegative"):
+        ContinuityLedgerRow.from_wire(payload)
+
+
+def test_non_finite_word_count_rejected_via_validate_record() -> None:
+    payload = {
+        "doc_type": "consultant_report",
+        "canonical_section": "portfolio_overview",
+        "item": "equity_weight",
+        "consecutive_years_unchanged": 3,
+        "first_seen": "2022",
+        "last_seen": "2025",
+        "words": math.inf,
+        "text": "unchanged allocation language",
+    }
+    with pytest.raises(ValueError, match="finite"):
+        validate_record("persistence_ledger", payload)
+
+
 def test_non_finite_percentage_rejected() -> None:
     payload = {
         "doc_type": "consultant_report",

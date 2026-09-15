@@ -16,6 +16,14 @@ def require_finite_number(value: Any, field_name: str) -> float:
     return number
 
 
+def require_nonnegative_number(value: Any, field_name: str) -> float:
+    """Reject non-finite or negative numbers at validation time."""
+    number = require_finite_number(value, field_name)
+    if number < 0:
+        raise ValueError(f"{field_name} must be nonnegative")
+    return number
+
+
 def require_finite_int(value: Any, field_name: str) -> int:
     """Reject non-finite or non-integer numeric values at validation time."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):

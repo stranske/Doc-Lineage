@@ -6,7 +6,11 @@ from dataclasses import asdict, dataclass, field, fields
 from enum import Enum
 from typing import Any
 
-from doc_lineage.schema._finite import require_finite_int, require_finite_number
+from doc_lineage.schema._finite import (
+    require_finite_int,
+    require_finite_number,
+    require_nonnegative_number,
+)
 from doc_lineage.schema.enums import MaterialityTier, SegmentClassification, TextBasis
 
 WIRE_FIELDS: dict[str, tuple[str, ...]] = {
@@ -111,6 +115,7 @@ class ChangeLedgerRow:
     current_text: str
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "page_new", require_finite_int(self.page_new, "page_new"))
         _validate_enum(self.tier, MaterialityTier, "tier")
 
     def to_wire(self) -> dict[str, Any]:
@@ -156,7 +161,7 @@ class ContinuityLedgerRow:
             "carry_forward_pct",
             "refresh_pct",
         ):
-            object.__setattr__(self, name, require_finite_number(getattr(self, name), name))
+            object.__setattr__(self, name, require_nonnegative_number(getattr(self, name), name))
         for name in (
             "verbatim_words",
             "near_verbatim_words",
@@ -223,6 +228,15 @@ class StaleFlagLedgerRow:
     report_year: int
     flag: str
 
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "consecutive_years_unchanged",
+            require_finite_int(self.consecutive_years_unchanged, "consecutive_years_unchanged"),
+        )
+        object.__setattr__(self, "words", require_finite_int(self.words, "words"))
+        object.__setattr__(self, "report_year", require_finite_int(self.report_year, "report_year"))
+
     def to_wire(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -238,6 +252,10 @@ class SectionCrosswalkRow:
     raw_section: str
     canonical_section: str
     words: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "year", require_finite_int(self.year, "year"))
+        object.__setattr__(self, "words", require_finite_int(self.words, "words"))
 
     def to_wire(self) -> dict[str, Any]:
         return asdict(self)
