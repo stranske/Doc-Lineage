@@ -4,7 +4,22 @@ from pathlib import Path
 
 import pytest
 
-from doc_lineage.identity import compute_identity, parse_path_parts, sha256_bytes
+from doc_lineage.identity import _parse_as_of, compute_identity, parse_path_parts, sha256_bytes
+
+
+@pytest.mark.parametrize(
+    ("intermediate_parts", "filename", "as_of"),
+    [
+        (("2024",), "terms.pdf", "2024"),
+        (("archive",), "terms_2025.pdf", "2025"),
+        (("archive",), "terms.pdf", "unknown"),
+        (("2023", "archive"), "beta_side_copy.pdf", "2023"),
+    ],
+)
+def test_parse_as_of_uses_directory_year_before_filename(
+    intermediate_parts: tuple[str, ...], filename: str, as_of: str
+) -> None:
+    assert _parse_as_of(intermediate_parts, filename) == as_of
 
 
 @pytest.mark.parametrize(
