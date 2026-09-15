@@ -135,9 +135,7 @@ def test_coverage_always_reports_all_three_counts(cache_dir: Path, tmp_path: Pat
     assert coverage.pages_recognized >= 0
     assert coverage.pages_unreadable >= 0
     assert (
-        coverage.pages_with_text_layer
-        + coverage.pages_recognized
-        + coverage.pages_unreadable
+        coverage.pages_with_text_layer + coverage.pages_recognized + coverage.pages_unreadable
     ) == 1
 
 

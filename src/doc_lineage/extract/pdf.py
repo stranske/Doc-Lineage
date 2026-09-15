@@ -108,7 +108,6 @@ def _normalize_reading_order(text: str, rotation: int) -> str:
 
 def _render_page_image(page: object) -> object:
     from PIL import Image
-
     from pypdf import PageObject
 
     assert isinstance(page, PageObject)

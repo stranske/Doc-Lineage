@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING
 
 from doc_lineage.extract.cache import ExtractCache
 from doc_lineage.extract.models import CoverageStats, Document, Span
-from doc_lineage.extract.office import extract_docx, extract_pptx, stable_id_for_bytes
 from doc_lineage.extract.ocr import OCRBackend, default_ocr_backend
+from doc_lineage.extract.office import extract_docx, extract_pptx, stable_id_for_bytes
 from doc_lineage.extract.pdf import extract_pdf
 
 if TYPE_CHECKING:
