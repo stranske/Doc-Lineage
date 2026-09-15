@@ -1,0 +1,43 @@
+{
+  "schema_version": "artifact-manifest/v1",
+  "run_id": "doc-lineage-public-corpus/v1",
+  "tool": "doc-lineage-fixture-corpus",
+  "git_sha": null,
+  "created_at": "2026-09-15T17:35:00Z",
+  "artifacts": [
+    {
+      "artifact_id": "synthetic-alpha-lpa-001",
+      "name": "Synthetic manager_alpha LPA terms (001)",
+      "kind": "data",
+      "path": "tests/fixtures/library/manager_alpha/lpa/2024/001_alpha_terms.pdf",
+      "sha256": "30625187a0eba0130168c6f9b02038f04d3d154b6da5ee5cb3157eed9ec17548",
+      "bytes": 13,
+      "media_type": "application/pdf",
+      "doc_type_id": "synthetic_lpa",
+      "content_sha256": "30625187a0eba0130168c6f9b02038f04d3d154b6da5ee5cb3157eed9ec17548"
+    },
+    {
+      "artifact_id": "synthetic-beta-side-letter",
+      "name": "Synthetic manager_beta side letter",
+      "kind": "data",
+      "path": "tests/fixtures/library/manager_beta/side_letters/2023/beta_side.pdf",
+      "sha256": "fc01c37e41cd931731ce94af4d7b11a43ff7b8618299602f76de5b8a5baaa8a2",
+      "bytes": 17,
+      "media_type": "application/pdf",
+      "doc_type_id": "synthetic_side_letter",
+      "content_sha256": "fc01c37e41cd931731ce94af4d7b11a43ff7b8618299602f76de5b8a5baaa8a2"
+    },
+    {
+      "artifact_id": "calpers-ic-default",
+      "name": "CalPERS Investment Committee default public PDF",
+      "kind": "data",
+      "path": "tests/fixtures/public_corpus/calpers/ic/default.pdf",
+      "sha256": "daca1ab17429c3491561496678350fbb8d3f10c472544630cf4a21ab835d59e6",
+      "bytes": 265306,
+      "media_type": "application/pdf",
+      "doc_type_id": "calpers_investment_committee",
+      "source_url": "https://www.calpers.ca.gov/about/board/board-meetings/invest-202603-0",
+      "content_sha256": "daca1ab17429c3491561496678350fbb8d3f10c472544630cf4a21ab835d59e6"
+    }
+  ]
+}
