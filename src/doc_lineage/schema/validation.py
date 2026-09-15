@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 import math
 from functools import lru_cache
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, cast
 
-from importlib.resources import files
 from jsonschema import Draft202012Validator
 
 
