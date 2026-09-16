@@ -43,24 +43,20 @@ def _pdf_with_stream(body: bytes, *, header_extra: bytes = b"") -> bytes:
     return _pdf_with_pages((header_extra, body))
 
 
-def test_plain_text_input_is_one_page(tmp_path: Path) -> None:
+def test_plain_text_input_requires_docling(tmp_path: Path) -> None:
     source = tmp_path / "notes.txt"
     source.write_text("alpha lpa v1\n", encoding="utf-8")
 
-    result = segment_document(source, allow_docling=False)
-
-    assert result.backend == OFFLINE_BACKEND
-    assert [page.text for page in result.pages] == ["alpha lpa v1"]
-    assert result.pages_without_text_layer == ()
+    with pytest.raises(ValueError, match="non-PDF input requires Docling"):
+        segment_document(source, allow_docling=False)
 
 
-def test_empty_plain_text_reports_no_text_layer(tmp_path: Path) -> None:
+def test_empty_non_pdf_input_requires_docling(tmp_path: Path) -> None:
     source = tmp_path / "empty.txt"
     source.write_bytes(b"")
 
-    result = segment_document(source, allow_docling=False)
-
-    assert result.pages_without_text_layer == (1,)
+    with pytest.raises(ValueError, match="non-PDF input requires Docling"):
+        segment_document(source, allow_docling=False)
 
 
 def test_flate_encoded_stream_is_inflated(tmp_path: Path) -> None:
