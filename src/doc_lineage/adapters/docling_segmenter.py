@@ -28,9 +28,7 @@ _PAGE_TYPE_PATTERN = re.compile(rb"/Type\s*/Page(?![a-zA-Z])")
 _CONTENTS_PATTERN = re.compile(rb"/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)")
 _REFERENCE_PATTERN = re.compile(rb"(\d+)\s+\d+\s+R")
 _SHOW_TEXT_PATTERN = re.compile(
-    rb"\((?:\\.|[^()\\])*\)\s*(?:Tj|TJ|'|\")"
-    rb"|(?:\[(?:[^\]]|\\.)*\]\s*TJ)"
-    rb"|T\*",
+    rb"\((?:\\.|[^()\\])*\)\s*(?:Tj|TJ|'|\")" rb"|(?:\[(?:[^\]]|\\.)*\]\s*TJ)" rb"|T\*",
     re.DOTALL,
 )
 _STRING_PATTERN = re.compile(rb"\((?:\\.|[^()\\])*\)", re.DOTALL)
