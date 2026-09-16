@@ -9,6 +9,7 @@ identically in every CI leg.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -101,6 +102,19 @@ def test_ingest_rejects_a_missing_document(tmp_path: Path) -> None:
         ingest_document(tmp_path / "absent.pdf", output_dir=tmp_path / "out")
 
 
+def test_ingest_rejects_empty_run_id(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="run_id must be a non-empty string"):
+        ingest_document(FIXTURE, output_dir=tmp_path, run_id="   ", allow_docling=False)
+
+
+def test_offline_backend_rejects_binary_non_pdf(tmp_path: Path) -> None:
+    binary = tmp_path / "deck.pptx"
+    binary.write_bytes(b"PK\x03\x04fake-pptx-bytes")
+
+    with pytest.raises(ValueError, match="non-PDF input requires Docling"):
+        segment_document(binary, allow_docling=False)
+
+
 def test_cli_ingest_exits_zero(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     exit_code = cli_main(
         [
@@ -131,16 +145,25 @@ def test_cli_ingest_reports_a_missing_document(
 
 def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
     """`doc-lineage ingest <fixture> --output <dir>` exits 0, as the issue requires."""
+    project_root = Path(__file__).resolve().parents[2]
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "-e", str(project_root), "-q"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    script = shutil.which("doc-lineage")
+    assert script is not None, "doc-lineage console script must be installed"
+    command = [
+        script,
+        "ingest",
+        str(FIXTURE),
+        "--output",
+        str(tmp_path / "run"),
+        "--no-docling",
+    ]
     completed = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "doc_lineage.cli",
-            "ingest",
-            str(FIXTURE),
-            "--output",
-            str(tmp_path / "run"),
-        ],
+        command,
         check=False,
         capture_output=True,
         text=True,

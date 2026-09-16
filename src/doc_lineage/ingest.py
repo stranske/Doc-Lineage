@@ -26,6 +26,7 @@ SEGMENTS_SCHEMA_VERSION = "doc-lineage-segments/v1"
 TOOL_NAME = "doc-lineage-ingest"
 MANIFEST_FILENAME = "artifact-manifest.json"
 SEGMENTS_FILENAME = "segments.json"
+MAX_INGEST_BYTES = 100 * 1024 * 1024
 
 _PARAGRAPH_SPLIT = re.compile(r"\n\s*\n")
 _WHITESPACE = re.compile(r"\s+")
@@ -63,7 +64,9 @@ class IngestResult:
 
     @property
     def page_count(self) -> int:
-        return len({segment.page for segment in self.segments})
+        pages = {segment.page for segment in self.segments}
+        pages.update(self.pages_without_text_layer)
+        return len(pages)
 
 
 def segment_pages(result: SegmenterResult, *, source_sha256: str) -> tuple[Segment, ...]:
@@ -140,8 +143,17 @@ def ingest_document(
     if not source.is_file():
         raise FileNotFoundError(f"document to ingest does not exist: {source}")
 
+    source_size = source.stat().st_size
+    if source_size > MAX_INGEST_BYTES:
+        raise ValueError(
+            f"document exceeds ingest size limit ({source_size} > {MAX_INGEST_BYTES} bytes): {source}"
+        )
+
     raw = source.read_bytes()
     source_sha256 = sha256_bytes(raw)
+    effective_run_id = (run_id or f"ingest-{source_sha256[:12]}").strip()
+    if not effective_run_id:
+        raise ValueError("run_id must be a non-empty string")
     segmented = segment_document(source, allow_docling=allow_docling)
     segments = segment_pages(segmented, source_sha256=source_sha256)
     if not segments:
@@ -160,9 +172,8 @@ def ingest_document(
         "pages_without_text_layer": list(segmented.pages_without_text_layer),
         "segments": [segment.to_dict() for segment in segments],
     }
-    segments_path = destination / SEGMENTS_FILENAME
     segments_bytes = _dump(segments_payload)
-    segments_path.write_bytes(segments_bytes)
+    segments_path = destination / SEGMENTS_FILENAME
 
     artifacts = [
         {
@@ -176,13 +187,14 @@ def ingest_document(
         }
     ]
     manifest = build_manifest(
-        run_id=run_id or f"ingest-{source_sha256[:12]}",
+        run_id=effective_run_id,
         source_path=source,
         source_sha256=source_sha256,
         artifacts=artifacts,
         git_sha=git_sha,
         created_at=created_at,
     )
+    segments_path.write_bytes(segments_bytes)
     manifest_path = destination / MANIFEST_FILENAME
     manifest_path.write_bytes(_dump(manifest))
 

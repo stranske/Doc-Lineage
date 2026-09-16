@@ -27,8 +27,17 @@ _STREAM_PATTERN = re.compile(rb"stream\r?\n(.*?)\r?\nendstream", re.DOTALL)
 _PAGE_TYPE_PATTERN = re.compile(rb"/Type\s*/Page(?![a-zA-Z])")
 _CONTENTS_PATTERN = re.compile(rb"/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)")
 _REFERENCE_PATTERN = re.compile(rb"(\d+)\s+\d+\s+R")
-_SHOW_TEXT_PATTERN = re.compile(rb"\((?:\\.|[^()\\])*\)\s*(?:Tj|TJ|'|\")|T\*", re.DOTALL)
+_SHOW_TEXT_PATTERN = re.compile(
+    rb"\((?:\\.|[^()\\])*\)\s*(?:Tj|TJ|'|\")"
+    rb"|(?:\[(?:[^\]]|\\.)*\]\s*TJ)"
+    rb"|T\*",
+    re.DOTALL,
+)
 _STRING_PATTERN = re.compile(rb"\((?:\\.|[^()\\])*\)", re.DOTALL)
+_ARRAY_STRING_PATTERN = re.compile(rb"\((?:\\.|[^()\\])*\)", re.DOTALL)
+_KIDS_PATTERN = re.compile(rb"/Kids\s*\[([^\]]*)\]")
+_ROOT_PATTERN = re.compile(rb"/Root\s+(\d+)\s+\d+\s+R")
+_PAGES_TYPE_PATTERN = re.compile(rb"/Type\s*/Pages\b")
 _PDF_ESCAPES = {
     b"n": b"\n",
     b"r": b"\r",
@@ -94,20 +103,28 @@ def _try_docling(path: Path) -> tuple[PageText, ...] | None:
             by_page.setdefault(page_no, []).append(text)
     if not by_page:
         return None
+    total_pages = int(getattr(document, "num_pages", lambda: 0)() or 0)
+    if total_pages <= 0:
+        total_pages = max(by_page)
     return tuple(
-        PageText(page=page, text="\n".join(lines), has_text_layer=bool(lines))
-        for page, lines in sorted(by_page.items())
+        PageText(
+            page=page,
+            text="\n".join(by_page.get(page, [])),
+            has_text_layer=bool(by_page.get(page)),
+        )
+        for page in range(1, total_pages + 1)
     )
 
 
 def _offline_pages(data: bytes) -> tuple[PageText, ...]:
     """Recover page text without third-party tooling."""
     if not data.startswith(PDF_MAGIC):
-        text = data.decode("utf-8", errors="replace").strip()
-        return (PageText(page=1, text=text, has_text_layer=bool(text)),)
+        raise ValueError(
+            "non-PDF input requires Docling; the offline backend only reads PDF content streams"
+        )
 
     objects = _objects(data)
-    page_bodies = [body for body in objects.values() if _is_page_object(body)]
+    page_bodies = _ordered_page_bodies(data, objects)
     if not page_bodies:
         # A PDF with no page object is empty as far as this backend can tell.
         # Report one page with no text layer rather than returning nothing, so a
@@ -133,6 +150,41 @@ def _offline_pages(data: bytes) -> tuple[PageText, ...]:
 def _objects(data: bytes) -> dict[int, bytes]:
     """Return indirect object bodies keyed by object number, in file order."""
     return {int(match.group(1)): match.group(2) for match in _OBJECT_PATTERN.finditer(data)}
+
+
+def _ordered_page_bodies(data: bytes, objects: dict[int, bytes]) -> list[bytes]:
+    """Return page object bodies in logical reading order via the page tree."""
+    root_match = _ROOT_PATTERN.search(data)
+    if root_match is None:
+        return [body for body in objects.values() if _is_page_object(body)]
+    catalog = objects.get(int(root_match.group(1)))
+    if catalog is None:
+        return [body for body in objects.values() if _is_page_object(body)]
+    pages_ref = _REFERENCE_PATTERN.search(catalog)
+    if pages_ref is None:
+        return [body for body in objects.values() if _is_page_object(body)]
+    pages_body = objects.get(int(pages_ref.group(1)))
+    if pages_body is None:
+        return [body for body in objects.values() if _is_page_object(body)]
+    ordered: list[bytes] = []
+    _collect_pages(pages_body, objects, ordered)
+    return ordered or [body for body in objects.values() if _is_page_object(body)]
+
+
+def _collect_pages(node_body: bytes, objects: dict[int, bytes], out: list[bytes]) -> None:
+    """Walk a /Pages node depth-first, appending /Page bodies in Kids order."""
+    if _is_page_object(node_body):
+        out.append(node_body)
+        return
+    if not _PAGES_TYPE_PATTERN.search(node_body):
+        return
+    kids_match = _KIDS_PATTERN.search(node_body)
+    if kids_match is None:
+        return
+    for reference in _REFERENCE_PATTERN.finditer(kids_match.group(1)):
+        child = objects.get(int(reference.group(1)))
+        if child is not None:
+            _collect_pages(child, objects, out)
 
 
 def _is_page_object(body: bytes) -> bool:
@@ -184,8 +236,12 @@ def _extract_stream_text(stream: bytes) -> str:
             lines.append("".join(current))
             current = []
             continue
-        for string in _STRING_PATTERN.finditer(token):
-            current.append(_decode_pdf_string(string.group(0)[1:-1]))
+        if token.startswith(b"["):
+            for string in _ARRAY_STRING_PATTERN.finditer(token):
+                current.append(_decode_pdf_string(string.group(0)[1:-1]))
+        else:
+            for string in _STRING_PATTERN.finditer(token):
+                current.append(_decode_pdf_string(string.group(0)[1:-1]))
     if current:
         lines.append("".join(current))
     return "\n".join(lines).strip()
@@ -210,11 +266,12 @@ def _decode_pdf_string(raw: bytes) -> str:
             index += 1
             continue
         if escape.isdigit():
-            digits = raw[index : index + 3]
-            octal = bytes(c for c in digits if 0x30 <= c <= 0x37)
+            octal = bytearray()
+            while index < len(raw) and raw[index] in b"01234567" and len(octal) < 3:
+                octal.append(raw[index])
+                index += 1
             if octal:
                 out.append(int(octal, 8) & 0xFF)
-                index += len(octal)
                 continue
         out += escape
         index += 1
