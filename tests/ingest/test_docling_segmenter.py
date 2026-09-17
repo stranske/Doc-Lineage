@@ -109,6 +109,15 @@ def test_trailing_text_without_a_line_break_is_kept(tmp_path: Path) -> None:
     assert result.pages[0].text == "First\nSecond"
 
 
+def test_quote_operators_flush_the_previous_line(tmp_path: Path) -> None:
+    source = tmp_path / "quotes.pdf"
+    source.write_bytes(_pdf_with_stream(b"BT (Line 1) Tj (Line 2) ' (Line 3) \" ET"))
+
+    result = segment_document(source, allow_docling=False)
+
+    assert result.pages[0].text == "Line 1\nLine 2\nLine 3"
+
+
 def test_tj_array_with_kerning_adjustments(tmp_path: Path) -> None:
     source = tmp_path / "tj.pdf"
     source.write_bytes(_pdf_with_stream(b"BT [(First) 20 (Second)] TJ ET"))
@@ -350,19 +359,21 @@ def test_docling_uses_supplied_snapshot_not_live_path(
 
 
 def test_read_bounded_bytes_rejects_inputs_above_limit(tmp_path: Path) -> None:
+    limit = 4096
     source = tmp_path / "large.pdf"
-    source.write_bytes(b"x" * (MAX_INGEST_BYTES + 1))
+    source.write_bytes(b"x" * (limit + 1))
 
     with pytest.raises(ValueError, match="exceeds ingest size limit"):
-        read_bounded_bytes(source, MAX_INGEST_BYTES)
+        read_bounded_bytes(source, limit)
 
 
 def test_read_bounded_bytes_accepts_inputs_at_limit(tmp_path: Path) -> None:
+    limit = 4096
     source = tmp_path / "max.pdf"
-    payload = b"x" * MAX_INGEST_BYTES
+    payload = b"x" * limit
     source.write_bytes(payload)
 
-    assert read_bounded_bytes(source, MAX_INGEST_BYTES) == payload
+    assert read_bounded_bytes(source, limit) == payload
 
 
 def test_segment_document_uses_supplied_snapshot(tmp_path: Path) -> None:

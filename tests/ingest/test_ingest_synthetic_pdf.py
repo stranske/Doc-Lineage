@@ -111,10 +111,27 @@ def test_ingest_rejects_documents_above_size_limit(tmp_path: Path) -> None:
         ingest_document(oversized, output_dir=tmp_path / "out", allow_docling=False)
 
 
-def test_ingest_manifest_bytes_match_snapshot_length(tmp_path: Path) -> None:
-    result = ingest_document(FIXTURE, output_dir=tmp_path, allow_docling=False)
+def test_ingest_manifest_bytes_match_snapshot_length(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from doc_lineage import ingest as ingest_module
 
-    assert result.manifest["source"]["bytes"] == FIXTURE.stat().st_size
+    source = tmp_path / "snapshot.pdf"
+    shutil.copy(FIXTURE, source)
+    original = ingest_module.read_bounded_bytes
+    snapshot_len = source.stat().st_size
+
+    def _snapshot_then_mutate(path: Path, max_bytes: int) -> bytes:
+        payload = original(path, max_bytes)
+        path.write_bytes(b"mutated-after-snapshot")
+        return payload
+
+    monkeypatch.setattr(ingest_module, "read_bounded_bytes", _snapshot_then_mutate)
+
+    result = ingest_document(source, output_dir=tmp_path / "out", allow_docling=False)
+
+    assert result.manifest["source"]["bytes"] == snapshot_len
+    assert source.stat().st_size != snapshot_len
 
 
 def test_ingest_rejects_empty_run_id(tmp_path: Path) -> None:

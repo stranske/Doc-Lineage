@@ -139,10 +139,13 @@ def _try_docling(path: Path, data: bytes) -> tuple[PageText, ...] | None:
             by_page.setdefault(page_no, []).append(text)
     if not by_page and not pages_dict:
         return None
+    page_inventory = {int(page_no) for page_no in pages_dict} | set(by_page)
     num_pages_attr = getattr(document, "num_pages", 0)
     total_pages = int(num_pages_attr() if callable(num_pages_attr) else num_pages_attr or 0)
     if total_pages <= 0:
-        total_pages = max(by_page or pages_dict)
+        total_pages = max(page_inventory) if page_inventory else 0
+    elif page_inventory:
+        total_pages = max(total_pages, max(page_inventory))
     return tuple(
         PageText(
             page=page,
@@ -276,10 +279,13 @@ def _extract_stream_text(stream: bytes) -> str:
                 continue
             operator, operator_len = _peek_text_showing_operator(stream, end_index)
             if operator in (b"Tj", b"'", b'"'):
-                current.append(_decode_pdf_string(raw))
+                decoded = _decode_pdf_string(raw)
                 if operator in (b"'", b'"'):
-                    lines.append("".join(current))
-                    current = []
+                    if current:
+                        lines.append("".join(current))
+                    current = [decoded]
+                else:
+                    current.append(decoded)
             index = end_index + operator_len
             continue
         if stream[index : index + 1] == b"[":
