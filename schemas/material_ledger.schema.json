@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stranske/Doc-Lineage/schemas/material_ledger.schema.json",
+  "title": "material_ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["date", "tier", "theme", "category", "change", "From", "To"],
+  "properties": {
+    "date": { "type": "string" },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
+    "theme": { "type": "string" },
+    "category": { "type": "string" },
+    "change": { "type": "string" },
+    "From": { "type": "string" },
+    "To": { "type": "string" }
+  }
+}
