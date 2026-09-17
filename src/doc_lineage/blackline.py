@@ -13,9 +13,7 @@ from doc_lineage.ingest import Segment
 
 LINEAGE_EDGES_SCHEMA_VERSION = "lineage-edges/v1"
 DEFAULT_HEADER_CONFIDENCE_THRESHOLD = 0.8
-SECTION_HEADER_RE = re.compile(
-    r"^(\d+)\.\s+((?:[A-Z]{2,}(?:\s+[A-Z]{2,})*))(?:\s+(.*))?$"
-)
+SECTION_HEADER_RE = re.compile(r"^(\d+)\.\s+((?:[A-Z]{2,}(?:\s+[A-Z]{2,})*))(?:\s+(.*))?$")
 PairingMethod = Literal["section_id", "manual_review"]
 MANUAL_REVIEW_CONFIDENCE = 0.0
 
@@ -147,12 +145,8 @@ def align_sections(
         for index in range(pair_count):
             left = left_list[index] if index < len(left_list) else None
             right = right_list[index] if index < len(right_list) else None
-            left_conf = _finite_confidence(
-                left.header_confidence if left is not None else 1.0
-            )
-            right_conf = _finite_confidence(
-                right.header_confidence if right is not None else 1.0
-            )
+            left_conf = _finite_confidence(left.header_confidence if left is not None else 1.0)
+            right_conf = _finite_confidence(right.header_confidence if right is not None else 1.0)
             confidence = min(left_conf, right_conf)
             if duplicate_ambiguity or confidence < threshold:
                 pairing_method: PairingMethod = "manual_review"
