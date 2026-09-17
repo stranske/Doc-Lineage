@@ -19,7 +19,6 @@ from typing import Any
 from doc_lineage.adapters import SegmenterResult, segment_document
 from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
 from doc_lineage.identity import sha256_bytes
-from doc_lineage.schema.validation import validate_contract_record
 
 MANIFEST_SCHEMA_VERSION = "artifact-manifest/v1"
 MANIFEST_SCHEMA_NAME = "artifact-manifest-v1"
@@ -119,6 +118,8 @@ def build_manifest(
         },
         "artifacts": artifacts,
     }
+    from doc_lineage.schema.validation import validate_contract_record
+
     validate_contract_record(MANIFEST_SCHEMA_NAME, manifest)
     return manifest
 
