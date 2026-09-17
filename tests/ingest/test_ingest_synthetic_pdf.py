@@ -18,8 +18,8 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from doc_lineage.adapters import OFFLINE_BACKEND, segment_document
-from doc_lineage.cli import main as cli_main
 from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES
+from doc_lineage.cli import main as cli_main
 from doc_lineage.ingest import (
     MANIFEST_FILENAME,
     MANIFEST_SCHEMA_NAME,

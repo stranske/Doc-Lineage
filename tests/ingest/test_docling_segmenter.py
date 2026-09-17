@@ -12,7 +12,11 @@ from typing import Any
 import pytest
 
 from doc_lineage.adapters import DOCLING_BACKEND, OFFLINE_BACKEND, segment_document
-from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, _decode_pdf_string, read_bounded_bytes
+from doc_lineage.adapters.docling_segmenter import (
+    MAX_INGEST_BYTES,
+    _decode_pdf_string,
+    read_bounded_bytes,
+)
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "synthetic_lpa.pdf"
 
@@ -126,9 +130,7 @@ def test_tj_array_with_bracket_inside_literal_string(tmp_path: Path) -> None:
 def test_bdc_metadata_strings_are_not_extracted_as_page_text(tmp_path: Path) -> None:
     source = tmp_path / "bdc.pdf"
     source.write_bytes(
-        _pdf_with_stream(
-            b"BT /Span << /Lang (en-US) >> BDC (Actual clause) Tj EMC ET"
-        )
+        _pdf_with_stream(b"BT /Span << /Lang (en-US) >> BDC (Actual clause) Tj EMC ET")
     )
 
     result = segment_document(source, allow_docling=False)
