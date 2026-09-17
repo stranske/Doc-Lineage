@@ -128,6 +128,7 @@ def align_sections(
     threshold: float = DEFAULT_HEADER_CONFIDENCE_THRESHOLD,
 ) -> list[SectionPair]:
     """Pair sections by stable section IDs before any semantic fallback."""
+    effective_threshold = threshold if math.isfinite(threshold) else float("inf")
     left_groups = _sections_by_id(doc_a.sections)
     right_groups = _sections_by_id(doc_b.sections)
     ordered_ids = sorted(
@@ -148,7 +149,12 @@ def align_sections(
             left_conf = _finite_confidence(left.header_confidence if left is not None else 1.0)
             right_conf = _finite_confidence(right.header_confidence if right is not None else 1.0)
             confidence = min(left_conf, right_conf)
-            if duplicate_ambiguity or confidence < threshold:
+            if (
+                left is None
+                or right is None
+                or duplicate_ambiguity
+                or confidence < effective_threshold
+            ):
                 pairing_method: PairingMethod = "manual_review"
             else:
                 pairing_method = "section_id"

@@ -161,6 +161,44 @@ def test_non_finite_confidence_fails_closed_to_manual_review() -> None:
     assert math.isfinite(pair.confidence)
 
 
+def test_one_sided_section_id_emits_manual_review() -> None:
+    """Added or deleted sections must not pair as high-confidence section_id."""
+    section = Section(
+        section_id="1",
+        title="MANAGEMENT FEE",
+        header_confidence=1.0,
+        segment_ids=("seg-1",),
+        text="1. MANAGEMENT FEE body",
+    )
+    doc_with_section = DocumentSections(source_sha256="left", sections=(section,))
+    doc_empty = DocumentSections(source_sha256="right", sections=())
+
+    (deleted_pair,) = align_sections(doc_with_section, doc_empty)
+    assert deleted_pair.pairing_method == "manual_review"
+    assert deleted_pair.left is not None
+    assert deleted_pair.right is None
+
+    (added_pair,) = align_sections(doc_empty, doc_with_section)
+    assert added_pair.pairing_method == "manual_review"
+    assert added_pair.left is None
+    assert added_pair.right is not None
+
+
+def test_non_finite_threshold_fails_closed_to_manual_review() -> None:
+    section = Section(
+        section_id="1",
+        title="MANAGEMENT FEE",
+        header_confidence=1.0,
+        segment_ids=("seg-1",),
+        text="1. MANAGEMENT FEE body",
+    )
+    doc_a = DocumentSections(source_sha256="left", sections=(section,))
+    doc_b = DocumentSections(source_sha256="right", sections=(section,))
+
+    (pair,) = align_sections(doc_a, doc_b, threshold=math.nan)
+    assert pair.pairing_method == "manual_review"
+
+
 def test_duplicate_section_ids_emit_manual_review_pairs() -> None:
     duplicate_left = (
         Section(
