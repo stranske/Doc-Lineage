@@ -34,13 +34,43 @@ def _schema_resource(name: str) -> Path:
         return checkout_root / "schemas" / filename
 
 
+def _contract_schema_resource(name: str) -> Path:
+    """Locate a synced backplane contract schema.
+
+    Wheels bundle ``docs/contracts/schemas`` as ``doc_lineage._contracts`` so the
+    contract has exactly one source file; the checkout fallback mirrors the
+    pattern already used for the vocabulary in ``doc_lineage.vocab``.
+    """
+    filename = f"{name}.schema.json"
+    try:
+        resource = files("doc_lineage._contracts").joinpath(filename)
+        return Path(str(resource))
+    except ModuleNotFoundError:
+        checkout_root = Path(__file__).resolve().parents[3]
+        return checkout_root / "docs" / "contracts" / "schemas" / filename
+
+
 @lru_cache(maxsize=32)
 def load_schema(name: str) -> dict[str, Any]:
     path = _schema_resource(name)
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+@lru_cache(maxsize=32)
+def load_contract_schema(name: str) -> dict[str, Any]:
+    """Return a synced contract schema (e.g. ``artifact-manifest-v1``)."""
+    path = _contract_schema_resource(name)
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 def validate_record(schema_name: str, payload: dict[str, Any]) -> None:
     _reject_non_finite_numbers(payload)
     schema = load_schema(schema_name)
+    Draft202012Validator(schema).validate(payload)
+
+
+def validate_contract_record(schema_name: str, payload: dict[str, Any]) -> None:
+    """Validate a payload against a synced backplane contract schema."""
+    _reject_non_finite_numbers(payload)
+    schema = load_contract_schema(schema_name)
     Draft202012Validator(schema).validate(payload)

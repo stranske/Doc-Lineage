@@ -1,33 +1,28 @@
-"""Tests for doc_lineage module."""
+"""Package import smoke: the public surface must import and expose the M1 API.
 
-from doc_lineage import __version__, add, greet
+This replaces the Template's ``greet``/``add`` scaffold tests. The scaffold
+helpers are gone, so a test that still asserted on them would be asserting the
+package had not been built yet.
+"""
 
+from __future__ import annotations
 
-def test_version() -> None:
-    """Version should be a string."""
-    assert isinstance(__version__, str)
-    assert __version__ == "0.1.0"
-
-
-def test_greet() -> None:
-    """Greet should return proper greeting."""
-    assert greet("World") == "Hello, World!"
-    assert greet("Alice") == "Hello, Alice!"
+import doc_lineage
 
 
-def test_greet_empty() -> None:
-    """Greet should handle empty string."""
-    assert greet("") == "Hello, !"
+def test_version_is_a_string() -> None:
+    assert isinstance(doc_lineage.__version__, str)
+    assert doc_lineage.__version__ == "0.1.0"
 
 
-def test_add() -> None:
-    """Add should return sum of two numbers."""
-    assert add(1, 2) == 3
-    assert add(0, 0) == 0
-    assert add(-1, 1) == 0
+def test_public_surface_exposes_the_ingest_api() -> None:
+    assert "ingest_document" in doc_lineage.__all__
+    assert callable(doc_lineage.ingest_document)
+    assert not hasattr(doc_lineage, "greet")
+    assert not hasattr(doc_lineage, "add")
 
 
-def test_add_negative() -> None:
-    """Add should handle negative numbers."""
-    assert add(-5, -3) == -8
-    assert add(-10, 5) == -5
+def test_console_entry_point_is_importable() -> None:
+    from doc_lineage.cli import main
+
+    assert callable(main)

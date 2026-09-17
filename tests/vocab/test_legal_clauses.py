@@ -86,6 +86,12 @@ def test_installed_wheel_loads_bundled_vocabulary_despite_adjacent_decoy(tmp_pat
         shutil.copy2(root / name, checkout / name)
     shutil.copytree(root / "src" / "doc_lineage", checkout / "src" / "doc_lineage")
     shutil.copytree(root / "vocab", checkout / "vocab")
+    # pyproject packages the synced contract schemas as doc_lineage._contracts,
+    # so the wheel build needs them here too. The subject of this test is still
+    # the vocabulary resource; this only keeps the temp checkout buildable.
+    shutil.copytree(
+        root / "docs" / "contracts" / "schemas", checkout / "docs" / "contracts" / "schemas"
+    )
     wheels = tmp_path / "wheels"
     wheels.mkdir()
     subprocess.run(

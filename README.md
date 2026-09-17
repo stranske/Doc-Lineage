@@ -13,6 +13,23 @@ Document lineage and blackline engine for recurring investment documents.
 - Run without servers: a Python library plus a static/offline review surface, producing HTML and CSV artifacts with one-click links back to the source document and page.
 - **Synthetic and public data only** in this repository. No proprietary manager material is ever committed or used in tests.
 
+## Ingest (M1)
+
+`doc-lineage ingest` parses one document, splits it into page-anchored segments, and
+writes a run directory containing `segments.json` and an `artifact-manifest.json`
+conforming to `artifact-manifest/v1` (`docs/contracts/schemas/`):
+
+```bash
+doc-lineage ingest tests/fixtures/synthetic_lpa.pdf --output /tmp/out
+```
+
+Docling is the intended segmenter. It is an optional dependency, so the adapter falls
+back to reading the PDF's own content streams when Docling is not importable, and every
+run records which backend produced the text (`backend` in `segments.json`) so fallback
+output is never mistaken for a Docling parse. Pages with no readable text layer are
+reported in `pages_without_text_layer` rather than dropped — recognition (issue #3) is a
+required stage here, so a page that yields nothing is a finding, not a silence.
+
 ## Interoperability
 
 Identifiers and evidence objects follow the fleet conventions in `docs/contracts/` (`run-contract/v1`, `evidence-object/v1`, identity-map conventions). The versioned [legal clause vocabulary](vocab/legal-clauses.json) publishes 25 stable `ontology_key` values so sibling repos (`Inv-Man-Intake`, `Manager-Database`, `Pension-Data`) can adopt the same names. Load the full document with `from doc_lineage.vocab import load_legal_clauses` and `load_legal_clauses()`.

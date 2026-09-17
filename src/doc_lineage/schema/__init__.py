@@ -9,7 +9,12 @@ from doc_lineage.schema.change_ledger import (
     StaleFlagLedgerRow,
 )
 from doc_lineage.schema.enums import MaterialityTier, SegmentClassification, TextBasis
-from doc_lineage.schema.validation import load_schema, validate_record
+from doc_lineage.schema.validation import (
+    load_contract_schema,
+    load_schema,
+    validate_contract_record,
+    validate_record,
+)
 
 __all__ = [
     "ChangeLedgerRow",
@@ -21,6 +26,8 @@ __all__ = [
     "SegmentClassification",
     "StaleFlagLedgerRow",
     "TextBasis",
+    "load_contract_schema",
     "load_schema",
+    "validate_contract_record",
     "validate_record",
 ]
