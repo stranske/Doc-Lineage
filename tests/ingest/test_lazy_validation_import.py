@@ -31,14 +31,11 @@ def test_ingest_import_does_not_load_validator_module() -> None:
     finally:
         for name in list(sys.modules):
             if (
-                (
-                    name == "doc_lineage.ingest"
-                    or name.startswith("doc_lineage.ingest.")
-                    or name == "doc_lineage.schema.validation"
-                    or name.startswith("doc_lineage.schema.")
-                )
-                and name not in saved_modules
-            ):
+                name == "doc_lineage.ingest"
+                or name.startswith("doc_lineage.ingest.")
+                or name == "doc_lineage.schema.validation"
+                or name.startswith("doc_lineage.schema.")
+            ) and name not in saved_modules:
                 del sys.modules[name]
         sys.modules.update(saved_modules)
         if saved_ingest_attr is not None:
