@@ -38,14 +38,32 @@ def test_manifest_has_calpers_entry() -> None:
     calpers_entries = [
         artifact
         for artifact in manifest["artifacts"]
-        if artifact.get("doc_type_id", "").startswith("calpers")
-        or str(artifact.get("artifact_id", "")).startswith("calpers")
+        if artifact.get("artifact_id") == "calpers-ic-default"
     ]
-    assert calpers_entries, "expected a CalPERS corpus entry"
+    assert calpers_entries, "expected calpers-ic-default corpus entry"
     entry = calpers_entries[0]
-    assert entry.get("source_url"), "CalPERS entry must record source_url"
+    assert entry["doc_type_id"] == "calpers_investment_committee"
+    assert (
+        entry["source_url"]
+        == "https://www.calpers.ca.gov/about/board/board-meetings/invest-202603-0"
+    )
     assert SHA256_RE.fullmatch(entry["content_sha256"])
-    assert entry.get("doc_type_id")
+    assert entry["content_sha256"] == entry["sha256"]
+
+
+def test_present_public_file_wrong_digest_fails_validation(tmp_path: Path) -> None:
+    from scripts.validate_fixture_manifest import validate_manifest
+
+    manifest = _load_manifest()
+    calpers_path = REPO_ROOT / "tests/fixtures/public_corpus/calpers/ic/default.pdf"
+    assert calpers_path.is_file(), "CalPERS fixture PDF must be present for digest checks"
+    corrupted = json.loads(json.dumps(manifest))
+    for artifact in corrupted["artifacts"]:
+        if artifact.get("artifact_id") == "calpers-ic-default":
+            artifact["sha256"] = "0" * 64
+            artifact["content_sha256"] = "0" * 64
+    errors = validate_manifest(corrupted)
+    assert any("calpers/ic/default.pdf" in message for message in errors)
 
 
 def test_validate_fixture_manifest_script_passes() -> None:

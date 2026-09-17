@@ -32,12 +32,12 @@
       "name": "CalPERS Investment Committee default public PDF",
       "kind": "data",
       "path": "tests/fixtures/public_corpus/calpers/ic/default.pdf",
-      "sha256": "daca1ab17429c3491561496678350fbb8d3f10c472544630cf4a21ab835d59e6",
-      "bytes": 265306,
+      "sha256": "4c3b40a2609796c87b7796ac6b19d08aa1091cc1bc406222c254adb53b4953e4",
+      "bytes": 441,
       "media_type": "application/pdf",
       "doc_type_id": "calpers_investment_committee",
       "source_url": "https://www.calpers.ca.gov/about/board/board-meetings/invest-202603-0",
-      "content_sha256": "daca1ab17429c3491561496678350fbb8d3f10c472544630cf4a21ab835d59e6"
+      "content_sha256": "4c3b40a2609796c87b7796ac6b19d08aa1091cc1bc406222c254adb53b4953e4"
     }
   ]
 }

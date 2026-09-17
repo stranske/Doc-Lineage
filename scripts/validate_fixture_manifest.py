@@ -49,7 +49,7 @@ def validate_manifest(manifest: dict, *, repo_root: Path = REPO_ROOT) -> list[st
             if isinstance(value, str) and not SHA256_RE.fullmatch(value):
                 errors.append(f"/artifacts/{index}/{field}: invalid sha256 length or charset")
         rel_path = artifact.get("path")
-        if isinstance(rel_path, str) and rel_path.startswith("tests/fixtures/library/"):
+        if isinstance(rel_path, str):
             local_path = repo_root / rel_path
             if local_path.is_file():
                 import hashlib
