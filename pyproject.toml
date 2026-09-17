@@ -83,7 +83,7 @@ package-dir = {"" = "src", "doc_lineage._vocab" = "vocab", "doc_lineage._contrac
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src --cov-report=term-missing --cov-report=xml"
+addopts = "-v"
 pythonpath = ["src"]
 
 [tool.coverage.run]
