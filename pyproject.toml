@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
+    "jsonschema==4.22.0",
     "pypdf==6.0.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
@@ -38,6 +39,7 @@ dev = [
     "pytest-cov==7.1.0",
     "ruff==0.16.7",
     "mypy==2.3.1",
+    "types-jsonschema==4.23.0.20241208",
     "black==26.5.1",
     "pypdf==6.0.0",
     "python-docx==1.2.0",
@@ -46,16 +48,28 @@ dev = [
     "reportlab==4.4.2",
 ]
 
+[project.scripts]
+doc-lineage = "doc_lineage.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/stranske/Template"
 Repository = "https://github.com/stranske/Template"
 
 [tool.setuptools]
-packages = ["doc_lineage", "doc_lineage._vocab"]
-package-dir = {"" = "src", "doc_lineage._vocab" = "vocab"}
+packages = [
+    "doc_lineage",
+    "doc_lineage._contracts",
+    "doc_lineage._vocab",
+    "doc_lineage.adapters",
+    "doc_lineage.extract",
+    "doc_lineage.schema",
+]
+package-dir = {"" = "src", "doc_lineage._vocab" = "vocab", "doc_lineage._contracts" = "docs/contracts/schemas"}
 
 [tool.setuptools.package-data]
+"doc_lineage._contracts" = ["*.schema.json"]
 "doc_lineage._vocab" = ["legal-clauses.json"]
+"doc_lineage.schema" = ["schemas/*.schema.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -116,6 +130,12 @@ show_error_codes = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+# Optional OCR dependencies ship no type information. They are imported lazily
+# behind ImportError handling, so the untyped import is deliberate.
+[[tool.mypy.overrides]]
+module = ["pypdfium2", "pytesseract"]
+ignore_missing_imports = true
 
 [tool.black]
 line-length = 100

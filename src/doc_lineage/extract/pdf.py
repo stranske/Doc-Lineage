@@ -8,7 +8,9 @@ from typing import TYPE_CHECKING
 from doc_lineage.extract.models import CoverageStats, Document, Span
 
 if TYPE_CHECKING:
-    from doc_lineage.extract.cache import ExtractCache
+    from PIL.Image import Image
+
+    from doc_lineage.extract.cache import ExtractCache, OCRMode
     from doc_lineage.extract.ocr import OCRBackend
 
 
@@ -27,20 +29,19 @@ def extract_pdf(
     pages_with_text_layer = 0
     pages_recognized = 0
     pages_unreadable = 0
+    # The recognition mode is part of the cache identity: an empty result from a
+    # run with OCR off must not be replayed to a later run with OCR on.
+    mode: OCRMode = "ocr" if (ocr_enabled and ocr_backend is not None) else "off"
 
     for page_index, page in enumerate(reader.pages, start=1):
-        cached = cache.get(stable_id, page_index)
+        cached = cache.get(stable_id, page_index, mode)
         if cached is not None:
             spans.extend(cached)
             outcome = _page_outcome(cached)
-            pages_with_text_layer += int(outcome == "text_layer")
-            pages_recognized += int(outcome == "ocr")
-            pages_unreadable += int(outcome == "unreadable")
-            continue
-
-        page_spans, outcome = _extract_pdf_page(page, page_index, ocr_backend, ocr_enabled)
-        cache.put(stable_id, page_index, page_spans)
-        spans.extend(page_spans)
+        else:
+            page_spans, outcome = _extract_pdf_page(page, page_index, ocr_backend, ocr_enabled)
+            cache.put(stable_id, page_index, page_spans, mode)
+            spans.extend(page_spans)
         pages_with_text_layer += int(outcome == "text_layer")
         pages_recognized += int(outcome == "ocr")
         pages_unreadable += int(outcome == "unreadable")
@@ -75,7 +76,7 @@ def _extract_pdf_page(
 
     if text:
         span = Span(
-            text=_normalize_reading_order(text, rotation),
+            text=_normalize_reading_order(text),
             page=page_number,
             bbox=None,
             source="text_layer",
@@ -86,6 +87,10 @@ def _extract_pdf_page(
         return [], "unreadable"
 
     image = _render_page_image(page)
+    if image is None:
+        # No page renderer available, so this page was never actually looked at.
+        # Reporting it as unreadable is the whole point of the coverage contract.
+        return [], "unreadable"
     recognized = ocr_backend.recognize(image, rotation=rotation)
     if recognized:
         span = Span(
@@ -99,22 +104,31 @@ def _extract_pdf_page(
     return [], "unreadable"
 
 
-def _normalize_reading_order(text: str, rotation: int) -> str:
-    normalized = " ".join(text.split())
-    if rotation % 360 == 0:
-        return normalized
-    return normalized
+def _normalize_reading_order(text: str) -> str:
+    """Collapse the whitespace that rotated and watermarked layouts introduce.
+
+    ``pypdf.PageObject.extract_text`` already applies the page's ``/Rotate``
+    entry, so the text arrives in reading order; what it does not do is collapse
+    the ragged runs of spaces and newlines that a rotated text matrix or a
+    diagonal watermark leaves behind.
+    """
+    return " ".join(text.split())
 
 
-def _render_page_image(page: object) -> object:
-    from PIL import Image
+def _render_page_image(page: object) -> Image | None:
+    """Render one page to an image, or return ``None`` when that is impossible.
+
+    A missing renderer is an unreadable page, not a blank one: returning a
+    placeholder image here would let any supplied OCR backend "recognize" an
+    empty page and report it as read.
+    """
     from pypdf import PageObject
 
     assert isinstance(page, PageObject)
     try:
         import pypdfium2 as pdfium
     except ImportError:
-        return Image.new("RGB", (1, 1), color="white")
+        return None
 
     import io
 
@@ -124,7 +138,14 @@ def _render_page_image(page: object) -> object:
     writer = PdfWriter()
     writer.add_page(page)
     writer.write(buffer)
-    doc = pdfium.PdfDocument(buffer.getvalue())
-    rendered = doc[0].render(scale=2).to_pil()
-    doc.close()
+    try:
+        doc = pdfium.PdfDocument(buffer.getvalue())
+    except Exception:  # noqa: BLE001 - any pdfium failure is an unreadable page
+        return None
+    try:
+        rendered: Image = doc[0].render(scale=2).to_pil()
+    except Exception:  # noqa: BLE001 - see above
+        return None
+    finally:
+        doc.close()
     return rendered

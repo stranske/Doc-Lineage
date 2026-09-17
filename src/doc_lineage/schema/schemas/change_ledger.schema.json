@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stranske/Doc-Lineage/schemas/change_ledger.schema.json",
+  "title": "change_ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "doc_type",
+    "transition",
+    "canonical_section",
+    "subsection",
+    "item",
+    "page_new",
+    "change_type",
+    "tier",
+    "topic",
+    "prior_text",
+    "current_text"
+  ],
+  "properties": {
+    "doc_type": { "type": "string" },
+    "transition": { "type": "string" },
+    "canonical_section": { "type": "string" },
+    "subsection": { "type": "string" },
+    "item": { "type": "string" },
+    "page_new": { "type": "integer" },
+    "change_type": { "type": "string" },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
+    "topic": { "type": "string" },
+    "prior_text": { "type": "string" },
+    "current_text": { "type": "string" }
+  }
+}

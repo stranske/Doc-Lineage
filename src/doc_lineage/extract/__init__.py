@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from doc_lineage.extract.cache import ExtractCache
 from doc_lineage.extract.models import CoverageStats, Document, Span
@@ -12,17 +11,19 @@ from doc_lineage.extract.ocr import OCRBackend, default_ocr_backend
 from doc_lineage.extract.office import extract_docx, extract_pptx, stable_id_for_bytes
 from doc_lineage.extract.pdf import extract_pdf
 
-if TYPE_CHECKING:
-    pass
-
 __all__ = [
     "CoverageStats",
     "Document",
-    "Span",
-    "extract",
     "ExtractCache",
     "OCRBackend",
+    "Span",
+    "extract",
 ]
+
+#: ``python-docx`` and ``python-pptx`` read OOXML only. The legacy binary
+#: formats share a file-type name with them and nothing else, so routing one
+#: through them raises an opaque parser error instead of saying what is wrong.
+_LEGACY_BINARY_SUFFIXES = {".doc": ".docx", ".ppt": ".pptx"}
 
 _GLOBAL_CACHE: ExtractCache | None = None
 
@@ -71,9 +72,15 @@ def extract(
             ocr_enabled=ocr_enabled,
         )
     if suffix == ".docx":
-        return extract_docx(file_path, stable_id)
-    if suffix in {".pptx", ".ppt"}:
-        return extract_pptx(file_path, stable_id)
+        return extract_docx(file_path, stable_id, cache=active_cache)
+    if suffix == ".pptx":
+        return extract_pptx(file_path, stable_id, cache=active_cache)
+    if suffix in _LEGACY_BINARY_SUFFIXES:
+        msg = (
+            f"unsupported document type: {suffix} is the legacy binary format; "
+            f"convert it to {_LEGACY_BINARY_SUFFIXES[suffix]} first"
+        )
+        raise ValueError(msg)
 
     msg = f"unsupported document type: {suffix}"
     raise ValueError(msg)
