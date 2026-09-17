@@ -1,0 +1,38 @@
+{
+  "change_ledger": {
+    "doc_type": "consultant_report",
+    "transition": "2024_to_2025",
+    "canonical_section": "portfolio_overview",
+    "subsection": "allocation",
+    "item": "equity_weight",
+    "page_new": 12,
+    "change_type": "numeric_refresh",
+    "tier": "T2",
+    "topic": "equity allocation",
+    "prior_text": "45%",
+    "current_text": "48%"
+  },
+  "continuity_ledger": {
+    "doc_type": "consultant_report",
+    "transition": "2024_to_2025",
+    "canonical_section": "portfolio_overview",
+    "status": "REVISED",
+    "words_current": 420,
+    "carry_forward_pct": 72.5,
+    "refresh_pct": 27.5,
+    "verbatim_words": 180,
+    "near_verbatim_words": 120,
+    "revised_words": 80,
+    "new_words": 25,
+    "dropped_words": 15,
+    "segments_verbatim": 3,
+    "segments_near": 2,
+    "segments_revised": 1,
+    "segments_new": 1,
+    "segments_dropped": 0,
+    "segments_cosmetic": 0,
+    "new_items": 1,
+    "dropped_items": 0,
+    "text_basis": "native"
+  }
+}

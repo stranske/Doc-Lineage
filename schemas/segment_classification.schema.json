@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stranske/Doc-Lineage/schemas/segment_classification.schema.json",
+  "title": "segment_classification",
+  "type": "string",
+  "enum": ["VERBATIM", "NEAR_VERBATIM", "REVISED", "NEW", "DROPPED"]
+}

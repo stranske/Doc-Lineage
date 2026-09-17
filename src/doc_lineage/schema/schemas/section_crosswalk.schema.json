@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stranske/Doc-Lineage/schemas/section_crosswalk.schema.json",
+  "title": "section_crosswalk",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["doc_type", "year", "raw_section", "canonical_section", "words"],
+  "properties": {
+    "doc_type": { "type": "string" },
+    "year": { "type": "integer" },
+    "raw_section": { "type": "string" },
+    "canonical_section": { "type": "string" },
+    "words": { "type": "integer" }
+  }
+}

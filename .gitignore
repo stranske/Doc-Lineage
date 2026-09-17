@@ -111,3 +111,4 @@ agents/codex-*.md
 
 # Agent execution bootstrap scratch files, not project content.
 agents/codex-*.md
+.coverage
