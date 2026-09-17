@@ -22,9 +22,17 @@ classifiers = [
 ]
 dependencies = [
     "jsonschema==4.22.0",
+    "pypdf==6.0.0",
+    "python-docx==1.2.0",
+    "python-pptx==1.0.2",
+    "pillow==11.3.0",
 ]
 
 [project.optional-dependencies]
+ocr = [
+    "pypdfium2==4.30.0",
+    "pytesseract==0.3.13",
+]
 dev = [
     "setuptools==82.0.1",
     "pytest==9.1.1",
@@ -33,6 +41,11 @@ dev = [
     "mypy==2.3.1",
     "types-jsonschema==4.23.0.20241208",
     "black==26.5.1",
+    "pypdf==6.0.0",
+    "python-docx==1.2.0",
+    "python-pptx==1.0.2",
+    "pillow==11.3.0",
+    "reportlab==4.4.2",
 ]
 
 [project.scripts]
@@ -48,6 +61,7 @@ packages = [
     "doc_lineage._contracts",
     "doc_lineage._vocab",
     "doc_lineage.adapters",
+    "doc_lineage.extract",
     "doc_lineage.schema",
 ]
 package-dir = {"" = "src", "doc_lineage._vocab" = "vocab", "doc_lineage._contracts" = "docs/contracts/schemas"}
@@ -116,6 +130,12 @@ show_error_codes = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+# Optional OCR dependencies ship no type information. They are imported lazily
+# behind ImportError handling, so the untyped import is deliberate.
+[[tool.mypy.overrides]]
+module = ["pypdfium2", "pytesseract"]
+ignore_missing_imports = true
 
 [tool.black]
 line-length = 100
