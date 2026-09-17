@@ -105,6 +105,15 @@ def test_trailing_text_without_a_line_break_is_kept(tmp_path: Path) -> None:
     assert result.pages[0].text == "First\nSecond"
 
 
+def test_tj_array_with_kerning_adjustments(tmp_path: Path) -> None:
+    source = tmp_path / "tj.pdf"
+    source.write_bytes(_pdf_with_stream(b"BT [(First) 20 (Second)] TJ ET"))
+
+    result = segment_document(source, allow_docling=False)
+
+    assert result.pages[0].text == "FirstSecond"
+
+
 def test_balanced_parentheses_inside_literal_strings(tmp_path: Path) -> None:
     source = tmp_path / "nested.pdf"
     source.write_bytes(_pdf_with_stream(b"BT (Section (A)) Tj ET"))
@@ -209,6 +218,32 @@ def test_missing_docling_falls_back_without_raising(monkeypatch: pytest.MonkeyPa
     result = segment_document(FIXTURE)
 
     assert result.backend == OFFLINE_BACKEND
+
+
+def test_docling_convert_failure_falls_back_to_offline(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _Converter:
+        def convert(self, _source: str) -> Any:
+            raise RuntimeError("docling conversion failed")
+
+    converter_module = types.ModuleType("docling.document_converter")
+    converter_module.DocumentConverter = _Converter  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "docling", types.ModuleType("docling"))
+    monkeypatch.setitem(sys.modules, "docling.document_converter", converter_module)
+
+    result = segment_document(FIXTURE)
+
+    assert result.backend == OFFLINE_BACKEND
+    assert len(result.pages) == 2
+
+
+def test_segment_document_uses_supplied_snapshot(tmp_path: Path) -> None:
+    source = tmp_path / "snapshot.pdf"
+    payload = _pdf_with_stream(b"BT (Snapshot clause) Tj ET")
+    source.write_bytes(payload)
+
+    result = segment_document(source, allow_docling=False, data=payload)
+
+    assert result.pages[0].text == "Snapshot clause"
 
 
 def test_a_page_with_no_readable_text_is_still_reported_as_a_page(tmp_path: Path) -> None:

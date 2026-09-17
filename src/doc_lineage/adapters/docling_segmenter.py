@@ -68,18 +68,26 @@ class SegmenterResult:
         return tuple(page.page for page in self.pages if not page.has_text_layer)
 
 
-def segment_document(path: Path, *, allow_docling: bool = True) -> SegmenterResult:
+def segment_document(
+    path: Path,
+    *,
+    allow_docling: bool = True,
+    data: bytes | None = None,
+) -> SegmenterResult:
     """Return per-page text for ``path`` using Docling when it is importable.
 
     ``allow_docling=False`` forces the offline backend. Tests use it to exercise
     the fallback deterministically on machines where Docling happens to exist.
+
+    When ``data`` is supplied, segmentation uses that immutable snapshot instead
+    of re-reading ``path``, so callers can hash and segment the same bytes.
     """
-    data = path.read_bytes()
+    payload = data if data is not None else path.read_bytes()
     if allow_docling:
         docling_pages = _try_docling(path)
         if docling_pages is not None:
             return SegmenterResult(backend=DOCLING_BACKEND, pages=docling_pages)
-    return SegmenterResult(backend=OFFLINE_BACKEND, pages=_offline_pages(data))
+    return SegmenterResult(backend=OFFLINE_BACKEND, pages=_offline_pages(payload))
 
 
 def _try_docling(path: Path) -> tuple[PageText, ...] | None:
@@ -89,7 +97,10 @@ def _try_docling(path: Path) -> tuple[PageText, ...] | None:
     except ImportError:
         return None
 
-    document = DocumentConverter().convert(str(path)).document
+    try:
+        document = DocumentConverter().convert(str(path)).document
+    except Exception:
+        return None
     by_page: dict[int, list[str]] = {}
     for item, _level in document.iterate_items():
         text = str(getattr(item, "text", "") or "").strip()

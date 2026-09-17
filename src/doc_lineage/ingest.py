@@ -150,11 +150,15 @@ def ingest_document(
         )
 
     raw = source.read_bytes()
+    if len(raw) > MAX_INGEST_BYTES:
+        raise ValueError(
+            f"document exceeds ingest size limit ({len(raw)} > {MAX_INGEST_BYTES} bytes): {source}"
+        )
     source_sha256 = sha256_bytes(raw)
     effective_run_id = (run_id or f"ingest-{source_sha256[:12]}").strip()
     if not effective_run_id:
         raise ValueError("run_id must be a non-empty string")
-    segmented = segment_document(source, allow_docling=allow_docling)
+    segmented = segment_document(source, allow_docling=allow_docling, data=raw)
     segments = segment_pages(segmented, source_sha256=source_sha256)
     if not segments:
         raise ValueError(
