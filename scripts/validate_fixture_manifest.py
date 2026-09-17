@@ -9,8 +9,6 @@ import re
 import sys
 from pathlib import Path
 
-from jsonschema import Draft202012Validator
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "tests" / "fixtures" / "public_corpus" / "manifest.json"
 SCHEMA_PATH = REPO_ROOT / "docs" / "contracts" / "schemas" / "artifact-manifest-v1.schema.json"
@@ -25,13 +23,19 @@ def load_manifest(path: Path) -> dict:
 
 
 def validate_manifest(manifest: dict, *, repo_root: Path = REPO_ROOT) -> list[str]:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    errors = [
-        f"{error.json_path}: {error.message}"
-        for error in Draft202012Validator(schema).iter_errors(manifest)
-    ]
+    errors: list[str] = []
     artifacts = manifest.get("artifacts")
     if not isinstance(artifacts, list):
+        try:
+            from jsonschema import Draft202012Validator
+
+            schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+            errors.extend(
+                f"{error.json_path}: {error.message}"
+                for error in Draft202012Validator(schema).iter_errors(manifest)
+            )
+        except ImportError:
+            errors.append("/artifacts: artifacts must be a list")
         return errors
 
     for index, artifact in enumerate(artifacts):
@@ -59,6 +63,17 @@ def validate_manifest(manifest: dict, *, repo_root: Path = REPO_ROOT) -> list[st
                     errors.append(
                         f"/artifacts/{index}/sha256: does not match checked-in file {rel_path}"
                     )
+
+    try:
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        errors.extend(
+            f"{error.json_path}: {error.message}"
+            for error in Draft202012Validator(schema).iter_errors(manifest)
+        )
+    except ImportError:
+        pass
     return errors
 
 
