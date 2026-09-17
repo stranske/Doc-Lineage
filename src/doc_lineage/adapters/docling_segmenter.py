@@ -101,9 +101,7 @@ def _try_docling(path: Path) -> tuple[PageText, ...] | None:
     if not by_page:
         return None
     num_pages_attr = getattr(document, "num_pages", 0)
-    total_pages = int(
-        num_pages_attr() if callable(num_pages_attr) else num_pages_attr or 0
-    )
+    total_pages = int(num_pages_attr() if callable(num_pages_attr) else num_pages_attr or 0)
     if total_pages <= 0:
         total_pages = max(by_page)
     return tuple(
