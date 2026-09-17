@@ -13,9 +13,12 @@ fallback (issue #3) has to act on, not a silence to paper over.
 from __future__ import annotations
 
 import re
+import tempfile
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
+
+MAX_INGEST_BYTES = 100 * 1024 * 1024
 
 DOCLING_BACKEND = "docling"
 OFFLINE_BACKEND = "offline-pdf-text"
@@ -82,26 +85,51 @@ def segment_document(
     When ``data`` is supplied, segmentation uses that immutable snapshot instead
     of re-reading ``path``, so callers can hash and segment the same bytes.
     """
-    payload = data if data is not None else path.read_bytes()
+    payload = data if data is not None else read_bounded_bytes(path, MAX_INGEST_BYTES)
     if allow_docling:
-        docling_pages = _try_docling(path)
+        docling_pages = _try_docling(path, payload)
         if docling_pages is not None:
             return SegmenterResult(backend=DOCLING_BACKEND, pages=docling_pages)
     return SegmenterResult(backend=OFFLINE_BACKEND, pages=_offline_pages(payload))
 
 
-def _try_docling(path: Path) -> tuple[PageText, ...] | None:
+def read_bounded_bytes(path: Path, max_bytes: int) -> bytes:
+    """Read at most ``max_bytes`` from ``path``, rejecting larger inputs."""
+    with path.open("rb") as handle:
+        payload = handle.read(max_bytes + 1)
+    if len(payload) > max_bytes:
+        raise ValueError(
+            f"document exceeds ingest size limit ({len(payload)} > {max_bytes} bytes): {path}"
+        )
+    return payload
+
+
+def _try_docling(path: Path, data: bytes) -> tuple[PageText, ...] | None:
     """Convert with Docling, or return ``None`` when it is unavailable."""
     try:
         from docling.document_converter import DocumentConverter  # type: ignore[import-not-found]
+        from docling.exceptions import ConversionError  # type: ignore[import-not-found]
     except ImportError:
         return None
 
+    convert_path = path
+    temp_path: Path | None = None
+    suffix = path.suffix or ".bin"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as handle:
+        handle.write(data)
+        temp_path = Path(handle.name)
+        convert_path = temp_path
+
     try:
-        document = DocumentConverter().convert(str(path)).document
-    except Exception:
+        document = DocumentConverter().convert(str(convert_path)).document
+    except ConversionError:
         return None
-    by_page: dict[int, list[str]] = {}
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+
+    pages_dict = getattr(document, "pages", None) or {}
+    by_page: dict[int, list[str]] = {int(page_no): [] for page_no in pages_dict}
     for item, _level in document.iterate_items():
         text = str(getattr(item, "text", "") or "").strip()
         if not text:
@@ -109,12 +137,12 @@ def _try_docling(path: Path) -> tuple[PageText, ...] | None:
         for provenance in getattr(item, "prov", ()) or ():
             page_no = int(getattr(provenance, "page_no", 1) or 1)
             by_page.setdefault(page_no, []).append(text)
-    if not by_page:
+    if not by_page and not pages_dict:
         return None
     num_pages_attr = getattr(document, "num_pages", 0)
     total_pages = int(num_pages_attr() if callable(num_pages_attr) else num_pages_attr or 0)
     if total_pages <= 0:
-        total_pages = max(by_page)
+        total_pages = max(by_page or pages_dict)
     return tuple(
         PageText(
             page=page,
@@ -241,36 +269,83 @@ def _extract_stream_text(stream: bytes) -> str:
     current: list[str] = []
     index = 0
     while index < len(stream):
-        byte = stream[index : index + 1]
-        if byte == b"(":
-            raw, index = _read_balanced_pdf_string(stream, index)
-            if raw is not None:
+        if stream[index : index + 1] == b"(":
+            raw, end_index = _read_balanced_pdf_string(stream, index)
+            if raw is None:
+                index += 1
+                continue
+            operator, operator_len = _peek_text_showing_operator(stream, end_index)
+            if operator in (b"Tj", b"'", b'"'):
                 current.append(_decode_pdf_string(raw))
+                if operator in (b"'", b'"'):
+                    lines.append("".join(current))
+                    current = []
+            index = end_index + operator_len
+            continue
+        if stream[index : index + 1] == b"[":
+            array_end = _find_balanced_array_end(stream, index)
+            if array_end == -1:
+                index += 1
+                continue
+            operator, operator_len = _peek_text_showing_operator(stream, array_end + 1)
+            if operator == b"TJ":
+                current.extend(_strings_from_tj_array(stream[index + 1 : array_end]))
+            index = array_end + 1 + operator_len
             continue
         if stream[index : index + 2] == b"T*":
             lines.append("".join(current))
             current = []
             index += 2
             continue
-        if byte == b"[":
-            close = stream.find(b"]", index)
-            if close == -1:
-                break
-            array_body = stream[index + 1 : close]
-            array_index = 0
-            while array_index < len(array_body):
-                if array_body[array_index : array_index + 1] == b"(":
-                    raw, array_index = _read_balanced_pdf_string(array_body, array_index)
-                    if raw is not None:
-                        current.append(_decode_pdf_string(raw))
-                    continue
-                array_index += 1
-            index = close + 1
-            continue
         index += 1
     if current:
         lines.append("".join(current))
     return "\n".join(lines).strip()
+
+
+def _peek_text_showing_operator(stream: bytes, start: int) -> tuple[bytes, int]:
+    """Return ``(operator, consumed_length)`` when a text operator follows."""
+    index = start
+    while index < len(stream) and stream[index : index + 1] in b" \t\r\n\f":
+        index += 1
+    for operator in (b"TJ", b"Tj", b"T*", b"'", b'"'):
+        if stream[index : index + len(operator)] == operator:
+            return operator, index - start + len(operator)
+    return b"", index - start
+
+
+def _find_balanced_array_end(stream: bytes, start: int) -> int:
+    """Return the index of the closing ``]`` for an array starting at ``start``."""
+    if start >= len(stream) or stream[start : start + 1] != b"[":
+        return -1
+    depth = 0
+    index = start
+    while index < len(stream):
+        byte = stream[index : index + 1]
+        if byte == b"(":
+            _, index = _read_balanced_pdf_string(stream, index)
+            continue
+        if byte == b"[":
+            depth += 1
+        elif byte == b"]":
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    return -1
+
+
+def _strings_from_tj_array(array_body: bytes) -> list[str]:
+    strings: list[str] = []
+    index = 0
+    while index < len(array_body):
+        if array_body[index : index + 1] == b"(":
+            raw, index = _read_balanced_pdf_string(array_body, index)
+            if raw is not None:
+                strings.append(_decode_pdf_string(raw))
+            continue
+        index += 1
+    return strings
 
 
 def _read_balanced_pdf_string(data: bytes, start: int) -> tuple[bytes | None, int]:

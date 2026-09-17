@@ -19,6 +19,7 @@ from jsonschema import Draft202012Validator
 
 from doc_lineage.adapters import OFFLINE_BACKEND, segment_document
 from doc_lineage.cli import main as cli_main
+from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES
 from doc_lineage.ingest import (
     MANIFEST_FILENAME,
     MANIFEST_SCHEMA_NAME,
@@ -100,6 +101,20 @@ def test_offline_backend_reports_missing_text_layer(tmp_path: Path) -> None:
 def test_ingest_rejects_a_missing_document(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         ingest_document(tmp_path / "absent.pdf", output_dir=tmp_path / "out")
+
+
+def test_ingest_rejects_documents_above_size_limit(tmp_path: Path) -> None:
+    oversized = tmp_path / "oversized.pdf"
+    oversized.write_bytes(b"x" * (MAX_INGEST_BYTES + 1))
+
+    with pytest.raises(ValueError, match="exceeds ingest size limit"):
+        ingest_document(oversized, output_dir=tmp_path / "out", allow_docling=False)
+
+
+def test_ingest_manifest_bytes_match_snapshot_length(tmp_path: Path) -> None:
+    result = ingest_document(FIXTURE, output_dir=tmp_path, allow_docling=False)
+
+    assert result.manifest["source"]["bytes"] == FIXTURE.stat().st_size
 
 
 def test_ingest_rejects_empty_run_id(tmp_path: Path) -> None:

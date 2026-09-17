@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from doc_lineage.adapters import SegmenterResult, segment_document
+from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
 from doc_lineage.identity import sha256_bytes
 from doc_lineage.schema.validation import validate_contract_record
 
@@ -26,8 +27,6 @@ SEGMENTS_SCHEMA_VERSION = "doc-lineage-segments/v1"
 TOOL_NAME = "doc-lineage-ingest"
 MANIFEST_FILENAME = "artifact-manifest.json"
 SEGMENTS_FILENAME = "segments.json"
-MAX_INGEST_BYTES = 100 * 1024 * 1024
-
 _PARAGRAPH_SPLIT = re.compile(r"\n\s*\n")
 _WHITESPACE = re.compile(r"\s+")
 
@@ -104,6 +103,7 @@ def build_manifest(
     artifacts: list[dict[str, Any]],
     git_sha: str | None = None,
     created_at: str | None = None,
+    source_bytes: int | None = None,
 ) -> dict[str, Any]:
     """Assemble an ``artifact-manifest/v1`` payload for one ingest run."""
     manifest: dict[str, Any] = {
@@ -115,7 +115,7 @@ def build_manifest(
         "source": {
             "filename": source_path.name,
             "sha256": source_sha256,
-            "bytes": source_path.stat().st_size,
+            "bytes": source_bytes if source_bytes is not None else source_path.stat().st_size,
         },
         "artifacts": artifacts,
     }
@@ -143,17 +143,7 @@ def ingest_document(
     if not source.is_file():
         raise FileNotFoundError(f"document to ingest does not exist: {source}")
 
-    source_size = source.stat().st_size
-    if source_size > MAX_INGEST_BYTES:
-        raise ValueError(
-            f"document exceeds ingest size limit ({source_size} > {MAX_INGEST_BYTES} bytes): {source}"
-        )
-
-    raw = source.read_bytes()
-    if len(raw) > MAX_INGEST_BYTES:
-        raise ValueError(
-            f"document exceeds ingest size limit ({len(raw)} > {MAX_INGEST_BYTES} bytes): {source}"
-        )
+    raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
     source_sha256 = sha256_bytes(raw)
     effective_run_id = (run_id or f"ingest-{source_sha256[:12]}").strip()
     if not effective_run_id:
@@ -197,6 +187,7 @@ def ingest_document(
         artifacts=artifacts,
         git_sha=git_sha,
         created_at=created_at,
+        source_bytes=len(raw),
     )
     segments_path.write_bytes(segments_bytes)
     manifest_path = destination / MANIFEST_FILENAME
