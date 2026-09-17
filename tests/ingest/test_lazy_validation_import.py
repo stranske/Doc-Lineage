@@ -13,10 +13,11 @@ def test_ingest_import_does_not_load_validator_module() -> None:
     """Importing doc_lineage.ingest must not pull in schema.validation."""
     saved_modules: dict[str, object] = {}
     for name in list(sys.modules):
-        if name == "doc_lineage.ingest" or name.startswith("doc_lineage.ingest."):
-            saved_modules[name] = sys.modules.pop(name)
-        elif name == "doc_lineage.schema.validation" or name.startswith(
-            "doc_lineage.schema."
+        if (
+            name == "doc_lineage.ingest"
+            or name.startswith("doc_lineage.ingest.")
+            or name == "doc_lineage.schema.validation"
+            or name.startswith("doc_lineage.schema.")
         ):
             saved_modules[name] = sys.modules.pop(name)
 
@@ -26,11 +27,11 @@ def test_ingest_import_does_not_load_validator_module() -> None:
         assert "doc_lineage.schema.validation" not in sys.modules
     finally:
         for name in list(sys.modules):
-            if name == "doc_lineage.ingest" or name.startswith("doc_lineage.ingest."):
-                if name not in saved_modules:
-                    del sys.modules[name]
-            elif name == "doc_lineage.schema.validation" or name.startswith(
-                "doc_lineage.schema."
+            if (
+                name == "doc_lineage.ingest"
+                or name.startswith("doc_lineage.ingest.")
+                or name == "doc_lineage.schema.validation"
+                or name.startswith("doc_lineage.schema.")
             ):
                 if name not in saved_modules:
                     del sys.modules[name]
