@@ -13,7 +13,6 @@ import pytest
 
 from doc_lineage.adapters import DOCLING_BACKEND, OFFLINE_BACKEND, segment_document
 from doc_lineage.adapters.docling_segmenter import (
-    MAX_INGEST_BYTES,
     _decode_pdf_string,
     read_bounded_bytes,
 )
