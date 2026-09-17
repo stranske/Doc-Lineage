@@ -50,7 +50,9 @@ def test_ingest_writes_valid_manifest(tmp_path: Path) -> None:
 
     # The manifest must describe the bytes actually written, not the bytes the
     # pipeline intended to write. This is what the deliberate-break gate removes.
-    (artifact,) = manifest["artifacts"]
+    # Evidence objects are listed alongside the segments artifact (see
+    # tests/emit/test_evidence_object.py), so select the one under test.
+    (artifact,) = [entry for entry in manifest["artifacts"] if entry["kind"] == "data"]
     assert artifact["path"] == SEGMENTS_FILENAME
     assert artifact["sha256"] == _sha256(segments_path)
     assert artifact["bytes"] == segments_path.stat().st_size

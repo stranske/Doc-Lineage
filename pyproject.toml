@@ -68,6 +68,7 @@ packages = [
     "doc_lineage._contracts",
     "doc_lineage._vocab",
     "doc_lineage.adapters",
+    "doc_lineage.emit",
     "doc_lineage.extract",
     "doc_lineage.mutations",
     "doc_lineage.harvest",
