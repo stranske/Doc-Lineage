@@ -27,12 +27,11 @@ _STREAM_PATTERN = re.compile(rb"stream\r?\n(.*?)\r?\nendstream", re.DOTALL)
 _PAGE_TYPE_PATTERN = re.compile(rb"/Type\s*/Page(?![a-zA-Z])")
 _CONTENTS_PATTERN = re.compile(rb"/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)")
 _REFERENCE_PATTERN = re.compile(rb"(\d+)\s+\d+\s+R")
+_PAGES_REF_PATTERN = re.compile(rb"/Pages\s+(\d+)\s+\d+\s+R")
 _SHOW_TEXT_PATTERN = re.compile(
     rb"\((?:\\.|[^()\\])*\)\s*(?:Tj|TJ|'|\")" rb"|(?:\[(?:[^\]]|\\.)*\]\s*TJ)" rb"|T\*",
     re.DOTALL,
 )
-_STRING_PATTERN = re.compile(rb"\((?:\\.|[^()\\])*\)", re.DOTALL)
-_ARRAY_STRING_PATTERN = re.compile(rb"\((?:\\.|[^()\\])*\)", re.DOTALL)
 _KIDS_PATTERN = re.compile(rb"/Kids\s*\[([^\]]*)\]")
 _ROOT_PATTERN = re.compile(rb"/Root\s+(\d+)\s+\d+\s+R")
 _PAGES_TYPE_PATTERN = re.compile(rb"/Type\s*/Pages\b")
@@ -101,7 +100,10 @@ def _try_docling(path: Path) -> tuple[PageText, ...] | None:
             by_page.setdefault(page_no, []).append(text)
     if not by_page:
         return None
-    total_pages = int(getattr(document, "num_pages", lambda: 0)() or 0)
+    num_pages_attr = getattr(document, "num_pages", 0)
+    total_pages = int(
+        num_pages_attr() if callable(num_pages_attr) else num_pages_attr or 0
+    )
     if total_pages <= 0:
         total_pages = max(by_page)
     return tuple(
@@ -158,7 +160,7 @@ def _ordered_page_bodies(data: bytes, objects: dict[int, bytes]) -> list[bytes]:
     catalog = objects.get(int(root_match.group(1)))
     if catalog is None:
         return [body for body in objects.values() if _is_page_object(body)]
-    pages_ref = _REFERENCE_PATTERN.search(catalog)
+    pages_ref = _PAGES_REF_PATTERN.search(catalog)
     if pages_ref is None:
         return [body for body in objects.values() if _is_page_object(body)]
     pages_body = objects.get(int(pages_ref.group(1)))
@@ -228,21 +230,59 @@ def _extract_stream_text(stream: bytes) -> str:
     """Join the text-showing operators of one content stream into page text."""
     lines: list[str] = []
     current: list[str] = []
-    for match in _SHOW_TEXT_PATTERN.finditer(stream):
-        token = match.group(0)
-        if token == b"T*":
+    index = 0
+    while index < len(stream):
+        byte = stream[index : index + 1]
+        if byte == b"(":
+            raw, index = _read_balanced_pdf_string(stream, index)
+            if raw is not None:
+                current.append(_decode_pdf_string(raw))
+            continue
+        if stream[index : index + 2] == b"T*":
             lines.append("".join(current))
             current = []
+            index += 2
             continue
-        if token.startswith(b"["):
-            for string in _ARRAY_STRING_PATTERN.finditer(token):
-                current.append(_decode_pdf_string(string.group(0)[1:-1]))
-        else:
-            for string in _STRING_PATTERN.finditer(token):
-                current.append(_decode_pdf_string(string.group(0)[1:-1]))
+        if byte == b"[":
+            close = stream.find(b"]", index)
+            if close == -1:
+                break
+            array_body = stream[index + 1 : close]
+            array_index = 0
+            while array_index < len(array_body):
+                if array_body[array_index : array_index + 1] == b"(":
+                    raw, array_index = _read_balanced_pdf_string(array_body, array_index)
+                    if raw is not None:
+                        current.append(_decode_pdf_string(raw))
+                    continue
+                array_index += 1
+            index = close + 1
+            continue
+        index += 1
     if current:
         lines.append("".join(current))
     return "\n".join(lines).strip()
+
+
+def _read_balanced_pdf_string(data: bytes, start: int) -> tuple[bytes | None, int]:
+    """Return the raw bytes inside a PDF literal string starting at ``(``."""
+    if start >= len(data) or data[start : start + 1] != b"(":
+        return None, start + 1
+    depth = 0
+    index = start
+    while index < len(data):
+        byte = data[index : index + 1]
+        if byte == b"\\":
+            index += 2 if index + 1 < len(data) else 1
+            continue
+        if byte == b"(":
+            depth += 1
+        elif byte == b")":
+            depth -= 1
+            if depth == 0:
+                return data[start + 1 : index], index + 1
+        index += 1
+    return None, len(data)
 
 
 def _decode_pdf_string(raw: bytes) -> str:

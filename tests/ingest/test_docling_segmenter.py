@@ -105,6 +105,33 @@ def test_trailing_text_without_a_line_break_is_kept(tmp_path: Path) -> None:
     assert result.pages[0].text == "First\nSecond"
 
 
+def test_balanced_parentheses_inside_literal_strings(tmp_path: Path) -> None:
+    source = tmp_path / "nested.pdf"
+    source.write_bytes(_pdf_with_stream(b"BT (Section (A)) Tj ET"))
+
+    result = segment_document(source, allow_docling=False)
+
+    assert result.pages[0].text == "Section (A)"
+
+
+def test_catalog_pages_reference_is_resolved_when_metadata_precedes_it(tmp_path: Path) -> None:
+    source = tmp_path / "catalog.pdf"
+    source.write_bytes(
+        b"%PDF-1.4\n"
+        b"1 0 obj\n<< /Type /Catalog /Metadata 9 0 R /Pages 2 0 R >>\nendobj\n"
+        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
+        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /Contents 4 0 R >>\nendobj\n"
+        b"4 0 obj\n<< /Length 24 >>\nstream\nBT (Catalog page) Tj ET\nendstream\nendobj\n"
+        b"9 0 obj\n<< /Subtype /XML >>\nendobj\n"
+        b"xref\n0 10\n0000000000 65535 f \n"
+        b"trailer\n<< /Root 1 0 R >>\nstartxref\n0\n%%EOF\n"
+    )
+
+    result = segment_document(source, allow_docling=False)
+
+    assert result.pages[0].text == "Catalog page"
+
+
 def test_pdf_string_escapes_are_resolved() -> None:
     assert _decode_pdf_string(rb"Fee \(1.75\%\)") == "Fee (1.75%)"
     assert _decode_pdf_string(rb"line\nbreak") == "line\nbreak"
@@ -128,11 +155,12 @@ def test_docling_is_used_when_importable(monkeypatch: pytest.MonkeyPatch) -> Non
         prov: tuple[_Prov, ...]
 
     class _Document:
+        num_pages = 3
+
         def iterate_items(self) -> list[tuple[_Item, int]]:
             return [
                 (_Item("Docling clause one", (_Prov(1),)), 0),
                 (_Item("   ", (_Prov(1),)), 0),
-                (_Item("Docling clause two", (_Prov(2),)), 0),
             ]
 
     class _Converter:
@@ -148,7 +176,11 @@ def test_docling_is_used_when_importable(monkeypatch: pytest.MonkeyPatch) -> Non
     result = segment_document(FIXTURE)
 
     assert result.backend == DOCLING_BACKEND
-    assert [page.text for page in result.pages] == ["Docling clause one", "Docling clause two"]
+    assert [page.page for page in result.pages] == [1, 2, 3]
+    assert result.pages[0].text == "Docling clause one"
+    assert result.pages[1].text == ""
+    assert result.pages[2].text == ""
+    assert result.pages_without_text_layer == (2, 3)
 
 
 def test_docling_returning_nothing_falls_back_to_offline(monkeypatch: pytest.MonkeyPatch) -> None:
