@@ -2,7 +2,10 @@
 
 import json
 import tempfile
+from importlib.resources import files
 from pathlib import Path
+
+import pytest
 
 from doc_lineage.compare.classify import (
     SegmentPair,
@@ -117,3 +120,15 @@ def test_tier_mapping_override_changes_classified_tier() -> None:
     assert result.change_type == "NEW"
     assert result.tier == "T2"
     assert result.tier_label == tiers.label_for("T2")
+
+
+@pytest.mark.parametrize("validate_on_load", [False, True])
+def test_catalog_rejects_unknown_tier_in_any_class(tmp_path: Path, validate_on_load: bool) -> None:
+    raw = json.loads(files("doc_lineage.compare").joinpath("data/segment_classes.json").read_text())
+    raw["DROPPED"]["tier"] = "not-a-tier"
+    catalog_path = tmp_path / "classes.json"
+    catalog_path.write_text(json.dumps(raw))
+    tiers = load_tier_catalog()
+    with pytest.raises(ValueError, match="DROPPED.*not-a-tier"):
+        classes = load_class_catalog(catalog_path, tiers=tiers if validate_on_load else None)
+        classify_segment(SegmentPair("risk", None, "New disclosure."), tiers=tiers, classes=classes)

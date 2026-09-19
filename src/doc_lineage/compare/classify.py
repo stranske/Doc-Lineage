@@ -175,6 +175,7 @@ def classify_segment(
     current = pair.current_text or ""
     similarity = _similarity(prior, current)
     change_type = _infer_change_type(pair)
+    _validate_class_tiers(classes, tiers)
     tier_id = _infer_tier(change_type, classes)
     return ClassifiedSegment(
         section_id=pair.section_id,
