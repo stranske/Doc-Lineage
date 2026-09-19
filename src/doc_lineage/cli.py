@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from doc_lineage.export import export_docx_redline
+from doc_lineage.export.fact_key_map import export_fact_key_map
 from doc_lineage.harvest import harvest_edgar_ex10
 from doc_lineage.ingest import ingest_document
 
@@ -61,6 +62,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Required acknowledgement that a tracked-changes comparison is being produced.",
     )
+
+    fact_map = subparsers.add_parser(
+        "export-fact-key-map",
+        help="Export tracked-variable identity joins and an artifact manifest.",
+    )
+    fact_map.add_argument("path", type=Path, help="JSON array of tracked-variable/v1 records.")
+    fact_map.add_argument("--output", type=Path, required=True, help="New run directory to create.")
 
     harvest = subparsers.add_parser(
         "harvest-edgar",
@@ -122,6 +130,14 @@ def _run_harvest_edgar(args: argparse.Namespace) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "export-fact-key-map":
+        try:
+            manifest = export_fact_key_map(args.path, args.output)
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage export-fact-key-map: {exc}", file=sys.stderr)
+            return 1
+        print(f"manifest: {manifest}")
+        return 0
     if args.command == "export-docx":
         return _run_export_docx(args)
     if args.command == "harvest-edgar":

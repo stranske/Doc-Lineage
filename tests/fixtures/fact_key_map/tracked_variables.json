@@ -1,0 +1,16 @@
+[
+  {
+    "schema_version": "tracked-variable/v1",
+    "variable_id": "var:alpha",
+    "ontology_key": "legal.withdrawal.notice_days",
+    "entity_ref": "manager:alpha",
+    "period": "2026-Q1"
+  },
+  {
+    "schema_version": "tracked-variable/v1",
+    "variable_id": "var:beta",
+    "ontology_key": "legal.withdrawal.notice_days",
+    "entity_ref": "manager:beta",
+    "period": "2026-Q2"
+  }
+]
