@@ -179,7 +179,7 @@ def _fetch_exhibit_bytes(
 
     _rate_limit()
     with urllib.request.urlopen(exhibit.document_url, timeout=60) as response:
-        return response.read()
+        return bytes(response.read())
 
 
 def _artifact_relative_path(cik: str, exhibit: Ex10Exhibit, extension: str) -> str:
