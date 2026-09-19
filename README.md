@@ -4,6 +4,30 @@ Document lineage and blackline engine for recurring investment documents.
 
 **Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope, architecture and first issues arrive from research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). The initial legal clause vocabulary and Python loader are available; the document processing engine remains to be implemented.
 
+## DOCX tracked-changes export
+
+Install the package and compare two DOCX files with the bundled local engine:
+
+```bash
+doc-lineage export-docx --original original.docx --modified revised.docx \
+  --blackline --output redline.docx --author Counsel
+```
+
+The command writes native Word insertion/deletion markup. Without `--output`, it
+writes DOCX bytes to standard output. Input files remain unchanged.
+
+Here `--blackline` is a boolean flag for a file-pair comparison. The planned
+`--blackline <id>` interface in [issue #15](https://github.com/stranske/Doc-Lineage/issues/15)
+is not implemented: it needs a persisted comparison-ID lookup contract connecting
+[ingest #8](https://github.com/stranske/Doc-Lineage/issues/8) and
+[blackline #10](https://github.com/stranske/Doc-Lineage/issues/10). Ingest excludes
+blackline/diff, and the section-pairing issue does not yet define that lookup.
+A path is not treated as a substitute comparison ID. File-pair export therefore
+does not complete the ID-based scope of #15.
+
+Source distributions include the export tests under `tests/export/` so the
+native tracked-changes acceptance test can be run from the source archive.
+
 ## Intent
 
 - Take two or more versions of a recurring document (PPM, LPA, side letter, consultant report, manager letter, DDQ) and produce:
