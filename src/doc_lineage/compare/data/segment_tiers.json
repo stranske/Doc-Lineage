@@ -1,0 +1,17 @@
+{
+  "T1": {
+    "id": "T1",
+    "label": "decision-relevant",
+    "description": "Material changes affecting investment decisions or legal obligations."
+  },
+  "T2": {
+    "id": "T2",
+    "label": "factual refresh",
+    "description": "Updated facts or figures without altering the underlying decision frame."
+  },
+  "T3": {
+    "id": "T3",
+    "label": "cosmetic",
+    "description": "Formatting, punctuation, or stylistic edits with no substantive impact."
+  }
+}

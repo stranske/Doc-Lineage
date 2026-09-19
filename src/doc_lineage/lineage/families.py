@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from doc_lineage.identity import normalized_supersession_group, parse_numeric_prefix
 
@@ -70,7 +71,9 @@ def build_supersession_chain(docs: Sequence[DocumentRef]) -> list[SupersessionEd
             ),
         )
         for prior, successor in zip(ordered, ordered[1:], strict=False):
-            prefix, _, convention = parse_numeric_prefix(successor.filename)
+            if prior.content_hash == successor.content_hash:
+                continue
+            prefix, _, convention = parse_numeric_prefix(Path(successor.filename).name)
             edges.append(
                 SupersessionEdge(
                     prior_hash=prior.content_hash,

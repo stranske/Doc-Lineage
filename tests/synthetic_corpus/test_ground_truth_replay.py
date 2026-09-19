@@ -42,10 +42,10 @@ def test_replay_matches_ground_truth_manifest() -> None:
                 classified,
                 prior_mentions=prior_mentions,
                 current_mentions=current_mentions,
+                explicit_removal=pair.explicit_removal,
             )
             actual[section_id] = {"change_type": classified.change_type, "tier": classified.tier}
 
-        for expected in case["expected"]:
-            section_id = expected["section_id"]
-            assert actual[section_id]["change_type"] == expected["change_type"]
-            assert actual[section_id]["tier"] == expected["tier"]
+        expected_map = {e["section_id"]: {"change_type": e["change_type"], "tier": e["tier"]}
+                       for e in case["expected"]}
+        assert actual == expected_map, f"Mismatch for case {case['case_id']}: actual={actual}, expected={expected_map}"

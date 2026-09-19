@@ -71,6 +71,7 @@ package-dir = {"" = "src", "doc_lineage._vocab" = "vocab", "doc_lineage._contrac
 [tool.setuptools.package-data]
 "doc_lineage._contracts" = ["*.schema.json"]
 "doc_lineage._vocab" = ["legal-clauses.json"]
+"doc_lineage.compare" = ["data/*.json"]
 "doc_lineage.schema" = ["schemas/*.schema.json"]
 
 [tool.pytest.ini_options]

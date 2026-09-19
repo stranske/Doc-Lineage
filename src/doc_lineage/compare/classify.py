@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from difflib import SequenceMatcher
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
-_DATA_ROOT = Path(__file__).resolve().parents[3] / "data"
+_DATADIR = files("doc_lineage.compare.data")
 
 
 @dataclass(frozen=True)
@@ -71,13 +72,30 @@ class ClassifiedSegment:
     similarity: float
 
 
-def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+def _load_resource(resource_path: str) -> dict[str, Any]:
+    """Load a JSON resource from the package or fallback to source checkout path."""
+    try:
+        ref = _DATADIR.joinpath(resource_path)
+        text = ref.read_text(encoding="utf-8")
+    except (ModuleNotFoundError, FileNotFoundError):
+        module = Path(__file__).resolve()
+        root = module.parents[3]
+        if (
+            module.parent != root / "src" / "doc_lineage"
+            or not (root / "pyproject.toml").is_file()
+        ):
+            raise
+        fallback = root / "src" / "doc_lineage" / "compare" / "data" / resource_path
+        text = fallback.read_text(encoding="utf-8")
+    return json.loads(text)
 
 
 def load_tier_catalog(path: Path | None = None) -> TierCatalog:
-    """Load tier definitions from ``data/segment_tiers.json``."""
-    raw = _load_json(path or _DATA_ROOT / "segment_tiers.json")
+    """Load tier definitions from ``segment_tiers.json`` packaged with doc_lineage.compare."""
+    if path is not None:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        raw = _load_resource("segment_tiers.json")
     tiers = {
         key: TierDefinition(id=key, label=entry["label"], description=entry["description"])
         for key, entry in raw.items()
@@ -86,8 +104,11 @@ def load_tier_catalog(path: Path | None = None) -> TierCatalog:
 
 
 def load_class_catalog(path: Path | None = None) -> ClassCatalog:
-    """Load segment-class definitions from ``data/segment_classes.json``."""
-    raw = _load_json(path or _DATA_ROOT / "segment_classes.json")
+    """Load segment-class definitions from ``segment_classes.json`` packaged with doc_lineage.compare."""
+    if path is not None:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        raw = _load_resource("segment_classes.json")
     classes = {
         key: ClassDefinition(id=key, label=entry["label"], description=entry["description"])
         for key, entry in raw.items()
@@ -112,9 +133,9 @@ def _infer_change_type(pair: SegmentPair) -> str:
         if pair.explicit_removal:
             return "DROPPED"
         return "UNKNOWN_ABSENCE"
-    ratio = _similarity(prior, current)
-    if ratio >= 0.98:
+    if prior == current:
         return "VERBATIM"
+    ratio = _similarity(prior, current)
     if ratio >= 0.85:
         return "NEAR_VERBATIM"
     return "REVISED"

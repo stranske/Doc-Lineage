@@ -10,14 +10,21 @@ def apply_silence_invariant(
     *,
     prior_mentions: int,
     current_mentions: int = 0,
+    explicit_removal: bool = False,
 ) -> ClassifiedSegment:
     """Refuse to map bare absence to ``DROPPED`` without an explicit removal signal.
 
     When a segment was present in the prior document but has zero mentions in the
     current document, absence alone is weak evidence and must not auto-emit
-    ``DROPPED``.
+    ``DROPPED``.  However, if ``explicit_removal`` is True, the ``DROPPED`` classification
+    is preserved even with zero current mentions.
     """
-    if classified.change_type == "DROPPED" and prior_mentions > 0 and current_mentions == 0:
+    if (
+        classified.change_type == "DROPPED"
+        and prior_mentions > 0
+        and current_mentions == 0
+        and not explicit_removal
+    ):
         return ClassifiedSegment(
             section_id=classified.section_id,
             change_type="UNKNOWN_ABSENCE",
