@@ -390,7 +390,6 @@ MODULE_TO_PACKAGE = {
     "jwt": "PyJWT",
     "yaml": "PyYAML",
     "PIL": "Pillow",
-    "docx": "python-docx",
     "sklearn": "scikit-learn",
     "cv2": "opencv-python",
     "pre_commit": "pre-commit",
