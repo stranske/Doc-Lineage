@@ -61,7 +61,9 @@ packages = [
     "doc_lineage._contracts",
     "doc_lineage._vocab",
     "doc_lineage.adapters",
+    "doc_lineage.compare",
     "doc_lineage.extract",
+    "doc_lineage.lineage",
     "doc_lineage.schema",
 ]
 package-dir = {"" = "src", "doc_lineage._vocab" = "vocab", "doc_lineage._contracts" = "docs/contracts/schemas"}

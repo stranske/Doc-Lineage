@@ -1,0 +1,32 @@
+{
+  "VERBATIM": {
+    "id": "VERBATIM",
+    "label": "verbatim",
+    "description": "Text unchanged between prior and current document versions."
+  },
+  "NEAR_VERBATIM": {
+    "id": "NEAR_VERBATIM",
+    "label": "near verbatim",
+    "description": "Minor edits preserving the same substantive meaning."
+  },
+  "REVISED": {
+    "id": "REVISED",
+    "label": "revised",
+    "description": "Substantive rewrite of an existing segment."
+  },
+  "NEW": {
+    "id": "NEW",
+    "label": "new",
+    "description": "Segment present only in the current document."
+  },
+  "DROPPED": {
+    "id": "DROPPED",
+    "label": "dropped",
+    "description": "Segment explicitly removed with a positive removal signal."
+  },
+  "UNKNOWN_ABSENCE": {
+    "id": "UNKNOWN_ABSENCE",
+    "label": "unknown absence",
+    "description": "Prior mention missing without an explicit removal signal."
+  }
+}
