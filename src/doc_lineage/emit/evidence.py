@@ -10,38 +10,29 @@ omit, so neither is optional decoration here.
 
 from __future__ import annotations
 
+import json
+from functools import lru_cache
 from typing import Any, Protocol, runtime_checkable
 
 from doc_lineage.identity import sha256_bytes
-from doc_lineage.schema.validation import validate_contract_record
+from doc_lineage.schema.validation import load_contract_schema, validate_contract_record
 
 EVIDENCE_SCHEMA_VERSION = "evidence-object/v1"
 EVIDENCE_SCHEMA_NAME = "evidence-object-v1"
 EVIDENCE_DIRNAME = "evidence"
-
-#: ``maxLength`` of ``excerpt`` in the contract schema. Longer source text is
-#: truncated rather than dropped, because a missing excerpt is the exact gap
-#: this contract exists to close.
-EXCERPT_MAX_CHARS = 2000
 TRUNCATION_SUFFIX = "..."
 
-#: The ``method`` enum from the contract schema.
-EVIDENCE_METHODS = frozenset(
-    {
-        "rule",
-        "parser",
-        "table",
-        "text",
-        "ocr",
-        "llm",
-        "computed",
-        "fallback",
-        "manual",
-    }
-)
 
-_ID_FIELD_SEPARATOR = "|"
-_ABSENT_EXCERPT_TOKEN = "<absent>"
+@lru_cache(maxsize=1)
+def _evidence_schema_constraints() -> tuple[frozenset[str], int]:
+    """Return ``(method enum, excerpt maxLength)`` from the consumed contract."""
+    schema = load_contract_schema(EVIDENCE_SCHEMA_NAME)
+    methods = frozenset(schema["properties"]["method"]["enum"])
+    max_chars = schema["properties"]["excerpt"]["maxLength"]
+    return methods, max_chars
+
+
+EVIDENCE_METHODS, EXCERPT_MAX_CHARS = _evidence_schema_constraints()
 
 
 @runtime_checkable
@@ -74,15 +65,33 @@ def bound_excerpt(text: str, *, limit: int = EXCERPT_MAX_CHARS) -> str:
     return text[: limit - len(TRUNCATION_SUFFIX)] + TRUNCATION_SUFFIX
 
 
+def _evidence_id_preimage(
+    *, source_id: str, fact_ref: str, method: str, excerpt: str | None
+) -> str:
+    """Serialize preimage fields with unambiguous boundaries and null encoding."""
+    return json.dumps(
+        {
+            "excerpt": excerpt,
+            "fact_ref": fact_ref,
+            "method": method,
+            "source_id": source_id,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    )
+
+
 def evidence_id_for(*, source_id: str, fact_ref: str, method: str, excerpt: str | None) -> str:
     """Return a deterministic id for one evidence link.
 
     The same source, fact, method and excerpt always yield the same id, so a
     re-run overwrites its own evidence instead of accumulating duplicates.
     """
-    excerpt_part = _ABSENT_EXCERPT_TOKEN if excerpt is None else excerpt
-    parts = (source_id, fact_ref, method, excerpt_part)
-    return sha256_bytes(_ID_FIELD_SEPARATOR.join(parts).encode("utf-8"))[:32]
+    preimage = _evidence_id_preimage(
+        source_id=source_id, fact_ref=fact_ref, method=method, excerpt=excerpt
+    )
+    return sha256_bytes(preimage.encode("utf-8"))[:32]
 
 
 def emit_evidence_object(
@@ -109,9 +118,9 @@ def emit_evidence_object(
 
     resolved_fact_ref = fact_ref or f"segment:{span.segment_id}"
     resolved_excerpt = bound_excerpt(span.text if excerpt is None else excerpt)
-    resolved_locator: dict[str, Any] = {"page": span.page, "order": span.order}
-    if locator:
-        resolved_locator.update(locator)
+    resolved_locator: dict[str, Any] = dict(locator) if locator else {}
+    resolved_locator["page"] = span.page
+    resolved_locator["order"] = span.order
 
     payload: dict[str, Any] = {
         "schema_version": EVIDENCE_SCHEMA_VERSION,

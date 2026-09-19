@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
+from doc_lineage.adapters import DOCLING_BACKEND
 from doc_lineage.emit import (
     EVIDENCE_DIRNAME,
     EVIDENCE_METHODS,
@@ -135,3 +136,32 @@ def test_locator_carries_the_page_pointer() -> None:
     assert evidence["locator"]["page"] == 1
     assert evidence["locator"]["order"] == 1
     assert evidence["locator"]["section"] == "6.1"
+
+
+def test_locator_page_and_order_are_not_overridden_by_caller() -> None:
+    evidence = emit_evidence_object(
+        _span(),
+        source_id="sha256:deadbeef",
+        method="text",
+        locator={"page": 99, "order": 99, "section": "6.1"},
+    )
+
+    assert evidence["locator"]["page"] == 1
+    assert evidence["locator"]["order"] == 1
+    assert evidence["locator"]["section"] == "6.1"
+
+
+def test_evidence_method_for_docling_backend_returns_parser() -> None:
+    assert evidence_method_for(DOCLING_BACKEND) == "parser"
+
+
+def test_evidence_id_preimage_avoids_separator_collisions() -> None:
+    first = evidence_id_for(source_id="s|f", fact_ref="r", method="text", excerpt="x")
+    second = evidence_id_for(source_id="s", fact_ref="f|r", method="text", excerpt="x")
+    assert first != second
+
+
+def test_evidence_id_distinguishes_null_from_absent_token() -> None:
+    null_id = evidence_id_for(source_id="s", fact_ref="f", method="text", excerpt=None)
+    token_id = evidence_id_for(source_id="s", fact_ref="f", method="text", excerpt="<absent>")
+    assert null_id != token_id
