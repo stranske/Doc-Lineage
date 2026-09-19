@@ -26,6 +26,7 @@ dependencies = [
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "pillow==11.3.0",
+    "python-redlines[docxodus]==0.3.0",
 ]
 
 [project.optional-dependencies]
@@ -54,6 +55,9 @@ doc-lineage = "doc_lineage.cli:main"
 [project.urls]
 Homepage = "https://github.com/stranske/Template"
 Repository = "https://github.com/stranske/Template"
+
+[project.entry-points."console_scripts"]
+doc-lineage = "doc_lineage.cli:main"
 
 [tool.setuptools]
 packages = [
@@ -126,6 +130,10 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "python_redlines.*"
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "tests.*"

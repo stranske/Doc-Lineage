@@ -46,7 +46,9 @@ pillow==11.3.0
     #   python-pptx
     #   reportlab
 platformdirs==4.9.2
-    # via black
+    # via
+    #   black
+    #   python-redlines
 pluggy==1.6.0
     # via
     #   pytest
@@ -65,6 +67,10 @@ python-docx==1.2.0
     # via doc-lineage (pyproject.toml)
 python-pptx==1.0.2
     # via doc-lineage (pyproject.toml)
+python-redlines==0.3.0
+    # via doc-lineage (pyproject.toml)
+python-redlines-docxodus==1.0.0
+    # via python-redlines
 pytokens==0.4.1
     # via black
 referencing==0.37.0
