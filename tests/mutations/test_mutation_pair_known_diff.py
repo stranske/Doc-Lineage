@@ -31,12 +31,20 @@ def test_gate_provision_change_detected() -> None:
     assert "gate_provision_change" in classes
 
 
-def test_all_catalog_mutations_materialized() -> None:
-    """Every catalog mutation must appear in the generated manifest (deliberate-break gate)."""
-    manifest = _load_manifest()
-    manifest_ids = {entry["mutation_id"] for entry in manifest["mutations"]}
-    catalog_ids = {spec.mutation_id for spec in MUTATION_SPECS}
+def _assert_complete(manifest_ids: set[str], catalog_ids: set[str]) -> None:
+    # Independent fixture obligation prevents an empty catalog and regenerated
+    # empty manifest from passing together.
+    assert "management_fee_bump" in catalog_ids
     assert manifest_ids == catalog_ids
+
+
+def test_all_catalog_mutations_materialized() -> None:
+    """Every catalog mutation must appear in the generated manifest."""
+    manifest = _load_manifest()
+    _assert_complete(
+        {entry["mutation_id"] for entry in manifest["mutations"]},
+        {spec.mutation_id for spec in MUTATION_SPECS},
+    )
 
 
 @pytest.mark.parametrize("spec", MUTATION_SPECS, ids=[spec.mutation_id for spec in MUTATION_SPECS])
@@ -47,11 +55,33 @@ def test_catalog_change_class_detected(spec) -> None:
 
 
 def test_deliberate_break_skipping_catalog_mutation_fails_manifest_gate() -> None:
-    """Skipping one catalog mutation must fail the manifest completeness gate."""
-    manifest = _load_manifest()
-    if len(MUTATION_SPECS) <= 1:
-        pytest.skip("need multiple catalog mutations for skip-one deliberate-break gate")
-    manifest_ids = {entry["mutation_id"] for entry in manifest["mutations"]}
+    """Removing even the sole mutation must fail the completeness gate."""
     catalog_ids = {spec.mutation_id for spec in MUTATION_SPECS}
-    skipped = catalog_ids - manifest_ids
-    assert not skipped, f"catalog mutations missing from manifest: {sorted(skipped)}"
+    manifest_ids = {entry["mutation_id"] for entry in _load_manifest()["mutations"]}
+    manifest_ids.remove("management_fee_bump")
+    with pytest.raises(AssertionError):
+        _assert_complete(manifest_ids, catalog_ids)
+    with pytest.raises(AssertionError):
+        _assert_complete(set(), set())
+
+
+def test_generator_normalizes_paths_and_preserves_synthetic_identity(tmp_path, monkeypatch) -> None:
+    from tools import generate_mutations
+
+    monkeypatch.setattr(generate_mutations, "REPO_ROOT", tmp_path)
+    monkeypatch.chdir(tmp_path)
+    manifest = generate_mutations.generate(Path("generated"))
+    entry = manifest["mutations"][0]
+    after = load_segment_tree(tmp_path / entry["after"])
+    before = load_segment_tree(tmp_path / entry["before"])
+    assert after["source_sha256"] != before["source_sha256"]
+    assert all(s["segment_id"].startswith(after["source_sha256"][:16]) for s in after["segments"])
+    assert detect_change_classes(before, after) == ("gate_provision_change",)
+    first = (tmp_path / entry["after"]).read_bytes()
+    generate_mutations.generate(Path("generated"))
+    assert (tmp_path / entry["after"]).read_bytes() == first
+    outside = tmp_path / "outside" / "generated"
+    monkeypatch.setattr(generate_mutations, "REPO_ROOT", tmp_path / "repo")
+    with pytest.raises(ValueError):
+        generate_mutations.generate(outside)
+    assert not outside.exists()

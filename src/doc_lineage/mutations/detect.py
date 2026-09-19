@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from doc_lineage.blackline import align_sections, build_section_tree
 from doc_lineage.ingest import Segment
@@ -15,7 +15,7 @@ GATE_PROVISION_SECTION_RE = re.compile(r"^\d+\.\s+MANAGEMENT FEE\b")
 
 def load_segment_tree(path: Path) -> dict[str, Any]:
     """Load a segment-tree JSON fixture."""
-    return json.loads(path.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
 def _segments_from_payload(payload: dict[str, Any]) -> tuple[Segment, ...]:

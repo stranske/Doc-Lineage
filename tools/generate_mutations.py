@@ -5,11 +5,12 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import re
 from pathlib import Path
 
-from doc_lineage.mutations.catalog import MUTATION_SPECS
+from doc_lineage.mutations.catalog import MUTATION_SPECS, MutationSpec
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BASE_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "blackline" / "lpa_before_segments.json"
@@ -17,7 +18,7 @@ OUTPUT_ROOT = REPO_ROOT / "tests" / "fixtures" / "mutations"
 SECTION_HEADER_RE = re.compile(r"^(\d+)\.\s+")
 
 
-def _apply_spec(payload: dict, spec) -> dict:
+def _apply_spec(payload: dict, spec: MutationSpec) -> dict:
     mutated = copy.deepcopy(payload)
     for segment in mutated["segments"]:
         header = SECTION_HEADER_RE.match(segment["text"])
@@ -39,6 +40,8 @@ def _apply_spec(payload: dict, spec) -> dict:
 
 def generate(output_root: Path = OUTPUT_ROOT) -> dict:
     """Write mutation pair fixtures and return the manifest payload."""
+    output_root = output_root.resolve()
+    output_root.relative_to(REPO_ROOT)  # Validate before creating any files.
     base = json.loads(BASE_FIXTURE.read_text(encoding="utf-8"))
     manifest_entries: list[dict[str, str]] = []
     for spec in MUTATION_SPECS:
@@ -47,7 +50,12 @@ def generate(output_root: Path = OUTPUT_ROOT) -> dict:
         before_path = pair_dir / "before_segments.json"
         after_path = pair_dir / "after_segments.json"
         after_payload = _apply_spec(base, spec)
-        after_payload["source_sha256"] = after_payload["source_sha256"].replace("b709", "c709", 1)
+        # These fixtures model synthetic sources, identified by an explicit seed.
+        seed = f"synthetic-mutation/v1:{base['source_sha256']}:{spec!r}"
+        digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
+        after_payload["source_sha256"] = digest
+        for segment in after_payload["segments"]:
+            segment["segment_id"] = digest[:16] + segment["segment_id"][16:]
         before_path.write_text(json.dumps(base, indent=2) + "\n", encoding="utf-8")
         after_path.write_text(json.dumps(after_payload, indent=2) + "\n", encoding="utf-8")
         manifest_entries.append(
