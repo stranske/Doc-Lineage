@@ -86,7 +86,9 @@ def write_corpus(output_root: Path = OUTPUT_ROOT) -> Path:
             encoding="utf-8",
         )
     manifest_path = output_root / "ground_truth.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return manifest_path
 
 
