@@ -65,7 +65,7 @@ def build_supersession_chain(docs: Sequence[DocumentRef]) -> list[SupersessionEd
         ordered = sorted(
             family_docs,
             key=lambda item: (
-                parse_numeric_prefix(item.filename)[0] or 0,
+                parse_numeric_prefix(Path(item.filename).name)[0] or 0,
                 item.as_of,
                 item.filename,
             ),

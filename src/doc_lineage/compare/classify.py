@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from difflib import SequenceMatcher
 from importlib.resources import files
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-_DATADIR = files("doc_lineage.compare.data")
+_DATADIR = files("doc_lineage.compare").joinpath("data")
 
 
 @dataclass(frozen=True)
@@ -73,21 +73,11 @@ class ClassifiedSegment:
 
 
 def _load_resource(resource_path: str) -> dict[str, Any]:
-    """Load a JSON resource from the package or fallback to source checkout path."""
-    try:
-        ref = _DATADIR.joinpath(resource_path)
-        text = ref.read_text(encoding="utf-8")
-    except (ModuleNotFoundError, FileNotFoundError):
-        module = Path(__file__).resolve()
-        root = module.parents[3]
-        if (
-            module.parent != root / "src" / "doc_lineage"
-            or not (root / "pyproject.toml").is_file()
-        ):
-            raise
-        fallback = root / "src" / "doc_lineage" / "compare" / "data" / resource_path
-        text = fallback.read_text(encoding="utf-8")
-    return json.loads(text)
+    """Load catalog JSON through the regular package so wheels and checkouts agree."""
+    raw = json.loads(_DATADIR.joinpath(resource_path).read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError("catalog must be a JSON object")
+    return cast(dict[str, Any], raw)
 
 
 def load_tier_catalog(path: Path | None = None) -> TierCatalog:
