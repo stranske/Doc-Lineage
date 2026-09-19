@@ -71,6 +71,7 @@ packages = [
     "doc_lineage.compare",
     "doc_lineage.emit",
     "doc_lineage.extract",
+    "doc_lineage.export",
     "doc_lineage.lineage",
     "doc_lineage.mutations",
     "doc_lineage.harvest",
