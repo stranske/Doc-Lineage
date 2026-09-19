@@ -240,10 +240,15 @@ def ingest_document(
         created_at=created_at,
         source_bytes=len(raw),
     )
-    segments_path.write_bytes(segments_bytes)
+    if evidence_dir.is_symlink():
+        raise ValueError("evidence output directory must not be a symlink")
     evidence_dir.mkdir(parents=True, exist_ok=True)
+    segments_path.write_bytes(segments_bytes)
     for relative_path, payload_bytes in evidence_files:
-        (destination / relative_path).write_bytes(payload_bytes)
+        evidence_path = destination / relative_path
+        if evidence_path.is_symlink():
+            evidence_path.unlink()
+        evidence_path.write_bytes(payload_bytes)
     # A reused run directory must not retain evidence from a previous source.
     # Only prune after the current evidence has been validated and written.
     current_evidence_names = {Path(relative_path).name for relative_path, _ in evidence_files}

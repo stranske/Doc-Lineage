@@ -105,6 +105,20 @@ def test_evidence_ids_are_deterministic() -> None:
     )
 
 
+def test_evidence_output_rejects_symlink_directory(tmp_path: Path) -> None:
+    output = tmp_path / "output"
+    output.mkdir()
+    external = tmp_path / "external"
+    external.mkdir()
+    retained = external / "retained.json"
+    retained.write_text("private data", encoding="utf-8")
+    (output / EVIDENCE_DIRNAME).symlink_to(external, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="must not be a symlink"):
+        ingest_document(FIXTURE, output_dir=output, allow_docling=False)
+    assert retained.read_text(encoding="utf-8") == "private data"
+
+
 def test_long_excerpts_are_bounded_not_dropped() -> None:
     long_text = "clause " * 2000
     evidence = emit_evidence_object(_span(long_text), source_id="sha256:deadbeef", method="text")
