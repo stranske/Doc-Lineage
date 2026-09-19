@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from doc_lineage.export import export_docx_redline
+from doc_lineage.harvest import harvest_edgar_ex10
 from doc_lineage.ingest import ingest_document
 
 
@@ -60,6 +61,24 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Required acknowledgement that a tracked-changes comparison is being produced.",
     )
+
+    harvest = subparsers.add_parser(
+        "harvest-edgar",
+        help="Harvest SEC EX-10 exhibits for one CIK into a mirror-compatible manifest.",
+    )
+    harvest.add_argument("--cik", required=True, help="SEC CIK (zero-padded or bare digits).")
+    harvest.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Directory to write artifact-manifest.json into.",
+    )
+    harvest.add_argument(
+        "--fixture",
+        type=Path,
+        default=None,
+        help="Recorded filing JSON for offline harvest (no live SEC calls).",
+    )
     return parser
 
 
@@ -84,10 +103,29 @@ def _run_export_docx(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_harvest_edgar(args: argparse.Namespace) -> int:
+    try:
+        result = harvest_edgar_ex10(
+            args.cik,
+            args.output,
+            fixture_path=args.fixture,
+        )
+    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+        print(f"doc-lineage harvest-edgar: {exc}", file=sys.stderr)
+        return 1
+    print(
+        f"harvested {len(result.exhibits)} EX-10 exhibit(s) for CIK {result.cik} "
+        f"-> {result.manifest_path}"
+    )
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "export-docx":
         return _run_export_docx(args)
+    if args.command == "harvest-edgar":
+        return _run_harvest_edgar(args)
     if args.command != "ingest":  # pragma: no cover - argparse rejects anything else
         raise AssertionError(f"unhandled command: {args.command}")
 

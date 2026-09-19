@@ -1,0 +1,31 @@
+{
+  "cik": "0001067983",
+  "accession_number": "0001067983-24-000045",
+  "filing_date": "2024-03-15",
+  "documents": [
+    {
+      "sequence": "1",
+      "type": "10-K",
+      "description": "Annual report",
+      "document_url": "https://www.sec.gov/Archives/edgar/data/1067983/000106798324000045/berkshire-20231231.htm"
+    },
+    {
+      "sequence": "2",
+      "type": "EX-10.1",
+      "description": "Limited Partnership Agreement",
+      "document_url": "https://www.sec.gov/Archives/edgar/data/1067983/000106798324000045/exhibit101lpa.htm"
+    },
+    {
+      "sequence": "3",
+      "type": "EX-10.2",
+      "description": "Amended and Restated Side Letter",
+      "document_url": "https://www.sec.gov/Archives/edgar/data/1067983/000106798324000045/exhibit102sideletter.htm"
+    },
+    {
+      "sequence": "4",
+      "type": "EX-99.1",
+      "description": "Press release",
+      "document_url": "https://www.sec.gov/Archives/edgar/data/1067983/000106798324000045/exhibit991.htm"
+    }
+  ]
+}
