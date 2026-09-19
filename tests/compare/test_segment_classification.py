@@ -15,7 +15,31 @@ from doc_lineage.compare.classify import (
 )
 
 
-def test_tier_labels_loaded_from_data_not_branches() -> None:
+def test_tier_labels_loaded_from_data_not_branches(tmp_path: Path) -> None:
+    """Runtime catalogs and source mirrors agree; classification reads label data."""
+    root_data = Path(__file__).resolve().parents[2] / "data"
+    packaged_data = files("doc_lineage.compare").joinpath("data")
+    for filename in ("segment_tiers.json", "segment_classes.json"):
+        mirror = json.loads((root_data / filename).read_text(encoding="utf-8"))
+        canonical = json.loads(packaged_data.joinpath(filename).read_text(encoding="utf-8"))
+        assert mirror == canonical, f"{filename} source mirror differs from runtime catalog"
+
+    # A different T2 label must flow through the production loader and classifier,
+    # rather than merely matching the currently committed English label.
+    tier_data = json.loads(packaged_data.joinpath("segment_tiers.json").read_text())
+    tier_data["T2"]["label"] = "catalog-defined factual label"
+    tier_path = tmp_path / "segment_tiers.json"
+    tier_path.write_text(json.dumps(tier_data), encoding="utf-8")
+    changed_tiers = load_tier_catalog(tier_path)
+    changed_classes = load_class_catalog(root_data / "segment_classes.json", tiers=changed_tiers)
+    changed = classify_segment(
+        SegmentPair(section_id="risk", prior_text="Prior disclosure", current_text=None),
+        tiers=changed_tiers,
+        classes=changed_classes,
+    )
+    assert changed.tier == "T2"
+    assert changed.tier_label == "catalog-defined factual label"
+
     tiers = load_tier_catalog()
     classes = load_class_catalog()
     result = classify_segment(

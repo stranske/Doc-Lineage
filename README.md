@@ -71,3 +71,6 @@ The owner's work environment answered a structured information request, and its 
 - Two comparison tools already run there with real, named schemas: a consultant-report tracker with change, continuity, persistence and stale-flag ledgers, a section crosswalk, a five-value segment vocabulary and three materiality tiers; and a legal-document lineage tool with a seven-column material-change ledger and a three-tier materiality taxonomy mapped to named source fields. **This repo adopts those field names rather than inventing new ones.**
 
 So the build order is: document identity and manifest, extraction with page pointers and a recognition fallback, the tracked-variable schema taken from the two existing tools, then the lineage and comparison engine. Rendering belongs to `stranske/Deliverable-Render`, not here.
+
+Comparison catalog authority, mirror refresh commands, and acceptance checks are
+documented in [Comparison catalog maintenance](docs/comparison-catalogs.md).
