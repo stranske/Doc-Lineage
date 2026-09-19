@@ -86,9 +86,10 @@ def test_harvest_rejects_fixture_path_traversal(tmp_path: Path) -> None:
         harvest_edgar_ex10("0001067983", tmp_path / "out", fixture_path=bad_fixture)
 
 
-def test_parse_ex10_rejects_null_fields() -> None:
+@pytest.mark.parametrize("field", ["sequence", "description", "document_url"])
+def test_parse_ex10_rejects_null_fields(field: str) -> None:
     filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    filing["documents"][1]["description"] = None
+    filing["documents"][1][field] = None
     with pytest.raises(ValueError, match="sequence, description, and document_url"):
         parse_ex10_exhibits(filing)
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import re
 import time
@@ -211,7 +212,7 @@ def _fetch_exhibit_bytes(
         raise RuntimeError(f"HTTP {exc.code} fetching {exhibit.document_url}") from exc
     except urllib.error.URLError as exc:
         raise RuntimeError(f"failed to fetch {exhibit.document_url}: {exc.reason}") from exc
-    except (TimeoutError, OSError) as exc:
+    except (http.client.IncompleteRead, TimeoutError, OSError) as exc:
         raise RuntimeError(f"network error fetching {exhibit.document_url}: {exc}") from exc
 
 
