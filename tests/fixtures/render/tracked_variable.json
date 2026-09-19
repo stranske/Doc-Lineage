@@ -1,0 +1,27 @@
+{
+  "schema_version": "tracked-variable/v1",
+  "variable_id": "var:synthetic-notice",
+  "provenance": {
+    "document": {
+      "source_id": "document:synthetic-notice",
+      "locator": {"page": 42}
+    },
+    "mirror": {
+      "mirror_root": "/synthetic/Manager Library",
+      "blob_path": "blobs/notice.pdf",
+      "page_anchor": "#page=42"
+    },
+    "source_system": {
+      "system": "backstop",
+      "url": "https://backstop.example/documents/notice?view=full&version=1"
+    }
+  },
+  "evidence": {
+    "schema_version": "evidence-object/v1",
+    "evidence_id": "evidence:synthetic-notice",
+    "fact_ref": "legal.withdrawal.notice_days",
+    "source_id": "document:synthetic-notice",
+    "method": "parser",
+    "excerpt": "90 days written notice"
+  }
+}

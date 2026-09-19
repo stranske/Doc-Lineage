@@ -74,3 +74,7 @@ So the build order is: document identity and manifest, extraction with page poin
 
 Comparison catalog authority, mirror refresh commands, and acceptance checks are
 documented in [Comparison catalog maintenance](docs/comparison-catalogs.md).
+
+The small [static provenance link helper](docs/triple-link-resolver.md) resolves
+document-page, mirror, and source-system links for consumers of tracked variables.
+It does not implement the output renderer.
