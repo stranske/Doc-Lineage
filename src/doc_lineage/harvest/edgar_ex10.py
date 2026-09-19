@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -20,6 +21,10 @@ MANIFEST_FILENAME = "artifact-manifest.json"
 _EX10_TYPE = re.compile(r"^EX-10(?:\.\d+)?$", re.IGNORECASE)
 _SAFE_IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 _MIN_REQUEST_INTERVAL_SECONDS = 0.2
+_SEC_USER_AGENT = (
+    "stranske Doc-Lineage harvest/0.1 "
+    "(doc-lineage-harvest-edgar; https://github.com/stranske/Doc-Lineage)"
+)
 _last_request_at: float | None = None
 
 
@@ -96,9 +101,16 @@ def parse_ex10_exhibits(filing: dict[str, Any]) -> list[Ex10Exhibit]:
         exhibit_type = str(document.get("type", "")).strip()
         if not _EX10_TYPE.match(exhibit_type):
             continue
-        sequence = str(document.get("sequence", index + 1))
-        description = str(document.get("description", "")).strip()
-        document_url = str(document.get("document_url", "")).strip()
+        raw_sequence = document.get("sequence", index + 1)
+        raw_description = document.get("description")
+        raw_document_url = document.get("document_url")
+        if raw_sequence is None or raw_description is None or raw_document_url is None:
+            raise ValueError(
+                f"documents[{index}] EX-10 exhibit must include sequence, description, and document_url"
+            )
+        sequence = str(raw_sequence)
+        description = str(raw_description).strip()
+        document_url = str(raw_document_url).strip()
         if not description or not document_url:
             raise ValueError(
                 f"documents[{index}] EX-10 exhibit must include description and document_url"
@@ -163,14 +175,29 @@ def _load_filing_from_edgar(cik: str) -> dict[str, Any]:
     }
 
 
+def _resolve_fixture_exhibit_path(fixture_dir: Path, document_url: str) -> Path:
+    local_name = PurePosixPath(urlparse(document_url).path).name
+    if (
+        not local_name
+        or local_name in {".", ".."}
+        or "/" in local_name
+        or "\\" in local_name
+    ):
+        raise ValueError(f"invalid fixture local name derived from {document_url}")
+    resolved_dir = fixture_dir.resolve()
+    local_path = (resolved_dir / local_name).resolve()
+    if not local_path.is_relative_to(resolved_dir):
+        raise ValueError(f"fixture path escapes fixture_dir: {local_path}")
+    return local_path
+
+
 def _fetch_exhibit_bytes(
     exhibit: Ex10Exhibit,
     *,
     fixture_dir: Path | None,
 ) -> bytes:
     if fixture_dir is not None:
-        local_name = PurePosixPath(urlparse(exhibit.document_url).path).name
-        local_path = fixture_dir / local_name
+        local_path = _resolve_fixture_exhibit_path(fixture_dir, exhibit.document_url)
         if not local_path.is_file():
             raise ValueError(
                 f"fixture exhibit content missing for {exhibit.document_url}: {local_path}"
@@ -178,8 +205,25 @@ def _fetch_exhibit_bytes(
         return local_path.read_bytes()
 
     _rate_limit()
-    with urllib.request.urlopen(exhibit.document_url, timeout=60) as response:
-        return bytes(response.read())
+    request = urllib.request.Request(
+        exhibit.document_url,
+        headers={"User-Agent": _SEC_USER_AGENT},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return bytes(response.read())
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"HTTP {exc.code} fetching {exhibit.document_url}"
+        ) from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(
+            f"failed to fetch {exhibit.document_url}: {exc.reason}"
+        ) from exc
+    except (TimeoutError, OSError) as exc:
+        raise RuntimeError(
+            f"network error fetching {exhibit.document_url}: {exc}"
+        ) from exc
 
 
 def _artifact_relative_path(cik: str, exhibit: Ex10Exhibit, extension: str) -> str:

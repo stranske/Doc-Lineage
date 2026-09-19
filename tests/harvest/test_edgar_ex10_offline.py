@@ -76,6 +76,23 @@ def test_harvest_rejects_invalid_accession_in_fixture(tmp_path: Path) -> None:
         harvest_edgar_ex10("0001067983", tmp_path / "out", fixture_path=bad_fixture)
 
 
+def test_harvest_rejects_fixture_path_traversal(tmp_path: Path) -> None:
+    filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    filing["documents"][1]["document_url"] = "https://example.test/Archives/..\\secret"
+    bad_fixture = tmp_path / "traversal_filing.json"
+    bad_fixture.write_text(json.dumps(filing), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid fixture local name"):
+        harvest_edgar_ex10("0001067983", tmp_path / "out", fixture_path=bad_fixture)
+
+
+def test_parse_ex10_rejects_null_fields() -> None:
+    filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    filing["documents"][1]["description"] = None
+    with pytest.raises(ValueError, match="sequence, description, and document_url"):
+        parse_ex10_exhibits(filing)
+
+
 def test_parse_ex10_fixture_deliberate_break_empty_exhibits() -> None:
     """Deliberate-break gate: skipping EX-10 exhibits must fail the named test."""
     filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
