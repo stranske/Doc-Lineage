@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from doc_lineage.harvest.edgar_ex10 import (
 from doc_lineage.schema.validation import load_contract_schema
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "harvest" / "edgar_ex10_filing.json"
+FIXTURE_DIR = FIXTURE.parent
 
 
 def test_parse_ex10_fixture() -> None:
@@ -28,6 +30,8 @@ def test_parse_ex10_fixture() -> None:
     assert exhibits[0].description == "Limited Partnership Agreement"
     assert exhibits[0].document_url.endswith("exhibit101lpa.htm")
     assert exhibits[0].accession_number == "0001067983-24-000045"
+    assert exhibits[0].doc_type_id() == "edgar_ex10_lpa"
+    assert exhibits[1].doc_type_id() == "edgar_ex10_side_letter"
 
 
 def test_harvest_writes_mirror_compatible_manifest(tmp_path: Path) -> None:
@@ -45,6 +49,31 @@ def test_harvest_writes_mirror_compatible_manifest(tmp_path: Path) -> None:
     provenance = manifest["artifacts"][0]["provenance"]
     assert provenance["schema_version"] == "document-mirror/v1"
     assert provenance["exhibit_type"] == "EX-10.1"
+    assert manifest["artifacts"][0]["doc_type_id"] == "edgar_ex10_lpa"
+    assert manifest["artifacts"][1]["doc_type_id"] == "edgar_ex10_side_letter"
+
+    for artifact in manifest["artifacts"]:
+        artifact_path = tmp_path / artifact["path"]
+        assert artifact_path.is_file()
+        content = artifact_path.read_bytes()
+        digest = hashlib.sha256(content).hexdigest()
+        assert artifact["sha256"] == digest
+        assert artifact["content_sha256"] == digest
+        assert artifact["bytes"] == len(content)
+        assert artifact["bytes"] > 0
+        assert artifact["media_type"] == "text/html"
+
+
+def test_harvest_rejects_invalid_accession_in_fixture(tmp_path: Path) -> None:
+    filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    filing["accession_number"] = "../escape"
+    bad_fixture = tmp_path / "bad_filing.json"
+    bad_fixture.write_text(json.dumps(filing), encoding="utf-8")
+    for name in ("exhibit101lpa.htm", "exhibit102sideletter.htm"):
+        (tmp_path / name).write_bytes((FIXTURE_DIR / name).read_bytes())
+
+    with pytest.raises(ValueError, match="accession_number"):
+        harvest_edgar_ex10("0001067983", tmp_path / "out", fixture_path=bad_fixture)
 
 
 def test_parse_ex10_fixture_deliberate_break_empty_exhibits() -> None:

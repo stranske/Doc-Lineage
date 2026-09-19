@@ -6,15 +6,19 @@ import hashlib
 import json
 import re
 import time
+import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
+from urllib.parse import urlparse
 
 MANIFEST_SCHEMA_VERSION = "artifact-manifest/v1"
+MANIFEST_SCHEMA_NAME = "artifact-manifest-v1"
 TOOL_NAME = "doc-lineage-harvest-edgar"
 MANIFEST_FILENAME = "artifact-manifest.json"
 _EX10_TYPE = re.compile(r"^EX-10(?:\.\d+)?$", re.IGNORECASE)
+_SAFE_IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 _MIN_REQUEST_INTERVAL_SECONDS = 0.2
 _last_request_at: float | None = None
 
@@ -34,6 +38,14 @@ class Ex10Exhibit:
         slug = re.sub(r"[^a-z0-9]+", "-", self.description.lower()).strip("-")[:48]
         return f"edgar-{cik.lstrip('0')}-ex10-{self.sequence}-{slug or 'exhibit'}"
 
+    def doc_type_id(self) -> str:
+        description = self.description.lower()
+        if "side letter" in description:
+            return "edgar_ex10_side_letter"
+        if "limited partnership" in description or re.search(r"\blpa\b", description):
+            return "edgar_ex10_lpa"
+        return "edgar_ex10_exhibit"
+
 
 @dataclass(frozen=True)
 class HarvestResult:
@@ -43,6 +55,30 @@ class HarvestResult:
     output_dir: Path
     manifest_path: Path
     exhibits: tuple[Ex10Exhibit, ...]
+
+
+def _validate_identifier(value: str, field_name: str) -> str:
+    normalized = value.strip()
+    if not normalized or not _SAFE_IDENTIFIER.match(normalized):
+        raise ValueError(f"{field_name} must be a non-empty safe identifier")
+    if ".." in normalized or "/" in normalized or "\\" in normalized:
+        raise ValueError(f"{field_name} must not contain path separators or traversal")
+    return normalized
+
+
+def _artifact_extension(document_url: str) -> str:
+    suffix = PurePosixPath(urlparse(document_url).path).suffix.lower()
+    return suffix if suffix else ".bin"
+
+
+def _media_type_for_extension(extension: str) -> str:
+    if extension in {".htm", ".html"}:
+        return "text/html"
+    if extension == ".pdf":
+        return "application/pdf"
+    if extension == ".txt":
+        return "text/plain"
+    return "application/octet-stream"
 
 
 def parse_ex10_exhibits(filing: dict[str, Any]) -> list[Ex10Exhibit]:
@@ -127,26 +163,56 @@ def _load_filing_from_edgar(cik: str) -> dict[str, Any]:
     }
 
 
-def _build_manifest(cik: str, exhibits: list[Ex10Exhibit]) -> dict[str, Any]:
+def _fetch_exhibit_bytes(
+    exhibit: Ex10Exhibit,
+    *,
+    fixture_dir: Path | None,
+) -> bytes:
+    if fixture_dir is not None:
+        local_name = PurePosixPath(urlparse(exhibit.document_url).path).name
+        local_path = fixture_dir / local_name
+        if not local_path.is_file():
+            raise ValueError(
+                f"fixture exhibit content missing for {exhibit.document_url}: {local_path}"
+            )
+        return local_path.read_bytes()
+
+    _rate_limit()
+    with urllib.request.urlopen(exhibit.document_url, timeout=60) as response:
+        return response.read()
+
+
+def _artifact_relative_path(cik: str, exhibit: Ex10Exhibit, extension: str) -> str:
+    normalized_cik = _validate_identifier(cik.lstrip("0") or "0", "cik")
+    accession = _validate_identifier(exhibit.accession_number, "accession_number")
+    sequence = _validate_identifier(exhibit.sequence, "sequence")
+    return (
+        f"harvest/edgar/{normalized_cik}/{accession}/{sequence}{extension}"
+    )
+
+
+def _build_manifest(
+    cik: str,
+    exhibits: list[Ex10Exhibit],
+    materialized: list[tuple[Ex10Exhibit, Path, bytes]],
+) -> dict[str, Any]:
     created_at = datetime.now(tz=UTC).isoformat()
     artifacts: list[dict[str, Any]] = []
-    for exhibit in exhibits:
-        registration_digest = hashlib.sha256(exhibit.document_url.encode("utf-8")).hexdigest()
+    for exhibit, artifact_path, content in materialized:
+        content_digest = hashlib.sha256(content).hexdigest()
+        extension = artifact_path.suffix.lower()
         artifacts.append(
             {
                 "artifact_id": exhibit.artifact_id(cik),
                 "name": exhibit.description,
                 "kind": "data",
-                "path": (
-                    f"harvest/edgar/{cik.lstrip('0') or '0'}/"
-                    f"{exhibit.accession_number}/{exhibit.sequence}.pdf"
-                ),
-                "sha256": registration_digest,
-                "bytes": 0,
-                "media_type": "application/pdf",
-                "doc_type_id": "edgar_ex10_lpa",
+                "path": _artifact_relative_path(cik, exhibit, extension),
+                "sha256": content_digest,
+                "bytes": len(content),
+                "media_type": _media_type_for_extension(extension),
+                "doc_type_id": exhibit.doc_type_id(),
                 "source_url": exhibit.document_url,
-                "content_sha256": registration_digest,
+                "content_sha256": content_digest,
                 "provenance": {
                     "schema_version": "document-mirror/v1",
                     "cik": cik,
@@ -157,7 +223,7 @@ def _build_manifest(cik: str, exhibits: list[Ex10Exhibit]) -> dict[str, Any]:
                 },
             }
         )
-    return {
+    manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "run_id": f"doc-lineage-harvest-edgar/{cik}/{created_at}",
         "tool": TOOL_NAME,
@@ -165,6 +231,10 @@ def _build_manifest(cik: str, exhibits: list[Ex10Exhibit]) -> dict[str, Any]:
         "created_at": created_at,
         "artifacts": artifacts,
     }
+    from doc_lineage.schema.validation import validate_contract_record
+
+    validate_contract_record(MANIFEST_SCHEMA_NAME, manifest)
+    return manifest
 
 
 def harvest_edgar_ex10(
@@ -176,15 +246,27 @@ def harvest_edgar_ex10(
     """Harvest EX-10 exhibits for one CIK and register mirror-compatible artifacts."""
     if fixture_path is not None:
         filing = json.loads(fixture_path.read_text(encoding="utf-8"))
+        fixture_dir = fixture_path.parent
     else:
         filing = _load_filing_from_edgar(cik)
+        fixture_dir = None
 
     exhibits = parse_ex10_exhibits(filing)
     if not exhibits:
         raise ValueError(f"no EX-10 exhibits found for CIK {cik}")
 
-    manifest = _build_manifest(cik, exhibits)
     output_dir.mkdir(parents=True, exist_ok=True)
+    materialized: list[tuple[Ex10Exhibit, Path, bytes]] = []
+    for exhibit in exhibits:
+        content = _fetch_exhibit_bytes(exhibit, fixture_dir=fixture_dir)
+        extension = _artifact_extension(exhibit.document_url)
+        relative_path = _artifact_relative_path(cik, exhibit, extension)
+        artifact_path = output_dir / relative_path
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        artifact_path.write_bytes(content)
+        materialized.append((exhibit, artifact_path, content))
+
+    manifest = _build_manifest(cik, exhibits, materialized)
     manifest_path = output_dir / MANIFEST_FILENAME
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
