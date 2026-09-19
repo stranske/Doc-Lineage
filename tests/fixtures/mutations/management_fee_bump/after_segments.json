@@ -1,0 +1,45 @@
+{
+  "source_sha256": "c709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f",
+  "segments": [
+    {
+      "segment_id": "b709931830bf2185-p0001-s0001",
+      "page": 1,
+      "order": 1,
+      "text": "SYNTHETIC LIMITED PARTNERSHIP AGREEMENT Alpha Opportunities Fund IV, L.P.",
+      "char_count": 73,
+      "word_count": 9
+    },
+    {
+      "segment_id": "b709931830bf2185-p0001-s0002",
+      "page": 1,
+      "order": 2,
+      "text": "1. MANAGEMENT FEE The Partnership shall pay the General Partner an annual management fee equal to 2.0% of aggregate Capital Commitments during the Commitment Period, and 1.25% of invested capital thereafter.",
+      "char_count": 207,
+      "word_count": 31
+    },
+    {
+      "segment_id": "b709931830bf2185-p0001-s0003",
+      "page": 1,
+      "order": 3,
+      "text": "2. CARRIED INTEREST Carried interest is 20% of Distributable Proceeds, subject to a preferred return of 8% compounded annually.",
+      "char_count": 127,
+      "word_count": 19
+    },
+    {
+      "segment_id": "b709931830bf2185-p0002-s0004",
+      "page": 2,
+      "order": 4,
+      "text": "3. KEY PERSON EVENT A Key Person Event occurs if fewer than two Key Persons devote substantially all business time to the Partnership.",
+      "char_count": 134,
+      "word_count": 23
+    },
+    {
+      "segment_id": "b709931830bf2185-p0002-s0005",
+      "page": 2,
+      "order": 5,
+      "text": "4. TRANSFER RESTRICTIONS No Limited Partner may transfer its Interest without the prior written consent of the General Partner, which may be withheld in its sole discretion.",
+      "char_count": 173,
+      "word_count": 27
+    }
+  ]
+}
