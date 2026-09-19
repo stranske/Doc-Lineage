@@ -1,0 +1,11 @@
+{
+  "schema_version": "mutation-manifest/v1",
+  "mutations": [
+    {
+      "mutation_id": "management_fee_bump",
+      "change_class": "gate_provision_change",
+      "before": "tests/fixtures/mutations/management_fee_bump/before_segments.json",
+      "after": "tests/fixtures/mutations/management_fee_bump/after_segments.json"
+    }
+  ]
+}

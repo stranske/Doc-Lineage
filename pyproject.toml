@@ -69,6 +69,7 @@ packages = [
     "doc_lineage._vocab",
     "doc_lineage.adapters",
     "doc_lineage.extract",
+    "doc_lineage.mutations",
     "doc_lineage.harvest",
     "doc_lineage.schema",
 ]
