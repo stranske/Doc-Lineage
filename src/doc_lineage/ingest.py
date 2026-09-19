@@ -244,6 +244,12 @@ def ingest_document(
     evidence_dir.mkdir(parents=True, exist_ok=True)
     for relative_path, payload_bytes in evidence_files:
         (destination / relative_path).write_bytes(payload_bytes)
+    # A reused run directory must not retain evidence from a previous source.
+    # Only prune after the current evidence has been validated and written.
+    current_evidence_names = {Path(relative_path).name for relative_path, _ in evidence_files}
+    for previous_evidence in evidence_dir.glob("*.json"):
+        if previous_evidence.name not in current_evidence_names:
+            previous_evidence.unlink()
     manifest_path = destination / MANIFEST_FILENAME
     manifest_path.write_bytes(_dump(manifest))
 
