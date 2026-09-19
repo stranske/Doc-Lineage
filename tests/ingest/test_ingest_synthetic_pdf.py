@@ -50,7 +50,9 @@ def test_ingest_writes_valid_manifest(tmp_path: Path) -> None:
 
     # The manifest must describe the bytes actually written, not the bytes the
     # pipeline intended to write. This is what the deliberate-break gate removes.
-    (artifact,) = manifest["artifacts"]
+    # Evidence objects are listed alongside the segments artifact (see
+    # tests/emit/test_evidence_object.py), so select the one under test.
+    (artifact,) = [entry for entry in manifest["artifacts"] if entry["path"] == SEGMENTS_FILENAME]
     assert artifact["path"] == SEGMENTS_FILENAME
     assert artifact["sha256"] == _sha256(segments_path)
     assert artifact["bytes"] == segments_path.stat().st_size
@@ -74,6 +76,34 @@ def test_segments_carry_page_pointers_and_stable_ids(tmp_path: Path) -> None:
     assert "Key Person Event" in text
     assert all(segment.char_count == len(segment.text) for segment in first.segments)
     assert all(segment.word_count > 0 for segment in first.segments)
+
+
+def test_reused_output_removes_previous_document_evidence(tmp_path: Path) -> None:
+    """A completed run must not expose the previous document's evidence."""
+    output = tmp_path / "run"
+    first = ingest_document(FIXTURE, output_dir=output, allow_docling=False)
+    previous_paths = set((output / "evidence").glob("*.json"))
+    assert previous_paths
+
+    other = tmp_path / "other.pdf"
+    other.write_bytes(FIXTURE.read_bytes().replace(b"MANAGEMENT FEE", b"DIFFERENT FEE!"))
+    second = ingest_document(other, output_dir=output, allow_docling=False)
+
+    assert second.source_sha256 != first.source_sha256
+    expected_paths = {
+        output / artifact["path"]
+        for artifact in second.manifest["artifacts"]
+        if artifact["kind"] == "evidence"
+    }
+    assert expected_paths
+    assert set((output / "evidence").iterdir()) == expected_paths
+    assert not any(path.exists() for path in previous_paths)
+    for path in expected_paths:
+        assert first.source_sha256 not in path.read_text(encoding="utf-8")
+
+    # Repeating the current document must retain all of its evidence.
+    ingest_document(other, output_dir=output, allow_docling=False)
+    assert set((output / "evidence").iterdir()) == expected_paths
 
 
 def test_segments_payload_records_backend_and_text_layer(tmp_path: Path) -> None:

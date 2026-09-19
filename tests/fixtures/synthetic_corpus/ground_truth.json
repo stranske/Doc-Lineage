@@ -1,0 +1,81 @@
+{
+  "cases": [
+    {
+      "case_id": "verbatim_fee_terms",
+      "current_segments": {
+        "fee_terms": "The management fee is 1.5% per annum."
+      },
+      "expected": [
+        {
+          "change_type": "VERBATIM",
+          "section_id": "fee_terms",
+          "tier": "T3"
+        }
+      ],
+      "prior_segments": {
+        "fee_terms": "The management fee is 1.5% per annum."
+      }
+    },
+    {
+      "case_id": "near_verbatim_punctuation",
+      "current_segments": {
+        "reporting": "Reports are delivered quarterly to investors."
+      },
+      "expected": [
+        {
+          "change_type": "NEAR_VERBATIM",
+          "section_id": "reporting",
+          "tier": "T3"
+        }
+      ],
+      "prior_segments": {
+        "reporting": "Reports are delivered each quarter to investors."
+      }
+    },
+    {
+      "case_id": "revised_investment_policy",
+      "current_segments": {
+        "investment_policy": "The fund may not invest in private placements without LP consent and a 60-day notice."
+      },
+      "expected": [
+        {
+          "change_type": "REVISED",
+          "section_id": "investment_policy",
+          "tier": "T1"
+        }
+      ],
+      "prior_segments": {
+        "investment_policy": "The fund may invest up to 25% in private placements with board approval."
+      }
+    },
+    {
+      "case_id": "new_risk_disclosure",
+      "current_segments": {
+        "risk_disclosure": "Counterparty concentration risk is monitored monthly."
+      },
+      "expected": [
+        {
+          "change_type": "NEW",
+          "section_id": "risk_disclosure",
+          "tier": "T1"
+        }
+      ],
+      "prior_segments": {}
+    },
+    {
+      "case_id": "unknown_absence_without_signal",
+      "current_segments": {},
+      "expected": [
+        {
+          "change_type": "UNKNOWN_ABSENCE",
+          "section_id": "legacy_clause",
+          "tier": "T2"
+        }
+      ],
+      "prior_segments": {
+        "legacy_clause": "Legacy side-letter rights remain in force."
+      }
+    }
+  ],
+  "version": 1
+}

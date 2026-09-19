@@ -68,8 +68,11 @@ packages = [
     "doc_lineage._contracts",
     "doc_lineage._vocab",
     "doc_lineage.adapters",
+    "doc_lineage.compare",
+    "doc_lineage.emit",
     "doc_lineage.extract",
     "doc_lineage.export",
+    "doc_lineage.lineage",
     "doc_lineage.mutations",
     "doc_lineage.harvest",
     "doc_lineage.schema",
@@ -79,11 +82,12 @@ package-dir = {"" = "src", "doc_lineage._vocab" = "vocab", "doc_lineage._contrac
 [tool.setuptools.package-data]
 "doc_lineage._contracts" = ["*.schema.json"]
 "doc_lineage._vocab" = ["legal-clauses.json"]
+"doc_lineage.compare" = ["data/*.json"]
 "doc_lineage.schema" = ["schemas/*.schema.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src --cov-report=term-missing --cov-report=xml"
+addopts = "-v"
 pythonpath = ["src"]
 
 [tool.coverage.run]
