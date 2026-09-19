@@ -1,11 +1,19 @@
 """Silence-is-weak-evidence invariant tests."""
 
+from inspect import getfile
+from pathlib import Path
+
 from doc_lineage.compare.classify import ClassifiedSegment
 from doc_lineage.compare.silence import apply_silence_invariant
 
 
 def test_absence_does_not_emit_dropped() -> None:
     """Bare absence (no explicit removal) must not classify as DROPPED."""
+    # The deliberate-break gate transplants this test onto the base checkout.
+    # A candidate installed editable in the runner must not supply missing base
+    # modules and make that negative control pass against the wrong source tree.
+    source_root = Path(__file__).resolve().parents[2] / "src"
+    assert Path(getfile(apply_silence_invariant)).resolve().is_relative_to(source_root)
     classified = ClassifiedSegment(
         section_id="legacy_clause",
         change_type="DROPPED",
