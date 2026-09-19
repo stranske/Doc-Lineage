@@ -42,3 +42,15 @@ def test_nested_paths_use_numeric_order_and_skip_duplicate_hashes() -> None:
         ("hash-a", "hash-b"),
         ("hash-b", "hash-c"),
     ]
+
+
+def test_build_supersession_chain_deduplicates_non_adjacent_repeated_hashes() -> None:
+    docs = [
+        DocumentRef("01-terms.pdf", "hash-a", "manager_alpha", "lpa", "2024"),
+        DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
+        DocumentRef("03-terms.pdf", "hash-a", "manager_alpha", "lpa", "2026"),
+    ]
+    edges = build_supersession_chain(docs)
+    assert [(edge.prior_hash, edge.successor_hash) for edge in edges] == [
+        ("hash-a", "hash-b"),
+    ]

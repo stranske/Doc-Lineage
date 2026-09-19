@@ -70,9 +70,14 @@ def build_supersession_chain(docs: Sequence[DocumentRef]) -> list[SupersessionEd
                 item.filename,
             ),
         )
-        for prior, successor in zip(ordered, ordered[1:], strict=False):
-            if prior.content_hash == successor.content_hash:
+        deduped: list[DocumentRef] = []
+        seen_hashes: set[str] = set()
+        for doc in ordered:
+            if doc.content_hash in seen_hashes:
                 continue
+            seen_hashes.add(doc.content_hash)
+            deduped.append(doc)
+        for prior, successor in zip(deduped, deduped[1:], strict=False):
             prefix, _, convention = parse_numeric_prefix(Path(successor.filename).name)
             edges.append(
                 SupersessionEdge(

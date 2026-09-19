@@ -28,6 +28,7 @@ class ClassDefinition:
     id: str
     label: str
     description: str
+    tier: str
 
 
 @dataclass(frozen=True)
@@ -45,9 +46,16 @@ class ClassCatalog:
     """Versioned segment-class metadata."""
 
     classes: dict[str, ClassDefinition]
+    default_tier: str = "T1"
 
     def label_for(self, class_id: str) -> str:
         return self.classes[class_id].label
+
+    def tier_for(self, class_id: str) -> str:
+        definition = self.classes.get(class_id)
+        if definition is None:
+            return self.default_tier
+        return definition.tier
 
 
 @dataclass(frozen=True)
@@ -93,17 +101,38 @@ def load_tier_catalog(path: Path | None = None) -> TierCatalog:
     return TierCatalog(tiers=tiers)
 
 
-def load_class_catalog(path: Path | None = None) -> ClassCatalog:
+def _validate_class_tiers(classes: ClassCatalog, tiers: TierCatalog) -> None:
+    for class_id, definition in classes.classes.items():
+        if definition.tier not in tiers.tiers:
+            raise ValueError(
+                f"class {class_id!r} maps to unknown tier {definition.tier!r}; "
+                f"expected one of {sorted(tiers.tiers)}"
+            )
+
+
+def load_class_catalog(
+    path: Path | None = None,
+    *,
+    tiers: TierCatalog | None = None,
+) -> ClassCatalog:
     """Load segment-class definitions from ``segment_classes.json`` packaged with doc_lineage.compare."""
     if path is not None:
         raw = json.loads(path.read_text(encoding="utf-8"))
     else:
         raw = _load_resource("segment_classes.json")
     classes = {
-        key: ClassDefinition(id=key, label=entry["label"], description=entry["description"])
+        key: ClassDefinition(
+            id=key,
+            label=entry["label"],
+            description=entry["description"],
+            tier=entry["tier"],
+        )
         for key, entry in raw.items()
     }
-    return ClassCatalog(classes=classes)
+    catalog = ClassCatalog(classes=classes)
+    if tiers is not None:
+        _validate_class_tiers(catalog, tiers)
+    return catalog
 
 
 def _similarity(left: str, right: str) -> float:
@@ -131,18 +160,8 @@ def _infer_change_type(pair: SegmentPair) -> str:
     return "REVISED"
 
 
-def _infer_tier(change_type: str, similarity: float) -> str:
-    if change_type == "NEW":
-        return "T1"
-    if change_type in {"VERBATIM", "NEAR_VERBATIM"}:
-        return "T3"
-    if change_type == "DROPPED":
-        return "T1"
-    if change_type == "UNKNOWN_ABSENCE":
-        return "T2"
-    if change_type == "REVISED":
-        return "T1"
-    return "T1"
+def _infer_tier(change_type: str, classes: ClassCatalog) -> str:
+    return classes.tier_for(change_type)
 
 
 def classify_segment(
@@ -156,7 +175,7 @@ def classify_segment(
     current = pair.current_text or ""
     similarity = _similarity(prior, current)
     change_type = _infer_change_type(pair)
-    tier_id = _infer_tier(change_type, similarity)
+    tier_id = _infer_tier(change_type, classes)
     return ClassifiedSegment(
         section_id=pair.section_id,
         change_type=change_type,

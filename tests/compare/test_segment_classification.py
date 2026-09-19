@@ -1,5 +1,9 @@
 """Segment classification driven by versioned data catalogs."""
 
+import json
+import tempfile
+from pathlib import Path
+
 from doc_lineage.compare.classify import (
     SegmentPair,
     classify_segment,
@@ -87,3 +91,29 @@ def test_verbatim_one_char_change_not_verbatim() -> None:
     )
     assert result.change_type == "NEAR_VERBATIM"
     assert result.change_type != "VERBATIM"
+
+
+def test_tier_mapping_override_changes_classified_tier() -> None:
+    tiers = load_tier_catalog()
+    base_classes = load_class_catalog(tiers=tiers)
+    overridden = {
+        class_id: {
+            "id": definition.id,
+            "label": definition.label,
+            "description": definition.description,
+            "tier": "T2" if class_id == "NEW" else definition.tier,
+        }
+        for class_id, definition in base_classes.classes.items()
+    }
+    with tempfile.TemporaryDirectory() as tmpdir:
+        catalog_path = Path(tmpdir) / "segment_classes.json"
+        catalog_path.write_text(json.dumps(overridden), encoding="utf-8")
+        classes = load_class_catalog(catalog_path, tiers=tiers)
+    result = classify_segment(
+        SegmentPair(section_id="risk", prior_text=None, current_text="New disclosure."),
+        tiers=tiers,
+        classes=classes,
+    )
+    assert result.change_type == "NEW"
+    assert result.tier == "T2"
+    assert result.tier_label == tiers.label_for("T2")

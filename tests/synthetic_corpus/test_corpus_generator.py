@@ -25,8 +25,8 @@ def test_write_corpus_generates_valid_manifest_and_files() -> None:
 
             prior = json.loads((case_dir / "prior_segments.json").read_text(encoding="utf-8"))
             current = json.loads((case_dir / "current_segments.json").read_text(encoding="utf-8"))
-            assert isinstance(prior, dict)
-            assert isinstance(current, dict)
+            assert prior == case["prior_segments"]
+            assert current == case["current_segments"]
 
 
 def test_build_manifest_returns_nonzero_cases() -> None:
