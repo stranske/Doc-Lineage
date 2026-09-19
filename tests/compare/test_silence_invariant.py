@@ -4,7 +4,7 @@ from doc_lineage.compare.classify import ClassifiedSegment
 from doc_lineage.compare.silence import apply_silence_invariant
 
 
-def test_absence_without_signal_does_not_emit_dropped() -> None:
+def test_absence_does_not_emit_dropped() -> None:
     """Bare absence (no explicit removal) must not classify as DROPPED."""
     classified = ClassifiedSegment(
         section_id="legacy_clause",
