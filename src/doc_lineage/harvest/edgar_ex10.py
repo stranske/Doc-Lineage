@@ -186,9 +186,7 @@ def _artifact_relative_path(cik: str, exhibit: Ex10Exhibit, extension: str) -> s
     normalized_cik = _validate_identifier(cik.lstrip("0") or "0", "cik")
     accession = _validate_identifier(exhibit.accession_number, "accession_number")
     sequence = _validate_identifier(exhibit.sequence, "sequence")
-    return (
-        f"harvest/edgar/{normalized_cik}/{accession}/{sequence}{extension}"
-    )
+    return f"harvest/edgar/{normalized_cik}/{accession}/{sequence}{extension}"
 
 
 def _build_manifest(

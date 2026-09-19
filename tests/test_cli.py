@@ -101,10 +101,10 @@ def test_ingest_subcommand_survived_the_merge() -> None:
     assert "harvest-edgar" in subcommands
 
 
-def test_harvest_edgar_cli_offline_fixture(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    fixture = (
-        Path(__file__).resolve().parent / "fixtures" / "harvest" / "edgar_ex10_filing.json"
-    )
+def test_harvest_edgar_cli_offline_fixture(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    fixture = Path(__file__).resolve().parent / "fixtures" / "harvest" / "edgar_ex10_filing.json"
     output = tmp_path / "harvest-out"
 
     exit_code = main(
