@@ -7,8 +7,10 @@ author default, the `--blackline` acknowledgement, and that neither input is mut
 coverage survives the interface change rather than being quietly dropped with it.
 """
 
+import http.client
+import json
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -97,3 +99,85 @@ def test_ingest_subcommand_survived_the_merge() -> None:
 
     assert "ingest" in subcommands
     assert "export-docx" in subcommands
+    assert "harvest-edgar" in subcommands
+
+
+def test_harvest_edgar_cli_offline_fixture(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    fixture = Path(__file__).resolve().parent / "fixtures" / "harvest" / "edgar_ex10_filing.json"
+    output = tmp_path / "harvest-out"
+
+    exit_code = main(
+        [
+            "harvest-edgar",
+            "--cik",
+            "0001067983",
+            "--output",
+            str(output),
+            "--fixture",
+            str(fixture),
+        ]
+    )
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert "harvested 2 EX-10 exhibit(s)" in captured.out
+    manifest = json.loads((output / "artifact-manifest.json").read_text(encoding="utf-8"))
+    assert len(manifest["artifacts"]) == 2
+
+
+def test_harvest_edgar_cli_reports_errors_without_traceback(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    empty_fixture = tmp_path / "empty.json"
+    empty_fixture.write_text(
+        json.dumps(
+            {
+                "cik": "1",
+                "accession_number": "000000001-24-000001",
+                "filing_date": "2024-01-01",
+                "documents": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "harvest-edgar",
+            "--cik",
+            "0000000001",
+            "--output",
+            str(tmp_path / "out"),
+            "--fixture",
+            str(empty_fixture),
+        ]
+    )
+
+    assert exit_code == 1
+    assert "no EX-10 exhibits found" in capsys.readouterr().err
+
+
+def test_harvest_edgar_cli_reports_truncated_download(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A truncated SEC response uses the CLI error path and publishes no manifest."""
+    from doc_lineage.harvest import edgar_ex10
+
+    fixture = Path(__file__).resolve().parent / "fixtures" / "harvest" / "edgar_ex10_filing.json"
+    filing = json.loads(fixture.read_text(encoding="utf-8"))
+    monkeypatch.setattr(edgar_ex10, "_load_filing_from_edgar", lambda cik: filing)
+    monkeypatch.setattr(edgar_ex10, "_rate_limit", lambda: None)
+    response = MagicMock()
+    response.__enter__.return_value.read.side_effect = http.client.IncompleteRead(b"partial", 20)
+    monkeypatch.setattr(edgar_ex10.urllib.request, "urlopen", Mock(return_value=response))
+    output = tmp_path / "out"
+
+    assert main(["harvest-edgar", "--cik", "0001067983", "--output", str(output)]) == 1
+
+    captured = capsys.readouterr()
+    assert "network error fetching" in captured.err
+    assert "IncompleteRead" in captured.err
+    assert "Traceback" not in captured.err
+    assert not (output / "artifact-manifest.json").exists()
