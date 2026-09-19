@@ -177,12 +177,7 @@ def _load_filing_from_edgar(cik: str) -> dict[str, Any]:
 
 def _resolve_fixture_exhibit_path(fixture_dir: Path, document_url: str) -> Path:
     local_name = PurePosixPath(urlparse(document_url).path).name
-    if (
-        not local_name
-        or local_name in {".", ".."}
-        or "/" in local_name
-        or "\\" in local_name
-    ):
+    if not local_name or local_name in {".", ".."} or "/" in local_name or "\\" in local_name:
         raise ValueError(f"invalid fixture local name derived from {document_url}")
     resolved_dir = fixture_dir.resolve()
     local_path = (resolved_dir / local_name).resolve()
@@ -213,17 +208,11 @@ def _fetch_exhibit_bytes(
         with urllib.request.urlopen(request, timeout=60) as response:
             return bytes(response.read())
     except urllib.error.HTTPError as exc:
-        raise RuntimeError(
-            f"HTTP {exc.code} fetching {exhibit.document_url}"
-        ) from exc
+        raise RuntimeError(f"HTTP {exc.code} fetching {exhibit.document_url}") from exc
     except urllib.error.URLError as exc:
-        raise RuntimeError(
-            f"failed to fetch {exhibit.document_url}: {exc.reason}"
-        ) from exc
+        raise RuntimeError(f"failed to fetch {exhibit.document_url}: {exc.reason}") from exc
     except (TimeoutError, OSError) as exc:
-        raise RuntimeError(
-            f"network error fetching {exhibit.document_url}: {exc}"
-        ) from exc
+        raise RuntimeError(f"network error fetching {exhibit.document_url}: {exc}") from exc
 
 
 def _artifact_relative_path(cik: str, exhibit: Ex10Exhibit, extension: str) -> str:
