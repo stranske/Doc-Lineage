@@ -12,7 +12,9 @@ from pathlib import Path
 import pytest
 
 import doc_lineage.manifest as manifest_module
+from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES
 from doc_lineage.identity import DocumentIdentity, compute_identity, sha256_bytes
+from doc_lineage.ingest import ingest_document
 from doc_lineage.manifest import build_manifest_rows, read_manifest, write_manifest
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "library"
@@ -412,6 +414,37 @@ def test_manifest_does_not_include_in_root_document_symlink(tmp_path: Path) -> N
     rows = build_manifest_rows(library)
 
     assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+
+
+def test_manifest_and_ingest_reject_same_oversized_pdf(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    regular = documents / "inside.pdf"
+    regular.write_bytes(b"inside document")
+    oversized = documents / "oversized.pdf"
+    with oversized.open("wb") as handle:
+        handle.truncate(MAX_INGEST_BYTES + 1)
+
+    hashed: list[Path] = []
+    original_compute_identity = compute_identity
+
+    def record_identity(
+        root: Path, file_path: Path, *, content: bytes | None = None
+    ) -> DocumentIdentity:
+        hashed.append(file_path)
+        return original_compute_identity(root, file_path, content=content)
+
+    monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
+    rows = build_manifest_rows(library)
+
+    assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+    assert hashed == [regular]
+    assert "Skipping document alpha/reports/oversized.pdf: exceeds ingest size limit" in caplog.text
+    with pytest.raises(ValueError, match="exceeds ingest size limit"):
+        ingest_document(oversized, output_dir=tmp_path / "out", allow_docling=False)
 
 
 @pytest.mark.parametrize("replace_directory", [False, True], ids=["file", "directory"])

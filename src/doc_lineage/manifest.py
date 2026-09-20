@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import errno
 import json
+import logging
 import mimetypes
 import os
 import stat
@@ -13,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES
 from doc_lineage.identity import (
     DocumentIdentity,
     compute_identity,
@@ -21,6 +23,7 @@ from doc_lineage.identity import (
 )
 
 TEXT_LAYER_VALUES = frozenset({"present", "absent", "unknown"})
+LOGGER = logging.getLogger(__name__)
 DOCUMENT_SUFFIXES = {
     ".pdf",
     ".doc",
@@ -96,7 +99,24 @@ def _read_document_under_root(root_fd: int, relative: Path) -> tuple[bytes, os.s
             metadata = os.fstat(source.fileno())
             if not stat.S_ISREG(metadata.st_mode):
                 return None
-            return source.read(), metadata
+            if metadata.st_size > MAX_INGEST_BYTES:
+                LOGGER.warning(
+                    "Skipping document %s: exceeds ingest size limit (%s > %s bytes)",
+                    relative,
+                    metadata.st_size,
+                    MAX_INGEST_BYTES,
+                )
+                return None
+            content = source.read(MAX_INGEST_BYTES + 1)
+            if len(content) > MAX_INGEST_BYTES:
+                LOGGER.warning(
+                    "Skipping document %s: exceeds ingest size limit (%s > %s bytes)",
+                    relative,
+                    len(content),
+                    MAX_INGEST_BYTES,
+                )
+                return None
+            return content, metadata
     except OSError as error:
         # A candidate can disappear or become a symlink after directory traversal.
         # I/O, permissions, or descriptor exhaustion must fail the manifest.
