@@ -59,10 +59,10 @@ def test_built_wheel_publishes_doc_lineage_project_urls(tmp_path: pathlib.Path) 
         metadata = BytesParser(policy=default).parsebytes(archive.read(metadata_name))
 
     canonical_url = "https://github.com/stranske/Doc-Lineage"
-    assert set(metadata.get_all("Project-URL", [])) == {
+    assert sorted(metadata.get_all("Project-URL", [])) == [
         f"Homepage, {canonical_url}",
         f"Repository, {canonical_url}",
-    }
+    ]
 
 
 def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib.Path) -> None:
