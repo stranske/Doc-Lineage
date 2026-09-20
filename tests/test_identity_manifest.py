@@ -452,6 +452,58 @@ def test_manifest_and_ingest_reject_same_oversized_pdf(
     assert expected_boundary in str(exc_info.value)
 
 
+def test_manifest_accepts_exact_ingest_limit(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    exact = documents / "exact.pdf"
+    with exact.open("wb") as handle:
+        handle.truncate(MAX_INGEST_BYTES)
+
+    rows = build_manifest_rows(library)
+
+    assert [row.path for row in rows] == ["alpha/reports/exact.pdf"]
+    assert rows[0].bytes == MAX_INGEST_BYTES
+
+
+def test_manifest_skips_file_grown_after_fstat(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    grown = documents / "grown.pdf"
+    with grown.open("wb") as handle:
+        handle.truncate(MAX_INGEST_BYTES + 1)
+
+    original_fstat = manifest_module.os.fstat
+    grown_inode = grown.stat().st_ino
+
+    def stale_fstat(fd: int) -> object:
+        metadata = original_fstat(fd)
+        if metadata.st_ino == grown_inode:
+            # Model a file that grew after fstat but before the bounded read.
+            return type(
+                "StaleStat", (), {"st_mode": metadata.st_mode, "st_size": MAX_INGEST_BYTES}
+            )()
+        return metadata
+
+    hashed: list[Path] = []
+
+    def record_identity(
+        root: Path, file_path: Path, *, content: bytes | None = None
+    ) -> DocumentIdentity:
+        hashed.append(file_path)
+        return compute_identity(root, file_path, content=content)
+
+    monkeypatch.setattr(manifest_module.os, "fstat", stale_fstat)
+    monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
+
+    assert build_manifest_rows(library) == []
+    assert hashed == []
+    assert "Skipping document alpha/reports/grown.pdf: exceeds ingest size limit" in caplog.text
+
+
 @pytest.mark.parametrize("replace_directory", [False, True], ids=["file", "directory"])
 def test_manifest_rejects_symlink_swapped_after_listing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replace_directory: bool
