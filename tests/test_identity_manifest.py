@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import shutil
@@ -10,7 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from doc_lineage.identity import compute_identity, sha256_bytes
+import doc_lineage.manifest as manifest_module
+from doc_lineage.identity import DocumentIdentity, compute_identity, sha256_bytes
 from doc_lineage.manifest import build_manifest_rows, read_manifest, write_manifest
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "library"
@@ -366,6 +368,111 @@ def test_document_output_inside_library_is_rejected(tmp_path: Path, existing: bo
         assert output.read_bytes() == b"original document"
     else:
         assert not output.exists()
+
+
+@pytest.mark.parametrize("relative_target", [False, True], ids=["absolute", "relative"])
+def test_manifest_does_not_hash_out_of_root_document_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, relative_target: bool
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    regular = documents / "inside.pdf"
+    regular.write_bytes(b"inside document")
+    outside_content = b"external document must not be scanned"
+    outside = tmp_path / "outside.pdf"
+    outside.write_bytes(outside_content)
+    link_target = Path(os.path.relpath(outside, documents)) if relative_target else outside
+    (documents / "linked.pdf").symlink_to(link_target)
+
+    scanned_paths: list[Path] = []
+    original_compute_identity = manifest_module.compute_identity
+
+    def record_identity(
+        root: Path, file_path: Path, *, content: bytes | None = None
+    ) -> DocumentIdentity:
+        scanned_paths.append(file_path)
+        return original_compute_identity(root, file_path, content=content)
+
+    monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
+    rows = build_manifest_rows(library)
+
+    assert all(row.sha256 != sha256_bytes(outside_content) for row in rows)
+    assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+    assert scanned_paths == [regular]
+
+
+def test_manifest_does_not_include_in_root_document_symlink(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    (documents / "inside.pdf").write_bytes(b"inside document")
+    (documents / "linked.pdf").symlink_to("inside.pdf")
+
+    rows = build_manifest_rows(library)
+
+    assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+
+
+@pytest.mark.parametrize("replace_directory", [False, True], ids=["file", "directory"])
+def test_manifest_rejects_symlink_swapped_after_listing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replace_directory: bool
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    candidate = documents / "inside.pdf"
+    candidate.write_bytes(b"inside document")
+    outside_directory = tmp_path / "outside"
+    outside_directory.mkdir()
+    outside = outside_directory / "inside.pdf"
+    outside.write_bytes(b"outside document must not be scanned")
+    original_iter = manifest_module._iter_documents
+
+    def swap_after_listing(root: Path) -> list[Path]:
+        listed = original_iter(root)
+        if replace_directory:
+            documents.rename(library / "alpha" / "reports-moved")
+            documents.symlink_to(outside_directory, target_is_directory=True)
+        else:
+            candidate.unlink()
+            candidate.symlink_to(outside)
+        return listed
+
+    monkeypatch.setattr(manifest_module, "_iter_documents", swap_after_listing)
+
+    assert build_manifest_rows(library) == []
+
+
+def test_manifest_propagates_unexpected_document_read_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    library = tmp_path / "library"
+    document = library / "alpha" / "reports" / "inside.pdf"
+    document.parent.mkdir(parents=True)
+    document.write_bytes(b"inside document")
+    original_open = manifest_module.os.open
+
+    def fail_document_open(path: str | Path, flags: int, *args: object, **kwargs: object) -> int:
+        if path == "inside.pdf":
+            raise OSError(errno.EIO, "simulated read failure")
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(manifest_module.os, "open", fail_document_open)
+
+    with pytest.raises(OSError, match="simulated read failure"):
+        build_manifest_rows(library)
+
+
+def test_manifest_reports_missing_secure_open_support(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    library = tmp_path / "library"
+    library.mkdir()
+    monkeypatch.delattr(manifest_module.os, "O_NOFOLLOW")
+
+    with pytest.raises(RuntimeError, match="requires no-follow directory opens"):
+        build_manifest_rows(library)
 
 
 @pytest.mark.parametrize("annotation", ["present", "absent"])
