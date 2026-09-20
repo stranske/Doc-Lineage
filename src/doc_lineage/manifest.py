@@ -64,11 +64,13 @@ def _guess_mime(path: Path) -> str:
 def _iter_documents(root: Path) -> list[Path]:
     documents: list[Path] = []
     for path in sorted(root.rglob("*")):
-        if not path.is_file():
+        if path.is_symlink() or not path.is_file():
             continue
         if path.name.startswith("."):
             continue
         if path.suffix.lower() not in DOCUMENT_SUFFIXES:
+            continue
+        if not path.resolve().is_relative_to(root):
             continue
         documents.append(path)
     return documents

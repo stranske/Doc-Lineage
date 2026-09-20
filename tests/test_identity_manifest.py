@@ -10,7 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from doc_lineage.identity import compute_identity, sha256_bytes
+import doc_lineage.manifest as manifest_module
+from doc_lineage.identity import DocumentIdentity, compute_identity, sha256_bytes
 from doc_lineage.manifest import build_manifest_rows, read_manifest, write_manifest
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "library"
@@ -366,6 +367,34 @@ def test_document_output_inside_library_is_rejected(tmp_path: Path, existing: bo
         assert output.read_bytes() == b"original document"
     else:
         assert not output.exists()
+
+
+def test_manifest_does_not_hash_out_of_root_document_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    regular = documents / "inside.pdf"
+    regular.write_bytes(b"inside document")
+    outside_content = b"external document must not be scanned"
+    outside = tmp_path / "outside.pdf"
+    outside.write_bytes(outside_content)
+    (documents / "linked.pdf").symlink_to(outside)
+
+    scanned_paths: list[Path] = []
+    original_compute_identity = manifest_module.compute_identity
+
+    def record_identity(root: Path, file_path: Path) -> DocumentIdentity:
+        scanned_paths.append(file_path)
+        return original_compute_identity(root, file_path)
+
+    monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
+    rows = build_manifest_rows(library)
+
+    assert all(row.sha256 != sha256_bytes(outside_content) for row in rows)
+    assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+    assert scanned_paths == [regular]
 
 
 @pytest.mark.parametrize("annotation", ["present", "absent"])
