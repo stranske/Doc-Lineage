@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import mimetypes
 import os
@@ -96,9 +97,12 @@ def _read_document_under_root(root_fd: int, relative: Path) -> tuple[bytes, os.s
             if not stat.S_ISREG(metadata.st_mode):
                 return None
             return source.read(), metadata
-    except OSError:
+    except OSError as error:
         # A candidate can disappear or become a symlink after directory traversal.
-        return None
+        # I/O, permissions, or descriptor exhaustion must fail the manifest.
+        if error.errno in {errno.ENOENT, errno.ENOTDIR, errno.ELOOP}:
+            return None
+        raise
     finally:
         os.close(directory_fd)
 
@@ -173,6 +177,8 @@ def build_manifest_rows(root: Path) -> list[ManifestRow]:
     if not root.is_dir():
         raise ValueError(f"library root must be an existing directory: {root}")
     rows: list[ManifestRow] = []
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        raise RuntimeError("secure manifest scanning requires no-follow directory opens")
     root_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:
         for file_path in _iter_documents(root):

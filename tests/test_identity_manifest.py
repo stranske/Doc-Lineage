@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import shutil
@@ -441,6 +442,37 @@ def test_manifest_rejects_symlink_swapped_after_listing(
     monkeypatch.setattr(manifest_module, "_iter_documents", swap_after_listing)
 
     assert build_manifest_rows(library) == []
+
+
+def test_manifest_propagates_unexpected_document_read_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    library = tmp_path / "library"
+    document = library / "alpha" / "reports" / "inside.pdf"
+    document.parent.mkdir(parents=True)
+    document.write_bytes(b"inside document")
+    original_open = manifest_module.os.open
+
+    def fail_document_open(path: str | Path, flags: int, *args: object, **kwargs: object) -> int:
+        if path == "inside.pdf":
+            raise OSError(errno.EIO, "simulated read failure")
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(manifest_module.os, "open", fail_document_open)
+
+    with pytest.raises(OSError, match="simulated read failure"):
+        build_manifest_rows(library)
+
+
+def test_manifest_reports_missing_secure_open_support(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    library = tmp_path / "library"
+    library.mkdir()
+    monkeypatch.delattr(manifest_module.os, "O_NOFOLLOW")
+
+    with pytest.raises(RuntimeError, match="requires no-follow directory opens"):
+        build_manifest_rows(library)
 
 
 @pytest.mark.parametrize("annotation", ["present", "absent"])
