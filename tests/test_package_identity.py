@@ -27,6 +27,12 @@ def test_package_imports_and_exposes_a_version() -> None:
 
 
 def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib.Path) -> None:
+    fixture_path = pathlib.PurePosixPath("tests/fixtures/fact_key_map/tracked_variables.json")
+    expected_paths = {
+        pathlib.PurePosixPath("tests/export/test_fact_key_map.py"),
+        pathlib.PurePosixPath("tests/export/test_fact_key_map_cli.py"),
+        fixture_path,
+    }
     source = tmp_path / "source"
     shutil.copytree(
         pathlib.Path(__file__).resolve().parents[1],
@@ -61,7 +67,12 @@ def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib
     archives = list(output.glob("*.tar.gz"))
     assert len(archives) == 1
     with tarfile.open(archives[0], "r:gz") as archive:
-        members = {"/".join(pathlib.PurePosixPath(name).parts[1:]) for name in archive.getnames()}
-    assert "tests/export/test_fact_key_map.py" in members
-    assert "tests/export/test_fact_key_map_cli.py" in members
-    assert "tests/fixtures/fact_key_map/tracked_variables.json" in members
+        members = {
+            pathlib.PurePosixPath(*pathlib.PurePosixPath(member.name).parts[1:]): member
+            for member in archive.getmembers()
+        }
+        assert expected_paths <= members.keys()
+
+        archived_fixture = archive.extractfile(members[fixture_path])
+        assert archived_fixture is not None
+        assert archived_fixture.read() == (source / fixture_path).read_bytes()
