@@ -1,1 +1,2 @@
 recursive-include tests/export *.py
+include tests/fixtures/fact_key_map/tracked_variables.json
