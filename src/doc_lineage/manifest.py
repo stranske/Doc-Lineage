@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import os
+import stat
 from collections import defaultdict
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
@@ -51,8 +53,7 @@ class ManifestRow:
         return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
-def _received_at(path: Path) -> str:
-    timestamp = path.stat().st_mtime
+def _received_at(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp, tz=UTC).isoformat()
 
 
@@ -75,6 +76,31 @@ def _iter_documents(root: Path) -> list[Path]:
             continue
         documents.append(path)
     return documents
+
+
+def _read_document_under_root(root_fd: int, relative: Path) -> tuple[bytes, os.stat_result] | None:
+    """Read bytes and metadata from one root-anchored, no-follow file descriptor."""
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        raise RuntimeError("secure manifest scanning requires no-follow directory opens")
+    directory_fd = os.dup(root_fd)
+    try:
+        for part in relative.parts[:-1]:
+            next_fd = os.open(
+                part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory_fd
+            )
+            os.close(directory_fd)
+            directory_fd = next_fd
+        file_fd = os.open(relative.name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory_fd)
+        with os.fdopen(file_fd, "rb") as source:
+            metadata = os.fstat(source.fileno())
+            if not stat.S_ISREG(metadata.st_mode):
+                return None
+            return source.read(), metadata
+    except OSError:
+        # A candidate can disappear or become a symlink after directory traversal.
+        return None
+    finally:
+        os.close(directory_fd)
 
 
 def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
@@ -147,24 +173,32 @@ def build_manifest_rows(root: Path) -> list[ManifestRow]:
     if not root.is_dir():
         raise ValueError(f"library root must be an existing directory: {root}")
     rows: list[ManifestRow] = []
-    for file_path in _iter_documents(root):
-        identity = compute_identity(root, file_path)
-        relative_path = file_path.relative_to(root).as_posix()
-        rows.append(
-            ManifestRow(
-                stable_id=identity.stable_id,
-                sha256=identity.sha256,
-                path=relative_path,
-                entity_slug=identity.entity_slug,
-                category=identity.category,
-                as_of=identity.as_of,
-                received_at=_received_at(file_path),
-                bytes=file_path.stat().st_size,
-                mime=_guess_mime(file_path),
-                supersedes=None,
-                text_layer="unknown",
+    root_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for file_path in _iter_documents(root):
+            relative = file_path.relative_to(root)
+            opened = _read_document_under_root(root_fd, relative)
+            if opened is None:
+                continue
+            content, metadata = opened
+            identity = compute_identity(root, file_path, content=content)
+            rows.append(
+                ManifestRow(
+                    stable_id=identity.stable_id,
+                    sha256=identity.sha256,
+                    path=relative.as_posix(),
+                    entity_slug=identity.entity_slug,
+                    category=identity.category,
+                    as_of=identity.as_of,
+                    received_at=_received_at(metadata.st_mtime),
+                    bytes=metadata.st_size,
+                    mime=_guess_mime(file_path),
+                    supersedes=None,
+                    text_layer="unknown",
+                )
             )
-        )
+    finally:
+        os.close(root_fd)
     rows = _assign_supersedes(rows)
     return sorted(rows, key=lambda row: row.path)
 

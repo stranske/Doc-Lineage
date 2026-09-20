@@ -387,9 +387,11 @@ def test_manifest_does_not_hash_out_of_root_document_symlink(
     scanned_paths: list[Path] = []
     original_compute_identity = manifest_module.compute_identity
 
-    def record_identity(root: Path, file_path: Path) -> DocumentIdentity:
+    def record_identity(
+        root: Path, file_path: Path, *, content: bytes | None = None
+    ) -> DocumentIdentity:
         scanned_paths.append(file_path)
-        return original_compute_identity(root, file_path)
+        return original_compute_identity(root, file_path, content=content)
 
     monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
     rows = build_manifest_rows(library)
@@ -397,6 +399,48 @@ def test_manifest_does_not_hash_out_of_root_document_symlink(
     assert all(row.sha256 != sha256_bytes(outside_content) for row in rows)
     assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
     assert scanned_paths == [regular]
+
+
+def test_manifest_does_not_include_in_root_document_symlink(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    (documents / "inside.pdf").write_bytes(b"inside document")
+    (documents / "linked.pdf").symlink_to("inside.pdf")
+
+    rows = build_manifest_rows(library)
+
+    assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+
+
+@pytest.mark.parametrize("replace_directory", [False, True], ids=["file", "directory"])
+def test_manifest_rejects_symlink_swapped_after_listing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replace_directory: bool
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    candidate = documents / "inside.pdf"
+    candidate.write_bytes(b"inside document")
+    outside_directory = tmp_path / "outside"
+    outside_directory.mkdir()
+    outside = outside_directory / "inside.pdf"
+    outside.write_bytes(b"outside document must not be scanned")
+    original_iter = manifest_module._iter_documents
+
+    def swap_after_listing(root: Path) -> list[Path]:
+        listed = original_iter(root)
+        if replace_directory:
+            documents.rename(library / "alpha" / "reports-moved")
+            documents.symlink_to(outside_directory, target_is_directory=True)
+        else:
+            candidate.unlink()
+            candidate.symlink_to(outside)
+        return listed
+
+    monkeypatch.setattr(manifest_module, "_iter_documents", swap_after_listing)
+
+    assert build_manifest_rows(library) == []
 
 
 @pytest.mark.parametrize("annotation", ["present", "absent"])
