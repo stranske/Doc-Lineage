@@ -10,6 +10,7 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from doc_lineage.harvest.edgar_ex10 import (
+    MANIFEST_FILENAME,
     MANIFEST_SCHEMA_VERSION,
     harvest_edgar_ex10,
     parse_ex10_exhibits,
@@ -62,6 +63,33 @@ def test_harvest_writes_mirror_compatible_manifest(tmp_path: Path) -> None:
         assert artifact["bytes"] == len(content)
         assert artifact["bytes"] > 0
         assert artifact["media_type"] == "text/html"
+
+
+def test_harvest_failure_leaves_no_partial_publication(tmp_path: Path) -> None:
+    """Failure-atomicity: a missing second exhibit must not publish partial final artifacts."""
+    filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    fixture_dir = tmp_path / "fixtures"
+    fixture_dir.mkdir()
+    (fixture_dir / "exhibit101lpa.htm").write_bytes(
+        (FIXTURE_DIR / "exhibit101lpa.htm").read_bytes()
+    )
+    partial_fixture = fixture_dir / "partial_filing.json"
+    partial_fixture.write_text(json.dumps(filing), encoding="utf-8")
+
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+
+    with pytest.raises(ValueError, match="fixture exhibit content missing"):
+        harvest_edgar_ex10("0001067983", out_dir, fixture_path=partial_fixture)
+
+    assert not (out_dir / MANIFEST_FILENAME).exists()
+    harvest_root = out_dir / "harvest"
+    published_files = (
+        [path for path in harvest_root.rglob("*") if path.is_file()]
+        if harvest_root.exists()
+        else []
+    )
+    assert published_files == []
 
 
 def test_harvest_rejects_invalid_accession_in_fixture(tmp_path: Path) -> None:

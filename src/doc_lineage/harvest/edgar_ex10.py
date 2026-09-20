@@ -287,18 +287,23 @@ def harvest_edgar_ex10(
     if not exhibits:
         raise ValueError(f"no EX-10 exhibits found for CIK {cik}")
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    materialized: list[tuple[Ex10Exhibit, Path, bytes]] = []
+    staged: list[tuple[Ex10Exhibit, str, bytes]] = []
     for exhibit in exhibits:
         content = _fetch_exhibit_bytes(exhibit, fixture_dir=fixture_dir)
         extension = _artifact_extension(exhibit.document_url)
         relative_path = _artifact_relative_path(cik, exhibit, extension)
+        staged.append((exhibit, relative_path, content))
+
+    materialized_for_manifest = [
+        (exhibit, Path(relative_path), content) for exhibit, relative_path, content in staged
+    ]
+    manifest = _build_manifest(cik, exhibits, materialized_for_manifest)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for _exhibit, relative_path, content in staged:
         artifact_path = output_dir / relative_path
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
         artifact_path.write_bytes(content)
-        materialized.append((exhibit, artifact_path, content))
-
-    manifest = _build_manifest(cik, exhibits, materialized)
     manifest_path = output_dir / MANIFEST_FILENAME
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
