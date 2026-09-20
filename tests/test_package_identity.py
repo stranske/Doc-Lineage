@@ -7,6 +7,7 @@ imported module disagree, which surfaces later as an import error in a workflow 
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import pathlib
 import shutil
 import subprocess
@@ -21,6 +22,8 @@ from email.policy import default
 def test_distribution_and_package_names_are_not_the_template_placeholder() -> None:
     data = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
     assert data["project"]["name"] == "doc-lineage"
+    assert importlib.metadata.metadata("doc-lineage")["Name"] == "doc-lineage"
+    assert "doc-lineage" in importlib.metadata.packages_distributions()["doc_lineage"]
     assert not pathlib.Path("src/my_project").exists()
 
 
