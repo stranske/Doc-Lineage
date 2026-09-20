@@ -76,6 +76,11 @@ So the build order is: document identity and manifest, extraction with page poin
 Comparison catalog authority, mirror refresh commands, and acceptance checks are
 documented in [Comparison catalog maintenance](docs/comparison-catalogs.md).
 
+Manifest scans omit documents larger than the ingest limit (currently 100 MiB)
+before hashing them, and log each skipped library path and size. The ingest command
+rejects the same over-limit document. Split or reduce such a source before adding
+it to an ingestable manifest; an omitted document is not an ingest success.
+
 The small [static provenance link helper](docs/triple-link-resolver.md) resolves
 document-page, mirror, and source-system links for consumers of tracked variables.
 It does not implement the output renderer.

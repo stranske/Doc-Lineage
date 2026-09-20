@@ -12,7 +12,9 @@ from pathlib import Path
 import pytest
 
 import doc_lineage.manifest as manifest_module
+from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES
 from doc_lineage.identity import DocumentIdentity, compute_identity, sha256_bytes
+from doc_lineage.ingest import ingest_document
 from doc_lineage.manifest import build_manifest_rows, read_manifest, write_manifest
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "library"
@@ -412,6 +414,94 @@ def test_manifest_does_not_include_in_root_document_symlink(tmp_path: Path) -> N
     rows = build_manifest_rows(library)
 
     assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+
+
+def test_manifest_and_ingest_reject_same_oversized_pdf(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    regular = documents / "inside.pdf"
+    regular.write_bytes(b"inside document")
+    oversized = documents / "oversized.pdf"
+    with oversized.open("wb") as handle:
+        handle.truncate(MAX_INGEST_BYTES + 1)
+    expected_boundary = f"{MAX_INGEST_BYTES + 1} > {MAX_INGEST_BYTES} bytes"
+    assert oversized.stat().st_size == MAX_INGEST_BYTES + 1
+
+    hashed: list[Path] = []
+    original_compute_identity = compute_identity
+
+    def record_identity(
+        root: Path, file_path: Path, *, content: bytes | None = None
+    ) -> DocumentIdentity:
+        hashed.append(file_path)
+        return original_compute_identity(root, file_path, content=content)
+
+    monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
+    rows = build_manifest_rows(library)
+
+    assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
+    assert hashed == [regular]
+    assert "Skipping document alpha/reports/oversized.pdf: exceeds ingest size limit" in caplog.text
+    assert expected_boundary in caplog.text
+    with pytest.raises(ValueError) as exc_info:
+        ingest_document(oversized, output_dir=tmp_path / "out", allow_docling=False)
+    assert "document exceeds ingest size limit" in str(exc_info.value)
+    assert expected_boundary in str(exc_info.value)
+
+
+def test_manifest_accepts_exact_ingest_limit(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    exact = documents / "exact.pdf"
+    with exact.open("wb") as handle:
+        handle.truncate(MAX_INGEST_BYTES)
+
+    rows = build_manifest_rows(library)
+
+    assert [row.path for row in rows] == ["alpha/reports/exact.pdf"]
+    assert rows[0].bytes == MAX_INGEST_BYTES
+
+
+def test_manifest_skips_file_grown_after_fstat(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    library = tmp_path / "library"
+    documents = library / "alpha" / "reports"
+    documents.mkdir(parents=True)
+    grown = documents / "grown.pdf"
+    with grown.open("wb") as handle:
+        handle.truncate(MAX_INGEST_BYTES + 1)
+
+    original_fstat = manifest_module.os.fstat
+    grown_inode = grown.stat().st_ino
+
+    def stale_fstat(fd: int) -> object:
+        metadata = original_fstat(fd)
+        if metadata.st_ino == grown_inode:
+            # Model a file that grew after fstat but before the bounded read.
+            return type(
+                "StaleStat", (), {"st_mode": metadata.st_mode, "st_size": MAX_INGEST_BYTES}
+            )()
+        return metadata
+
+    hashed: list[Path] = []
+
+    def record_identity(
+        root: Path, file_path: Path, *, content: bytes | None = None
+    ) -> DocumentIdentity:
+        hashed.append(file_path)
+        return compute_identity(root, file_path, content=content)
+
+    monkeypatch.setattr(manifest_module.os, "fstat", stale_fstat)
+    monkeypatch.setattr(manifest_module, "compute_identity", record_identity)
+
+    assert build_manifest_rows(library) == []
+    assert hashed == []
+    assert "Skipping document alpha/reports/grown.pdf: exceeds ingest size limit" in caplog.text
 
 
 @pytest.mark.parametrize("replace_directory", [False, True], ids=["file", "directory"])
