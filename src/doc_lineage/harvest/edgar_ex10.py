@@ -5,7 +5,10 @@ from __future__ import annotations
 import hashlib
 import http.client
 import json
+import os
 import re
+import shutil
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -269,6 +272,48 @@ def _build_manifest(
     return manifest
 
 
+def _publish_run(output_dir: Path, files: list[tuple[str, bytes]]) -> None:
+    """Stage a run and restore prior files if any promotion fails."""
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    output_existed = output_dir.exists()
+    with tempfile.TemporaryDirectory(prefix=".edgar-harvest-", dir=output_dir.parent) as scratch:
+        scratch_dir = Path(scratch)
+        staged_dir = scratch_dir / "staged"
+        backup_dir = scratch_dir / "backup"
+        for relative_path, content in files:
+            staged_path = staged_dir / relative_path
+            staged_path.parent.mkdir(parents=True, exist_ok=True)
+            staged_path.write_bytes(content)
+
+        promoted: list[tuple[Path, Path | None]] = []
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            for relative_path, _content in files:
+                target = output_dir / relative_path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                backup: Path | None = None
+                if target.exists():
+                    backup = backup_dir / relative_path
+                    backup.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(target, backup)
+                os.replace(staged_dir / relative_path, target)
+                promoted.append((target, backup))
+        except Exception:
+            for target, backup in reversed(promoted):
+                if backup is None:
+                    target.unlink()
+                else:
+                    os.replace(backup, target)
+            if not output_existed:
+                for path in sorted(
+                    output_dir.rglob("*"), key=lambda item: len(item.parts), reverse=True
+                ):
+                    if path.is_dir():
+                        path.rmdir()
+                output_dir.rmdir()
+            raise
+
+
 def harvest_edgar_ex10(
     cik: str,
     output_dir: Path,
@@ -299,14 +344,11 @@ def harvest_edgar_ex10(
     ]
     manifest = _build_manifest(cik, exhibits, materialized_for_manifest)
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    for _exhibit, relative_path, content in staged:
-        artifact_path = output_dir / relative_path
-        artifact_path.parent.mkdir(parents=True, exist_ok=True)
-        artifact_path.write_bytes(content)
     manifest_path = output_dir / MANIFEST_FILENAME
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    _publish_run(
+        output_dir,
+        [(relative_path, content) for _exhibit, relative_path, content in staged]
+        + [(MANIFEST_FILENAME, (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode())],
     )
     return HarvestResult(
         cik=cik,
