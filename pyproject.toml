@@ -56,8 +56,8 @@ dev = [
 doc-lineage = "doc_lineage.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/stranske/Template"
-Repository = "https://github.com/stranske/Template"
+Homepage = "https://github.com/stranske/Doc-Lineage"
+Repository = "https://github.com/stranske/Doc-Lineage"
 
 [project.entry-points."console_scripts"]
 doc-lineage = "doc_lineage.cli:main"
