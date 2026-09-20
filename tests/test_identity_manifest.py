@@ -427,6 +427,8 @@ def test_manifest_and_ingest_reject_same_oversized_pdf(
     oversized = documents / "oversized.pdf"
     with oversized.open("wb") as handle:
         handle.truncate(MAX_INGEST_BYTES + 1)
+    expected_boundary = f"{MAX_INGEST_BYTES + 1} > {MAX_INGEST_BYTES} bytes"
+    assert oversized.stat().st_size == MAX_INGEST_BYTES + 1
 
     hashed: list[Path] = []
     original_compute_identity = compute_identity
@@ -443,8 +445,11 @@ def test_manifest_and_ingest_reject_same_oversized_pdf(
     assert [row.path for row in rows] == ["alpha/reports/inside.pdf"]
     assert hashed == [regular]
     assert "Skipping document alpha/reports/oversized.pdf: exceeds ingest size limit" in caplog.text
-    with pytest.raises(ValueError, match="exceeds ingest size limit"):
+    assert expected_boundary in caplog.text
+    with pytest.raises(ValueError) as exc_info:
         ingest_document(oversized, output_dir=tmp_path / "out", allow_docling=False)
+    assert "document exceeds ingest size limit" in str(exc_info.value)
+    assert expected_boundary in str(exc_info.value)
 
 
 @pytest.mark.parametrize("replace_directory", [False, True], ids=["file", "directory"])
