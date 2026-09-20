@@ -25,8 +25,9 @@ blackline/diff, and the section-pairing issue does not yet define that lookup.
 A path is not treated as a substitute comparison ID. File-pair export therefore
 does not complete the ID-based scope of #15.
 
-Source distributions include the export tests under `tests/export/` so the
-native tracked-changes acceptance test can be run from the source archive.
+Source distributions include the export tests under `tests/export/` and their
+`tests/fixtures/fact_key_map/tracked_variables.json` fixture so the native
+tracked-changes acceptance tests can be run from the source archive.
 
 ## Intent
 
