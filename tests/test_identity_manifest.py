@@ -369,8 +369,9 @@ def test_document_output_inside_library_is_rejected(tmp_path: Path, existing: bo
         assert not output.exists()
 
 
+@pytest.mark.parametrize("relative_target", [False, True], ids=["absolute", "relative"])
 def test_manifest_does_not_hash_out_of_root_document_symlink(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, relative_target: bool
 ) -> None:
     library = tmp_path / "library"
     documents = library / "alpha" / "reports"
@@ -380,7 +381,8 @@ def test_manifest_does_not_hash_out_of_root_document_symlink(
     outside_content = b"external document must not be scanned"
     outside = tmp_path / "outside.pdf"
     outside.write_bytes(outside_content)
-    (documents / "linked.pdf").symlink_to(outside)
+    link_target = Path(os.path.relpath(outside, documents)) if relative_target else outside
+    (documents / "linked.pdf").symlink_to(link_target)
 
     scanned_paths: list[Path] = []
     original_compute_identity = manifest_module.compute_identity
