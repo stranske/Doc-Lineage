@@ -21,8 +21,8 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "jsonschema==4.22.0",
-    "pypdf==6.0.0",
+    "jsonschema==4.26.0",
+    "pypdf==6.19.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "pillow==11.3.0",
@@ -43,13 +43,13 @@ dev = [
     "pytest-cov==7.1.0",
     "ruff==0.16.7",
     "mypy==2.3.1",
-    "types-jsonschema==4.23.0.20241208",
+    "types-jsonschema==4.26.0.20260518",
     "black==26.5.1",
-    "pypdf==6.0.0",
+    "pypdf==6.19.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "pillow==11.3.0",
-    "reportlab==4.4.2",
+    "reportlab==4.5.1",
 ]
 
 [project.scripts]
