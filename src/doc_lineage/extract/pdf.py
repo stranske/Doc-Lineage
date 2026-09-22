@@ -77,7 +77,8 @@ def _extract_pdf_page(
     from pypdf import PageObject
 
     assert isinstance(page, PageObject)
-    text = (page.extract_text() or "").strip()
+    raw_text = page.extract_text() or ""
+    text = raw_text.strip()
     rotation = int(page.get("/Rotate", 0) or 0)
 
     if text:
@@ -86,7 +87,7 @@ def _extract_pdf_page(
             page=page_number,
             bbox=None,
             source="text_layer",
-            text_lines=tuple(text.splitlines()),
+            text_lines=tuple(raw_text.splitlines()),
         )
         return [span], "text_layer"
 

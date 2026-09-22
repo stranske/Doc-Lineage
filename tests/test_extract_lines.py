@@ -62,7 +62,7 @@ def test_line_data_survives_fresh_disk_cache(tmp_path: Path, monkeypatch) -> Non
     assert second.spans[0].text_lines == METRIC_LINES
 
 
-@pytest.mark.parametrize("cached_lines", [None, "not-a-line-array", [7]])
+@pytest.mark.parametrize("cached_lines", [None, "not-a-line-array", [7], []])
 def test_legacy_or_invalid_native_lines_are_refreshed(tmp_path: Path, cached_lines) -> None:
     source = tmp_path / "metrics.pdf"
     _metric_pdf(source)
@@ -123,3 +123,36 @@ def test_legacy_ocr_cache_recovers_lines_without_recognition(tmp_path: Path) -> 
     assert spans is not None
     assert spans[0].text_lines == ("first row", "second row")
     assert spans[0].page == 2
+
+
+def test_malformed_legacy_ocr_text_is_reextracted(tmp_path: Path) -> None:
+    source = tmp_path / "metrics.pdf"
+    _metric_pdf(source)
+    cache_root = tmp_path / "cache"
+    first = extract(source, ocr_enabled=False, cache=ExtractCache(cache_root))
+    entry = cache_root / first.stable_id / "page-1.json"
+    payload = json.loads(entry.read_text())
+    payload["spans"][0].update(source="ocr", text=None)
+    payload["spans"][0].pop("text_lines")
+    entry.write_text(json.dumps(payload))
+
+    second = extract(source, ocr_enabled=False, cache=ExtractCache(cache_root))
+    assert second.spans[0] == first.spans[0]
+    assert json.loads(entry.read_text())["spans"][0]["source"] == "text_layer"
+
+
+def test_pdf_source_lines_keep_boundary_whitespace(tmp_path: Path) -> None:
+    from pypdf import PdfReader
+
+    source = tmp_path / "whitespace.pdf"
+    pdf = canvas.Canvas(str(source), invariant=1)
+    pdf.drawString(72, 720, "  First line")
+    pdf.drawString(72, 696, "Last line  ")
+    pdf.save()
+    raw_text = PdfReader(str(source)).pages[0].extract_text()
+    assert raw_text.startswith("  First line")
+    assert "Last line  " in raw_text
+
+    document = extract(source, ocr_enabled=False, cache=ExtractCache())
+    assert document.spans[0].text_lines == tuple(raw_text.splitlines())
+    assert document.spans[0].text == "First line Last line"
