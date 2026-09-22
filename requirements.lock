@@ -55,7 +55,7 @@ iniconfig==2.3.0
     # via pytest
 jinja2==3.1.6
     # via edgartools
-jsonschema==4.22.0
+jsonschema==4.26.0
     # via doc-lineage (pyproject.toml)
 jsonschema-specifications==2025.9.1
     # via jsonschema
@@ -97,7 +97,7 @@ pathspec==1.1.1
     # via
     #   black
     #   mypy
-pillow==11.3.0
+pillow==12.3.0
     # via
     #   doc-lineage (pyproject.toml)
     #   pytesseract
@@ -123,7 +123,7 @@ pygments==2.20.0
     #   rich
 pypdf==6.0.0
     # via doc-lineage (pyproject.toml)
-pypdfium2==4.30.0
+pypdfium2==5.13.0
     # via doc-lineage (pyproject.toml)
 pyrate-limiter==4.5.0
     # via
