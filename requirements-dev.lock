@@ -40,7 +40,7 @@ pathspec==1.0.4
     # via
     #   black
     #   mypy
-pillow==11.3.0
+pillow==12.3.0
     # via
     #   doc-lineage (pyproject.toml)
     #   python-pptx

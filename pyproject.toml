@@ -25,13 +25,13 @@ dependencies = [
     "pypdf==6.0.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
-    "pillow==11.3.0",
+    "pillow>=11.3.0,<13.0.0",
     "python-redlines[docxodus]==0.3.0",
 ]
 
 [project.optional-dependencies]
 ocr = [
-    "pypdfium2==4.30.0",
+    "pypdfium2>=4.30.0,<6.0.0",
     "pytesseract==0.3.13",
 ]
 harvest = [
@@ -48,7 +48,7 @@ dev = [
     "pypdf==6.0.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
-    "pillow==11.3.0",
+    "pillow>=11.3.0,<13.0.0",
     "reportlab==4.4.2",
 ]
 
