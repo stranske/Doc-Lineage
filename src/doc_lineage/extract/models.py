@@ -16,6 +16,9 @@ class Span:
     page: int
     bbox: tuple[float, float, float, float] | None
     source: SpanSource
+    # PDF source lines before whitespace normalization. None means unavailable
+    # (for example, an older cache entry or an Office extractor).
+    text_lines: tuple[str, ...] | None = None
 
 
 @dataclass(frozen=True)

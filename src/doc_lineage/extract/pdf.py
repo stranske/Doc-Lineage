@@ -35,6 +35,12 @@ def extract_pdf(
 
     for page_index, page in enumerate(reader.pages, start=1):
         cached = cache.get(stable_id, page_index, mode)
+        if cached and any(
+            span.source == "text_layer" and span.text_lines is None for span in cached
+        ):
+            # Old native-text entries have already lost their line boundaries.
+            # Re-extract from the PDF rather than inventing lines from flat text.
+            cached = None
         if cached is not None:
             spans.extend(cached)
             outcome = _page_outcome(cached)
@@ -80,6 +86,7 @@ def _extract_pdf_page(
             page=page_number,
             bbox=None,
             source="text_layer",
+            text_lines=tuple(text.splitlines()),
         )
         return [span], "text_layer"
 
@@ -98,6 +105,7 @@ def _extract_pdf_page(
             page=page_number,
             bbox=None,
             source="ocr",
+            text_lines=tuple(recognized.splitlines()),
         )
         return [span], "ocr"
 

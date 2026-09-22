@@ -55,6 +55,35 @@ output is never mistaken for a Docling parse. Pages with no readable text layer 
 reported in `pages_without_text_layer` rather than dropped — recognition (issue #3) is a
 required stage here, so a page that yields nothing is a finding, not a silence.
 
+## PDF extraction for metric consumers
+
+The public extraction API returns page-attributed spans with two text views:
+
+```python
+from doc_lineage.extract import ExtractCache, extract
+
+document = extract("report.pdf", cache=ExtractCache())
+for span in document.spans:
+    print(span.page, span.text)  # existing normalized text
+    print(span.text_lines)      # source lines before PDF whitespace normalization
+```
+
+`text_lines` preserves line breaks and horizontal spacing within each extracted
+line, so neighboring monetary units or percentage markers need not share a
+downstream metric-input block. It also preserves the OCR recognizer's lines.
+This is extracted text, not a table schema or a guarantee of metric accuracy;
+consumers still need value, unit, and provenance tests. Office spans may leave
+the additive field as `None`.
+
+Disk caches retain the field. Older native-PDF cache entries without line data
+are refreshed from the source; old OCR entries can recover lines from their
+unflattened text. `ExtractCache()` uses memory only. OCR still requires the
+`ocr` extra and a working local Tesseract installation; unreadable pages remain
+visible in `document.coverage.pages_unreadable`.
+
+Run `python -m pytest tests/test_extract_lines.py tests/test_extract_coverage.py -q`
+to verify preserved lines, page attribution, OCR routing, and cache reloads.
+
 ## Interoperability
 
 Identifiers and evidence objects follow the fleet conventions in `docs/contracts/` (`run-contract/v1`, `evidence-object/v1`, identity-map conventions). The versioned [legal clause vocabulary](vocab/legal-clauses.json) publishes 25 stable `ontology_key` values so sibling repos (`Inv-Man-Intake`, `Manager-Database`, `Pension-Data`) can adopt the same names. Load the full document with `from doc_lineage.vocab import load_legal_clauses` and `load_legal_clauses()`.

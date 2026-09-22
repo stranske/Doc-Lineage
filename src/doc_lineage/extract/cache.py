@@ -90,15 +90,28 @@ class ExtractCache:
             items = payload
         if not isinstance(items, list):
             raise TypeError("cached spans payload is not a list")
-        spans = [
-            Span(
-                text=item["text"],
-                page=item["page"],
-                bbox=tuple(item["bbox"]) if item["bbox"] is not None else None,
-                source=item["source"],
+        spans = []
+        for item in items:
+            if not isinstance(item, dict):
+                raise TypeError("cached span must be an object")
+            lines = item.get("text_lines")
+            if lines is not None and (
+                not isinstance(lines, list) or any(not isinstance(line, str) for line in lines)
+            ):
+                raise TypeError("cached span text_lines must be a list of strings or null")
+            # OCR text was never flattened, so old OCR entries retain enough
+            # information to recover their original lines without another OCR run.
+            if lines is None and item["source"] == "ocr":
+                lines = item["text"].splitlines()
+            spans.append(
+                Span(
+                    text=item["text"],
+                    page=item["page"],
+                    bbox=tuple(item["bbox"]) if item["bbox"] is not None else None,
+                    source=item["source"],
+                    text_lines=tuple(lines) if lines is not None else None,
+                )
             )
-            for item in items
-        ]
         return mode, spans
 
     @staticmethod
