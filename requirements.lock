@@ -29,7 +29,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   click
     #   pytest
     #   tqdm
-coverage==7.16.0
+coverage==7.16.1
     # via pytest-cov
 edgartools==5.58.0
     # via doc-lineage (pyproject.toml)
@@ -166,7 +166,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.8
+ruff==0.16.9
     # via doc-lineage (pyproject.toml)
 setuptools==82.0.1
     # via doc-lineage (pyproject.toml)
