@@ -166,7 +166,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.7
+ruff==0.16.8
     # via doc-lineage (pyproject.toml)
 setuptools==82.0.1
     # via doc-lineage (pyproject.toml)
