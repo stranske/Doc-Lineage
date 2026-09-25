@@ -1,0 +1,71 @@
+# Deliberate-break evidence: section-ID blackline gate (#38 / #10)
+
+Linked issue: `stranske/Doc-Lineage#38` (parent gate `#10`).
+
+## Mutation (temporary, reverted before merge)
+
+In `src/doc_lineage/blackline.py::align_sections`, pairing was temporarily routed through a semantic-only branch that ignores stable section IDs and pairs by positional index with reversed right-side order while still labeling `pairing_method="section_id"`.
+
+Production code on this branch keeps ID-first pairing; this file records the RED/GREEN transcript only.
+
+## RED — `pytest tests/blackline/test_section_id_pairing.py::test_pairs_by_section_id -q`
+
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/Doc-Lineage-issue-38
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/blackline/test_section_id_pairing.py F                             [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_pairs_by_section_id ___________________________
+
+    def test_pairs_by_section_id() -> None:
+        """Named gate: numbered sections pair by stable section IDs on a golden pair."""
+        before = _load_fixture("lpa_before_segments.json")
+        after = _load_fixture("lpa_after_segments.json")
+        doc_a = build_section_tree(before.segments, source_sha256=before.source_sha256)
+        doc_b = build_section_tree(after.segments, source_sha256=after.source_sha256)
+    
+        pairs = align_sections(doc_a, doc_b)
+        assert [pair.section_id for pair in pairs] == ["1", "2", "3", "4"]
+        assert all(pair.pairing_method == "section_id" for pair in pairs)
+        assert all(pair.left is not None and pair.right is not None for pair in pairs)
+        assert pairs[0].left is not None and pairs[0].right is not None
+        assert pairs[0].left.text != pairs[0].right.text
+        assert pairs[1].left is not None and pairs[1].right is not None
+>       assert pairs[1].left.text == pairs[1].right.text
+E       AssertionError: assert '2. CARRIED I...ded annually.' == '3. KEY PERSO... Partnership.'
+E         
+E         - 3. KEY PERSON EVENT A Key Person Event occurs if fewer than two Key Persons devote substantially all business time to the Partnership.
+E         + 2. CARRIED INTEREST Carried interest is 20% of Distributable Proceeds, subject to a preferred return of 8% compounded annually.
+
+tests/blackline/test_section_id_pairing.py:80: AssertionError
+=========================== short test summary info ============================
+FAILED tests/blackline/test_section_id_pairing.py::test_pairs_by_section_id
+============================== 1 failed in 2.82s ===============================
+```
+
+## GREEN — same command after revert
+
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/Doc-Lineage-issue-38
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/blackline/test_section_id_pairing.py .                             [100%]
+
+============================== 1 passed in 4.42s ===============================
+```
+
+## Verification command (this PR)
+
+`pytest tests/blackline/test_section_id_pairing.py::test_pairs_by_section_id -q`
