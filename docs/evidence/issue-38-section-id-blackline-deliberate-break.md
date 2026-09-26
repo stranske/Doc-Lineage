@@ -4,13 +4,38 @@ Linked issue: `stranske/Doc-Lineage#38` (parent gate `#10`).
 
 ## Mutation (temporary, reverted before merge)
 
-In `src/doc_lineage/blackline.py::align_sections`, pairing was temporarily routed through a semantic-only branch that ignores stable section IDs and pairs by positional index with reversed right-side order while still labeling `pairing_method="section_id"`.
+File: `src/doc_lineage/blackline.py`, function `align_sections`, **lines 140–169** (the `for section_id in ordered_ids:` loop body through `return pairs`).
 
-Production code on this branch keeps ID-first pairing; this file records the RED/GREEN transcript only.
+The ID-first loop was temporarily replaced with positional index pairing and reversed right-side order, while still labeling `pairing_method="section_id"` (mislabeled semantic-only pairing):
+
+```python
+    left_sections = list(doc_a.sections)
+    right_sections = list(doc_b.sections)
+    pairs: list[SectionPair] = []
+    for index, section_id in enumerate(ordered_ids):
+        left = left_sections[index] if index < len(left_sections) else None
+        right = right_sections[-(index + 1)] if index < len(right_sections) else None
+        confidence = min(
+            _finite_confidence(left.header_confidence if left is not None else 1.0),
+            _finite_confidence(right.header_confidence if right is not None else 1.0),
+        )
+        pairs.append(
+            SectionPair(
+                section_id=section_id,
+                left=left,
+                right=right,
+                pairing_method="section_id",  # deliberate-break: mislabels positional pairing
+                confidence=confidence,
+            )
+        )
+    return pairs
+```
+
+Production code on this branch keeps ID-first pairing (`blackline.py` lines 140–169 as merged); this file records the RED/GREEN transcript only.
 
 ## RED — `pytest tests/blackline/test_section_id_pairing.py::test_pairs_by_section_id -q`
 
-```
+```text
 ============================= test session starts ==============================
 platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
 rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/Doc-Lineage-issue-38
@@ -52,7 +77,7 @@ FAILED tests/blackline/test_section_id_pairing.py::test_pairs_by_section_id
 
 ## GREEN — same command after revert
 
-```
+```text
 ============================= test session starts ==============================
 platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
 rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/Doc-Lineage-issue-38
