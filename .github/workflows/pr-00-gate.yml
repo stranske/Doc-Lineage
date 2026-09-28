@@ -1043,15 +1043,57 @@ jobs:
               return;
             }
             const body = fs.readFileSync(commentPath, 'utf8');
-            await upsertAnchoredComment({
-              github,
-              context,
-              core,
-              prNumber: context.payload.pull_request?.number,
-              body,
-              anchorPattern: /<!--\s*gate-summary:([^>]*)-->/i,
-              fallbackMarker: '<!-- gate-summary:',
-            });
+            // This write runs before the commit-status write below and uses the
+            // same read-only workflow token on fork pull requests. Preserve the
+            // already-computed summary without hiding same-repository failures.
+            const pullRequest = context.payload.pull_request;
+            const headRepoObject = pullRequest?.head?.repo;
+            const headRepo = headRepoObject?.full_name;
+            const baseRepo = pullRequest?.base?.repo?.full_name;
+            const isForkPullRequest = Boolean(
+              baseRepo &&
+                (headRepoObject === null || (headRepo && headRepo !== baseRepo)),
+            );
+            try {
+              await upsertAnchoredComment({
+                github,
+                context,
+                core,
+                prNumber: context.payload.pull_request?.number,
+                body,
+                anchorPattern: /<!--\s*gate-summary:([^>]*)-->/i,
+                fallbackMarker: '<!-- gate-summary:',
+              });
+            } catch (error) {
+              const responseHeaders = error?.response?.headers || {};
+              const hitRateLimit =
+                error?.status === 403 &&
+                (/rate limit|abuse/i.test(error?.message || '') ||
+                  /rate limit|abuse/i.test(error?.response?.data?.message || '') ||
+                  String(responseHeaders['x-ratelimit-remaining']) === '0' ||
+                  responseHeaders['retry-after'] != null);
+              const readOnlyForkToken =
+                error?.status === 403 && isForkPullRequest && !hitRateLimit;
+              if (hitRateLimit) {
+                core.warning(
+                  'Rate limit prevented Gate from updating the consolidated summary comment.',
+                );
+              } else if (readOnlyForkToken) {
+                core.warning(
+                  'Fork pull request from ' +
+                    `${headRepo ?? pullRequest?.head?.label ?? 'deleted source repository'}: ` +
+                    'the workflow token is read-only, so the consolidated Gate ' +
+                    `summary comment could not be written (${error.message}). ` +
+                    'Falling back to the job summary.',
+                );
+                await core.summary
+                  .addHeading('Gate summary (fork pull request)', 3)
+                  .addRaw(body)
+                  .write();
+              } else {
+                throw error;
+              }
+            }
 
       - name: Report Gate commit status
         if: ${{ always() }}
@@ -1123,14 +1165,58 @@ jobs:
                 target_url: targetUrl,
               }));
             } catch (error) {
+              const responseHeaders = error?.response?.headers || {};
               const hitRateLimit =
                 error?.status === 403 &&
-                /rate limit/i.test(error?.message || '');
+                (/rate limit|abuse/i.test(error?.message || '') ||
+                  /rate limit|abuse/i.test(error?.response?.data?.message || '') ||
+                  String(responseHeaders['x-ratelimit-remaining']) === '0' ||
+                  responseHeaders['retry-after'] != null);
+              // Fork pull requests receive a read-only workflow token. Preserve
+              // their computed verdict, but keep same-repository permission
+              // failures and unrelated errors loud.
+              const pullRequest = context.payload.pull_request;
+              const headRepoObject = pullRequest?.head?.repo;
+              const headRepo = headRepoObject?.full_name;
+              const baseRepo = pullRequest?.base?.repo?.full_name;
+              const isForkPullRequest = Boolean(
+                baseRepo &&
+                  (headRepoObject === null || (headRepo && headRepo !== baseRepo)),
+              );
+              const readOnlyForkToken =
+                error?.status === 403 && isForkPullRequest && !hitRateLimit;
               if (hitRateLimit) {
                 core.warning(
                   'Rate limit prevented Gate from updating the commit status; ' +
                     'leaving existing status untouched.',
                 );
+                if (state !== 'success') {
+                  core.setFailed(
+                    `Gate verdict for ${sha} is '${state}': ${description}`,
+                  );
+                }
+              } else if (readOnlyForkToken) {
+                core.warning(
+                  'Fork pull request from ' +
+                    `${headRepo ?? pullRequest?.head?.label ?? 'deleted source repository'}: ` +
+                    'the workflow token is ' +
+                    "read-only, so the 'Gate / gate' commit status could not be " +
+                    `written (${error.message}). Gate verdict for ${sha} is ` +
+                    `'${state}': ${description}.`,
+                );
+                await core.summary
+                  .addHeading('Gate verdict (fork pull request)', 3)
+                  .addRaw(
+                    'The `Gate / gate` commit status could not be written for ' +
+                      `\`${sha}\` because a pull request from a fork receives a ` +
+                      `read-only token. Gate verdict: **${state}** — ${description}`,
+                  )
+                  .write();
+                if (state !== 'success') {
+                  core.setFailed(
+                    `Gate verdict for ${sha} is '${state}': ${description}`,
+                  );
+                }
               } else {
                 throw error;
               }
