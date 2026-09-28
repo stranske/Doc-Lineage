@@ -73,6 +73,8 @@ python-redlines-docxodus==1.0.0
     # via python-redlines
 pytokens==0.4.1
     # via black
+pyyaml==6.0.3
+    # via doc-lineage (pyproject.toml)
 referencing==0.37.0
     # via
     #   jsonschema
