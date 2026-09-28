@@ -1073,7 +1073,12 @@ jobs:
                   String(responseHeaders['x-ratelimit-remaining']) === '0' ||
                   responseHeaders['retry-after'] != null);
               const readOnlyForkToken =
-                error?.status === 403 && isForkPullRequest && !hitRateLimit;
+                error?.status === 403 &&
+                isForkPullRequest &&
+                !hitRateLimit &&
+                /resource not accessible by integration/i.test(
+                  error?.response?.data?.message || error?.message || '',
+                );
               if (hitRateLimit) {
                 core.warning(
                   'Rate limit prevented Gate from updating the consolidated summary comment.',
@@ -1184,7 +1189,12 @@ jobs:
                   (headRepoObject === null || (headRepo && headRepo !== baseRepo)),
               );
               const readOnlyForkToken =
-                error?.status === 403 && isForkPullRequest && !hitRateLimit;
+                error?.status === 403 &&
+                isForkPullRequest &&
+                !hitRateLimit &&
+                /resource not accessible by integration/i.test(
+                  error?.response?.data?.message || error?.message || '',
+                );
               if (hitRateLimit) {
                 core.warning(
                   'Rate limit prevented Gate from updating the commit status; ' +

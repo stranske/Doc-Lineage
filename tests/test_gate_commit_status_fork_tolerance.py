@@ -56,8 +56,7 @@ def _run_node_harness(
     return dict(json.loads(completed.stdout))
 
 
-STATUS_RUNNER_JS = textwrap.dedent(
-    """
+STATUS_RUNNER_JS = textwrap.dedent("""
     const fs = require('fs');
     const vm = require('vm');
     const src = fs.readFileSync(process.argv[2], 'utf8');
@@ -180,6 +179,10 @@ STATUS_RUNNER_JS = textwrap.dedent(
           ...SAME, state: 'success',
           error: makeError(403, 'Resource not accessible by integration'),
         }),
+        fork_unrelated_403: await runCase({
+          ...FORK, state: 'success',
+          error: makeError(403, 'Repository policy denied this operation'),
+        }),
         fork_rate_limit: await runCase({
           ...FORK, state: 'success',
           error: makeError(403, 'API rate limit exceeded'),
@@ -216,8 +219,7 @@ STATUS_RUNNER_JS = textwrap.dedent(
       };
       process.stdout.write(JSON.stringify(outcomes));
     })();
-    """
-).strip()
+    """).strip()
 
 
 @pytest.fixture(scope="module")
@@ -266,6 +268,13 @@ def test_same_repo_403_still_fails(status_outcomes: dict[str, Any]) -> None:
     assert case["failures"] == []
 
 
+def test_unrelated_fork_403_still_fails(status_outcomes: dict[str, Any]) -> None:
+    case = status_outcomes["fork_unrelated_403"]
+    assert case["threw"]["status"] == 403
+    assert case["summaryWrites"] == 0
+    assert case["failures"] == []
+
+
 def test_all_rate_limit_signals_keep_their_own_path(
     status_outcomes: dict[str, Any],
 ) -> None:
@@ -305,8 +314,7 @@ def test_successful_status_write_is_silent(status_outcomes: dict[str, Any]) -> N
     assert case["requests"][0]["sha"] == "headsha"
 
 
-COMMENT_RUNNER_JS = textwrap.dedent(
-    """
+COMMENT_RUNNER_JS = textwrap.dedent("""
     const nodeFs = require('fs');
     const vm = require('vm');
     const src = nodeFs.readFileSync(process.argv[2], 'utf8');
@@ -389,6 +397,9 @@ COMMENT_RUNNER_JS = textwrap.dedent(
         same_repo_read_only: await runCase({
           ...SAME, error: makeError(403, 'Resource not accessible by integration'),
         }),
+        fork_unrelated_403: await runCase({
+          ...FORK, error: makeError(403, 'Repository policy denied this operation'),
+        }),
         fork_rate_limit: await runCase({
           ...FORK, error: makeError(403, 'API rate limit exceeded'),
         }),
@@ -406,8 +417,7 @@ COMMENT_RUNNER_JS = textwrap.dedent(
       };
       process.stdout.write(JSON.stringify(outcomes));
     })();
-    """
-).strip()
+    """).strip()
 
 
 @pytest.fixture(scope="module")
@@ -432,6 +442,12 @@ def test_comment_fork_read_only_403_falls_back_to_job_summary(
 
 def test_comment_same_repo_403_still_fails(comment_outcomes: dict[str, Any]) -> None:
     assert comment_outcomes["same_repo_read_only"]["threw"]["status"] == 403
+
+
+def test_comment_unrelated_fork_403_still_fails(
+    comment_outcomes: dict[str, Any],
+) -> None:
+    assert comment_outcomes["fork_unrelated_403"]["threw"]["status"] == 403
 
 
 def test_comment_rate_limit_signals_stay_separate(
