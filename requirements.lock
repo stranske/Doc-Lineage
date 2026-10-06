@@ -14,7 +14,7 @@ attrs==26.1.0
     #   referencing
 beautifulsoup4==4.15.0
     # via edgartools
-black==26.5.1
+black==26.10.0
     # via doc-lineage (pyproject.toml)
 certifi==2026.7.22
     # via
@@ -29,7 +29,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   click
     #   pytest
     #   tqdm
-coverage==7.16.1
+coverage==7.16.2
     # via pytest-cov
 edgartools==5.58.0
     # via doc-lineage (pyproject.toml)
@@ -72,7 +72,7 @@ markupsafe==3.0.3
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-mypy==2.3.1
+mypy==2.4.0
     # via doc-lineage (pyproject.toml)
 mypy-extensions==1.1.0
     # via
@@ -168,7 +168,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.9
+ruff==0.16.10
     # via doc-lineage (pyproject.toml)
 setuptools==82.0.1
     # via doc-lineage (pyproject.toml)
