@@ -1,0 +1,43 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /workspace
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/lineage/test_supersession_evidence.py F                            [ 50%]
+tests/test_identity_manifest.py F                                        [100%]
+
+=================================== FAILURES ===================================
+____________ test_prefix_only_input_publishes_no_confirmed_lineage _____________
+
+tmp_path = PosixPath('/tmp/test-root')
+
+    def test_prefix_only_input_publishes_no_confirmed_lineage(tmp_path: Path) -> None:
+        directory = tmp_path / "alpha/reports"
+        directory.mkdir(parents=True)
+        for name, content in [("1_report.pdf", b"old"), ("2_report.pdf", b"new")]:
+            (directory / name).write_bytes(content)
+        rows = build_manifest_rows(tmp_path)
+        newer = next(row for row in rows if Path(row.path).name == "2_report.pdf")
+>       assert newer.supersedes is None
+E       AssertionError: assert 'cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4' is None
+E        +  where 'cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4' = ManifestRow(stable_id='11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437', sha256='11507a0e2f5e69d5dfa4...own', supersession_evidence=None, supersession_hint='cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4').supersedes
+
+tests/lineage/test_supersession_evidence.py:129: AssertionError
+____________ test_numeric_resupply_records_supersedes_and_evidence _____________
+
+    def test_numeric_resupply_records_supersedes_and_evidence() -> None:
+        rows = _rows_by_path(FIXTURE_ROOT)
+        older = rows["manager_alpha/lpa/2024/001_alpha_terms.pdf"]
+        newer = rows["manager_alpha/lpa/2024/002_alpha_terms.pdf"]
+>       assert newer["supersedes"] is None
+E       AssertionError: assert '30625187a0eba0130168c6f9b02038f04d3d154b6da5ee5cb3157eed9ec17548' is None
+
+tests/test_identity_manifest.py:160: AssertionError
+- generated xml file: /workspace/docs/evidence/supersession-evidence/manifest-prefix-red.xml -
+=========================== short test summary info ============================
+FAILED tests/lineage/test_supersession_evidence.py::test_prefix_only_input_publishes_no_confirmed_lineage
+FAILED tests/test_identity_manifest.py::test_numeric_resupply_records_supersedes_and_evidence
+============================== 2 failed in 0.32s ===============================

@@ -59,6 +59,7 @@ def test_written_manifest_contains_required_document_metadata(
         "mime": "application/pdf",
         "supersedes": None,
         "supersession_evidence": None,
+        "supersession_hint": None,
         "text_layer": "unknown",
     }
 
@@ -156,8 +157,9 @@ def test_numeric_resupply_records_supersedes_and_evidence() -> None:
     rows = _rows_by_path(FIXTURE_ROOT)
     older = rows["manager_alpha/lpa/2024/001_alpha_terms.pdf"]
     newer = rows["manager_alpha/lpa/2024/002_alpha_terms.pdf"]
-    assert newer["supersedes"] == older["stable_id"]
-    assert newer["supersession_evidence"] == "numeric_prefix_separator"
+    assert newer["supersedes"] is None
+    assert newer["supersession_evidence"] is None
+    assert newer["supersession_hint"] == older["stable_id"]
 
 
 @pytest.mark.parametrize("duplicate_original", [False, True])
@@ -182,11 +184,13 @@ def test_identical_resupplies_preserve_prior_distinct_identity(
     rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
     for filename in ("1_report.pdf", "2_report.pdf", "3_report.pdf"):
         row = rows[filename]
-        assert row["supersedes"] == (None if duplicate_original else sha256_bytes(b"original"))
-        assert row["supersession_evidence"] == (
-            None if duplicate_original else "numeric_prefix_separator"
+        assert row["supersedes"] is None
+        assert row["supersession_hint"] == (
+            None if duplicate_original else sha256_bytes(b"original")
         )
-    assert rows["4_report.pdf"]["supersedes"] == sha256_bytes(documents["3_report.pdf"])
+        assert row["supersession_evidence"] is None
+    assert rows["4_report.pdf"]["supersedes"] is None
+    assert rows["4_report.pdf"]["supersession_hint"] == sha256_bytes(documents["3_report.pdf"])
     assert all(row["supersedes"] != row["stable_id"] for row in rows.values())
     persisted = output.read_bytes()
     write_manifest(tmp_path, output)
@@ -348,10 +352,9 @@ def test_supersession_is_path_scoped_with_duplicate_content(tmp_path: Path) -> N
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
     rows = _rows_by_path(library)
-    assert rows["alpha/reports/002_report.pdf"]["supersedes"] == sha256_bytes(b"old")
-    assert (
-        rows["alpha/reports/002_report.pdf"]["supersession_evidence"] == "numeric_prefix_separator"
-    )
+    assert rows["alpha/reports/002_report.pdf"]["supersedes"] is None
+    assert rows["alpha/reports/002_report.pdf"]["supersession_evidence"] is None
+    assert rows["alpha/reports/002_report.pdf"]["supersession_hint"] == sha256_bytes(b"old")
     for relative in docs.keys() - {"alpha/reports/002_report.pdf"}:
         assert rows[relative]["supersedes"] is None
         assert rows[relative]["supersession_evidence"] is None
@@ -615,8 +618,9 @@ def test_numeric_resupply_links_unnumbered_original_and_orders_numerically(
     assert rows[versions[0]]["supersedes"] is None
     assert rows[versions[0]]["supersession_evidence"] is None
     for older, newer in zip(versions, versions[1:], strict=False):
-        assert rows[newer]["supersedes"] == rows[older]["stable_id"]
-        assert rows[newer]["supersession_evidence"] == "numeric_prefix_separator"
+        assert rows[newer]["supersedes"] is None
+        assert rows[newer]["supersession_evidence"] is None
+        assert rows[newer]["supersession_hint"] == rows[older]["stable_id"]
 
 
 @pytest.mark.parametrize("duplicate_content", [False, True])
@@ -639,11 +643,13 @@ def test_equal_numeric_prefixes_do_not_invent_version_order(
         row = rows[filename]
         if duplicate_content:
             expected = b"first" if filename == "2_report.pdf" else b"original"
-            assert row.supersedes == sha256_bytes(expected)
-            assert row.supersession_evidence == "numeric_prefix_separator"
+            assert row.supersedes is None
+            assert row.supersession_evidence is None
+            assert row.supersession_hint == sha256_bytes(expected)
         else:
             assert row.supersedes is None
             assert row.supersession_evidence is None
+            assert row.supersession_hint is None
 
 
 @pytest.mark.parametrize("annotation", ["present", "absent"])

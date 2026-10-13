@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.138" timestamp="2026-10-13T12:12:36.445181-05:00" hostname="local"><testcase classname="tests.lineage.test_supersession_chain" name="test_build_supersession_chain_orders_by_numeric_prefix" time="0.027"><failure message="AssertionError: assert [Supersession...x_separator')] == []&#10;  &#10;  Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')&#10;  Use -v to get more diff">def test_build_supersession_chain_orders_by_numeric_prefix() -&gt; None:
+        docs = [
+            DocumentRef("01-terms.pdf", "hash-a", "manager_alpha", "lpa", "2024"),
+            DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
+            DocumentRef("03-terms.pdf", "hash-c", "manager_alpha", "lpa", "2026"),
+        ]
+&gt;       assert build_supersession_chain(docs) == []
+E       AssertionError: assert [Supersession...x_separator')] == []
+E         
+E         Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')
+E         Use -v to get more diff
+
+tests/lineage/test_supersession_chain.py:24: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,11 @@
+{
+  "base": "ad55027827bff033d637bd8171f200e2e60a2d3f",
+  "sha256": {
+    "src/doc_lineage/manifest.py": "036c6b7b2f4e8b408872a5065fafa9202319df765fce1c32b9de5aac0aef8438",
+    "src/doc_lineage/lineage/families.py": "dbb5d98ba1a2343676d07857a9eeebe34da66ffda217e4275f619dee9636d4c7",
+    "src/doc_lineage/supersession.py": "01ea99e13643294aeaf17ecc904a3882ec0122bd7d15ae990074ff7bcdf05493",
+    "tests/test_identity_manifest.py": "899589b811644564b16787265266aab6986e63b17da4efc2856f12cc316c11aa",
+    "tests/lineage/test_supersession_chain.py": "c711190eeb913343b7133f1a22911dde9c14181972a792542638df3f0295c101",
+    "tests/lineage/test_supersession_evidence.py": "0e7257b1c3bfb0f30ef015f4499c516f63515ba0a69676151e65cdbad75414b9"
+  }
+}

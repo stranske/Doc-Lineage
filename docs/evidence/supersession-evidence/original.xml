@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="14" skipped="0" tests="57" time="1.190" timestamp="2026-10-13T12:05:24.593999-05:00" hostname="local"><testcase classname="tests.test_identity_manifest" name="test_written_manifest_contains_required_document_metadata[empty]" time="0.040"><failure message="AssertionError: assert {'as_of': '20...r_alpha', ...} == {'stable_id':...r_alpha', ...}&#10;  &#10;  Omitting 12 identical items, use -vv to show&#10;  Right contains 1 more item:&#10;  {'supersession_hint': None}&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/test-root')
+content = b''
+digest = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+
+    @pytest.mark.parametrize(
+        ("content", "digest"),
+        [
+            (b"", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+            (b"\x00\xff\r\n", "e9489f37fb3051e9efa1dc916004d7274e7b63975e3209708947267f2393a9be"),
+        ],
+        ids=["empty", "binary"],
+    )
+    def test_written_manifest_contains_required_document_metadata(
+        tmp_path: Path, content: bytes, digest: str
+    ) -&gt; None:
+        library = tmp_path / "library"
+        relative = "manager_alpha/lpa/2024/terms.pdf"
+        document = library / relative
+        document.parent.mkdir(parents=True)
+        document.write_bytes(content)
+        os.utime(document, (1_704_067_200, 1_704_067_200))
+        output = tmp_path / "manifest.jsonl"
+    
+        write_manifest(library, output)
+    
+        lines = output.read_text(encoding="utf-8").splitlines()
+        assert len(lines) == 1
+&gt;       assert json.loads(lines[0]) == {
+            "stable_id": digest,
+            "sha256": digest,
+            "path": relative,
+            "entity_slug": "manager_alpha",
+            "category": "lpa",
+            "as_of": "2024",
+            "received_at": "2024-01-01T00:00:00+00:00",
+            "bytes": len(content),
+            "mime": "application/pdf",
+            "supersedes": None,
+            "supersession_evidence": None,
+            "supersession_hint": None,
+            "text_layer": "unknown",
+        }
+E       AssertionError: assert {'as_of': '20...r_alpha', ...} == {'stable_id':...r_alpha', ...}
+E         
+E         Omitting 12 identical items, use -vv to show
+E         Right contains 1 more item:
+E         {'supersession_hint': None}
+E         Use -v to get more diff
+
+tests/test_identity_manifest.py:50: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_written_manifest_contains_required_document_metadata[binary]" time="0.003"><failure message="AssertionError: assert {'as_of': '20...r_alpha', ...} == {'stable_id':...r_alpha', ...}&#10;  &#10;  Omitting 12 identical items, use -vv to show&#10;  Right contains 1 more item:&#10;  {'supersession_hint': None}&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/test-root')
+content = b'\x00\xff\r\n'
+digest = 'e9489f37fb3051e9efa1dc916004d7274e7b63975e3209708947267f2393a9be'
+
+    @pytest.mark.parametrize(
+        ("content", "digest"),
+        [
+            (b"", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+            (b"\x00\xff\r\n", "e9489f37fb3051e9efa1dc916004d7274e7b63975e3209708947267f2393a9be"),
+        ],
+        ids=["empty", "binary"],
+    )
+    def test_written_manifest_contains_required_document_metadata(
+        tmp_path: Path, content: bytes, digest: str
+    ) -&gt; None:
+        library = tmp_path / "library"
+        relative = "manager_alpha/lpa/2024/terms.pdf"
+        document = library / relative
+        document.parent.mkdir(parents=True)
+        document.write_bytes(content)
+        os.utime(document, (1_704_067_200, 1_704_067_200))
+        output = tmp_path / "manifest.jsonl"
+    
+        write_manifest(library, output)
+    
+        lines = output.read_text(encoding="utf-8").splitlines()
+        assert len(lines) == 1
+&gt;       assert json.loads(lines[0]) == {
+            "stable_id": digest,
+            "sha256": digest,
+            "path": relative,
+            "entity_slug": "manager_alpha",
+            "category": "lpa",
+            "as_of": "2024",
+            "received_at": "2024-01-01T00:00:00+00:00",
+            "bytes": len(content),
+            "mime": "application/pdf",
+            "supersedes": None,
+            "supersession_evidence": None,
+            "supersession_hint": None,
+            "text_layer": "unknown",
+        }
+E       AssertionError: assert {'as_of': '20...r_alpha', ...} == {'stable_id':...r_alpha', ...}
+E         
+E         Omitting 12 identical items, use -vv to show
+E         Right contains 1 more item:
+E         {'supersession_hint': None}
+E         Use -v to get more diff
+
+tests/test_identity_manifest.py:50: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_rename_preserves_stable_id_and_sha256" time="0.002" /><testcase classname="tests.test_identity_manifest" name="test_duplicate_content_paths_share_stable_id" time="0.004" /><testcase classname="tests.test_identity_manifest" name="test_incremental_copy_and_removal_preserve_identity" time="0.016" /><testcase classname="tests.test_identity_manifest" name="test_incremental_manifest_tracks_fixture_rename" time="0.012" /><testcase classname="tests.test_identity_manifest" name="test_numeric_resupply_records_supersedes_and_evidence" time="0.003"><failure message="AssertionError: assert '30625187a0eba0130168c6f9b02038f04d3d154b6da5ee5cb3157eed9ec17548' is None">def test_numeric_resupply_records_supersedes_and_evidence() -&gt; None:
+        rows = _rows_by_path(FIXTURE_ROOT)
+        older = rows["manager_alpha/lpa/2024/001_alpha_terms.pdf"]
+        newer = rows["manager_alpha/lpa/2024/002_alpha_terms.pdf"]
+&gt;       assert newer["supersedes"] is None
+E       AssertionError: assert '30625187a0eba0130168c6f9b02038f04d3d154b6da5ee5cb3157eed9ec17548' is None
+
+tests/test_identity_manifest.py:160: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_identical_resupplies_preserve_prior_distinct_identity[False]" time="0.004"><failure message="AssertionError: assert '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5' is None">tmp_path = PosixPath('/tmp/test-root')
+duplicate_original = False
+
+    @pytest.mark.parametrize("duplicate_original", [False, True])
+    def test_identical_resupplies_preserve_prior_distinct_identity(
+        tmp_path: Path, duplicate_original: bool
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports"
+        directory.mkdir(parents=True)
+        documents = {
+            "report.pdf": b"original",
+            "1_report.pdf": b"original" if duplicate_original else b"revision",
+            "2_report.pdf": b"original" if duplicate_original else b"revision",
+            "3_report.pdf": b"original" if duplicate_original else b"revision",
+            "4_report.pdf": b"final revision",
+        }
+        for filename, content in documents.items():
+            (directory / filename).write_bytes(content)
+        output = tmp_path / "manifest.jsonl"
+    
+        write_manifest(tmp_path, output)
+    
+        rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+        for filename in ("1_report.pdf", "2_report.pdf", "3_report.pdf"):
+            row = rows[filename]
+&gt;           assert row["supersedes"] is None
+E           AssertionError: assert '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5' is None
+
+tests/test_identity_manifest.py:187: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_identical_resupplies_preserve_prior_distinct_identity[True]" time="0.003"><failure message="KeyError: 'supersession_hint'">tmp_path = PosixPath('/tmp/test-root')
+duplicate_original = True
+
+    @pytest.mark.parametrize("duplicate_original", [False, True])
+    def test_identical_resupplies_preserve_prior_distinct_identity(
+        tmp_path: Path, duplicate_original: bool
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports"
+        directory.mkdir(parents=True)
+        documents = {
+            "report.pdf": b"original",
+            "1_report.pdf": b"original" if duplicate_original else b"revision",
+            "2_report.pdf": b"original" if duplicate_original else b"revision",
+            "3_report.pdf": b"original" if duplicate_original else b"revision",
+            "4_report.pdf": b"final revision",
+        }
+        for filename, content in documents.items():
+            (directory / filename).write_bytes(content)
+        output = tmp_path / "manifest.jsonl"
+    
+        write_manifest(tmp_path, output)
+    
+        rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+        for filename in ("1_report.pdf", "2_report.pdf", "3_report.pdf"):
+            row = rows[filename]
+            assert row["supersedes"] is None
+&gt;           assert row["supersession_hint"] == (None if duplicate_original else sha256_bytes(b"original"))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'supersession_hint'
+
+tests/test_identity_manifest.py:188: KeyError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_text_layer_defaults_to_unknown" time="0.003" /><testcase classname="tests.test_identity_manifest" name="test_second_run_is_byte_identical" time="0.009" /><testcase classname="tests.test_identity_manifest" name="test_unchanged_manifest_is_not_rewritten[False]" time="0.013" /><testcase classname="tests.test_identity_manifest" name="test_unchanged_manifest_is_not_rewritten[True]" time="0.002" /><testcase classname="tests.test_identity_manifest" name="test_build_manifest_script_entry_point" time="0.447" /><testcase classname="tests.test_identity_manifest" name="test_content_based_stable_id_passes_rename_test" time="0.001" /><testcase classname="tests.test_identity_manifest" name="test_incremental_manifest_preserves_unchanged_lines" time="0.009" /><testcase classname="tests.test_identity_manifest" name="test_invalid_library_root_preserves_existing_manifest[False]" time="0.007" /><testcase classname="tests.test_identity_manifest" name="test_invalid_library_root_preserves_existing_manifest[True]" time="0.007" /><testcase classname="tests.test_identity_manifest" name="test_supersession_is_path_scoped_with_duplicate_content" time="0.003"><failure message="AssertionError: assert 'cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4' is None">tmp_path = PosixPath('/tmp/test-root')
+
+    def test_supersession_is_path_scoped_with_duplicate_content(tmp_path: Path) -&gt; None:
+        library = tmp_path / "library"
+        docs = {
+            "alpha/reports/001_report.pdf": b"old",
+            "alpha/reports/002_report.pdf": b"new",
+            "beta/reports/copy.pdf": b"new",
+            "gamma/reports/001_report.pdf": b"same",
+            "gamma/reports/002_report.pdf": b"same",
+        }
+        for relative, content in docs.items():
+            path = library / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        rows = _rows_by_path(library)
+&gt;       assert rows["alpha/reports/002_report.pdf"]["supersedes"] is None
+E       AssertionError: assert 'cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4' is None
+
+tests/test_identity_manifest.py:353: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_document_output_inside_library_is_rejected[False]" time="0.001" /><testcase classname="tests.test_identity_manifest" name="test_document_output_inside_library_is_rejected[True]" time="0.001" /><testcase classname="tests.test_identity_manifest" name="test_manifest_does_not_hash_out_of_root_document_symlink[absolute]" time="0.002" /><testcase classname="tests.test_identity_manifest" name="test_manifest_does_not_hash_out_of_root_document_symlink[relative]" time="0.002" /><testcase classname="tests.test_identity_manifest" name="test_manifest_does_not_include_in_root_document_symlink" time="0.001" /><testcase classname="tests.test_identity_manifest" name="test_manifest_and_ingest_reject_same_oversized_pdf" time="0.020" /><testcase classname="tests.test_identity_manifest" name="test_manifest_accepts_exact_ingest_limit" time="0.072" /><testcase classname="tests.test_identity_manifest" name="test_manifest_skips_file_grown_after_fstat" time="0.025" /><testcase classname="tests.test_identity_manifest" name="test_manifest_rejects_symlink_swapped_after_listing[file]" time="0.002" /><testcase classname="tests.test_identity_manifest" name="test_manifest_rejects_symlink_swapped_after_listing[directory]" time="0.002" /><testcase classname="tests.test_identity_manifest" name="test_manifest_propagates_unexpected_document_read_error" time="0.001" /><testcase classname="tests.test_identity_manifest" name="test_manifest_reports_missing_secure_open_support" time="0.001" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_annotation_survives_unchanged_content[present]" time="0.005" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_annotation_survives_unchanged_content[absent]" time="0.007" /><testcase classname="tests.test_identity_manifest" name="test_invalid_prior_text_layer_is_reset[not-a-state]" time="0.005" /><testcase classname="tests.test_identity_manifest" name="test_invalid_prior_text_layer_is_reset[None]" time="0.005" /><testcase classname="tests.test_identity_manifest" name="test_invalid_prior_text_layer_is_reset[False]" time="0.005" /><testcase classname="tests.test_identity_manifest" name="test_invalid_prior_text_layer_is_reset[1]" time="0.006" /><testcase classname="tests.test_identity_manifest" name="test_invalid_prior_text_layer_is_reset[annotation4]" time="0.003" /><testcase classname="tests.test_identity_manifest" name="test_invalid_prior_text_layer_is_reset[annotation5]" time="0.003" /><testcase classname="tests.test_identity_manifest" name="test_numeric_resupply_links_unnumbered_original_and_orders_numerically[_]" time="0.006"><failure message="AssertionError: assert '6466e450a16b77b865c5829d6b6c56d9f892956475642dbeb9ccc4340fe01b15' is None">tmp_path = PosixPath('/tmp/test-root')
+separator = '_'
+
+    @pytest.mark.parametrize("separator", ["_", "-", "."])
+    def test_numeric_resupply_links_unnumbered_original_and_orders_numerically(
+        tmp_path: Path, separator: str
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports/2024"
+        directory.mkdir(parents=True)
+        versions = ["report.pdf", f"2{separator}report.pdf", f"10{separator}report.pdf"]
+        for filename in reversed(versions):
+            (directory / filename).write_bytes(filename.encode())
+    
+        output = tmp_path / "manifest.jsonl"
+        write_manifest(tmp_path, output)
+        rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+        assert rows[versions[0]]["supersedes"] is None
+        assert rows[versions[0]]["supersession_evidence"] is None
+        for older, newer in zip(versions, versions[1:], strict=False):
+&gt;           assert rows[newer]["supersedes"] is None
+E           AssertionError: assert '6466e450a16b77b865c5829d6b6c56d9f892956475642dbeb9ccc4340fe01b15' is None
+
+tests/test_identity_manifest.py:619: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_numeric_resupply_links_unnumbered_original_and_orders_numerically[-]" time="0.004"><failure message="AssertionError: assert '6466e450a16b77b865c5829d6b6c56d9f892956475642dbeb9ccc4340fe01b15' is None">tmp_path = PosixPath('/tmp/test-root')
+separator = '-'
+
+    @pytest.mark.parametrize("separator", ["_", "-", "."])
+    def test_numeric_resupply_links_unnumbered_original_and_orders_numerically(
+        tmp_path: Path, separator: str
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports/2024"
+        directory.mkdir(parents=True)
+        versions = ["report.pdf", f"2{separator}report.pdf", f"10{separator}report.pdf"]
+        for filename in reversed(versions):
+            (directory / filename).write_bytes(filename.encode())
+    
+        output = tmp_path / "manifest.jsonl"
+        write_manifest(tmp_path, output)
+        rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+        assert rows[versions[0]]["supersedes"] is None
+        assert rows[versions[0]]["supersession_evidence"] is None
+        for older, newer in zip(versions, versions[1:], strict=False):
+&gt;           assert rows[newer]["supersedes"] is None
+E           AssertionError: assert '6466e450a16b77b865c5829d6b6c56d9f892956475642dbeb9ccc4340fe01b15' is None
+
+tests/test_identity_manifest.py:619: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_numeric_resupply_links_unnumbered_original_and_orders_numerically[.]" time="0.004"><failure message="AssertionError: assert '6466e450a16b77b865c5829d6b6c56d9f892956475642dbeb9ccc4340fe01b15' is None">tmp_path = PosixPath('/tmp/test-root')
+separator = '.'
+
+    @pytest.mark.parametrize("separator", ["_", "-", "."])
+    def test_numeric_resupply_links_unnumbered_original_and_orders_numerically(
+        tmp_path: Path, separator: str
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports/2024"
+        directory.mkdir(parents=True)
+        versions = ["report.pdf", f"2{separator}report.pdf", f"10{separator}report.pdf"]
+        for filename in reversed(versions):
+            (directory / filename).write_bytes(filename.encode())
+    
+        output = tmp_path / "manifest.jsonl"
+        write_manifest(tmp_path, output)
+        rows = {Path(path).name: json.loads(line) for path, line in read_manifest(output).items()}
+        assert rows[versions[0]]["supersedes"] is None
+        assert rows[versions[0]]["supersession_evidence"] is None
+        for older, newer in zip(versions, versions[1:], strict=False):
+&gt;           assert rows[newer]["supersedes"] is None
+E           AssertionError: assert '6466e450a16b77b865c5829d6b6c56d9f892956475642dbeb9ccc4340fe01b15' is None
+
+tests/test_identity_manifest.py:619: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_equal_numeric_prefixes_do_not_invent_version_order[False]" time="0.005"><failure message="AttributeError: 'ManifestRow' object has no attribute 'supersession_hint'. Did you mean: 'supersession_evidence'?">tmp_path = PosixPath('/tmp/test-root')
+duplicate_content = False
+
+    @pytest.mark.parametrize("duplicate_content", [False, True])
+    def test_equal_numeric_prefixes_do_not_invent_version_order(
+        tmp_path: Path, duplicate_content: bool
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports"
+        directory.mkdir(parents=True)
+        documents = {
+            "report.pdf": b"original",
+            "1_report.pdf": b"first",
+            "01-report.pdf": b"first" if duplicate_content else b"conflicting",
+            "2_report.pdf": b"second",
+        }
+        for filename, content in documents.items():
+            (directory / filename).write_bytes(content)
+        rows = {Path(row.path).name: row for row in build_manifest_rows(tmp_path)}
+        assert rows["report.pdf"].supersedes is None
+        for filename in ("1_report.pdf", "01-report.pdf", "2_report.pdf"):
+            row = rows[filename]
+            if duplicate_content:
+                expected = b"first" if filename == "2_report.pdf" else b"original"
+                assert row.supersedes is None
+                assert row.supersession_evidence is None
+                assert row.supersession_hint == sha256_bytes(expected)
+            else:
+                assert row.supersedes is None
+                assert row.supersession_evidence is None
+&gt;               assert row.supersession_hint is None
+                       ^^^^^^^^^^^^^^^^^^^^^
+E               AttributeError: 'ManifestRow' object has no attribute 'supersession_hint'. Did you mean: 'supersession_evidence'?
+
+tests/test_identity_manifest.py:650: AttributeError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_equal_numeric_prefixes_do_not_invent_version_order[True]" time="0.013"><failure message="AssertionError: assert '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5' is None&#10; +  where '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5' = ManifestRow(stable_id='a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e', sha256='a7937b64b8caa58f0372...fdd15a9e063849ed437a49677e6fcc5b4198c76575be5', text_layer='unknown', supersession_evidence='numeric_prefix_separator').supersedes">tmp_path = PosixPath('/tmp/test-root')
+duplicate_content = True
+
+    @pytest.mark.parametrize("duplicate_content", [False, True])
+    def test_equal_numeric_prefixes_do_not_invent_version_order(
+        tmp_path: Path, duplicate_content: bool
+    ) -&gt; None:
+        directory = tmp_path / "alpha/reports"
+        directory.mkdir(parents=True)
+        documents = {
+            "report.pdf": b"original",
+            "1_report.pdf": b"first",
+            "01-report.pdf": b"first" if duplicate_content else b"conflicting",
+            "2_report.pdf": b"second",
+        }
+        for filename, content in documents.items():
+            (directory / filename).write_bytes(content)
+        rows = {Path(row.path).name: row for row in build_manifest_rows(tmp_path)}
+        assert rows["report.pdf"].supersedes is None
+        for filename in ("1_report.pdf", "01-report.pdf", "2_report.pdf"):
+            row = rows[filename]
+            if duplicate_content:
+                expected = b"first" if filename == "2_report.pdf" else b"original"
+&gt;               assert row.supersedes is None
+E               AssertionError: assert '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5' is None
+E                +  where '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5' = ManifestRow(stable_id='a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e', sha256='a7937b64b8caa58f0372...fdd15a9e063849ed437a49677e6fcc5b4198c76575be5', text_layer='unknown', supersession_evidence='numeric_prefix_separator').supersedes
+
+tests/test_identity_manifest.py:644: AssertionError</failure></testcase><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_new_path[False-present]" time="0.007" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_new_path[False-absent]" time="0.005" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_new_path[True-present]" time="0.008" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_new_path[True-absent]" time="0.009" /><testcase classname="tests.test_identity_manifest" name="test_conflicting_text_layer_results_are_not_inherited_by_new_path" time="0.004" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_reused_path[False-present]" time="0.005" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_reused_path[False-absent]" time="0.007" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_reused_path[True-present]" time="0.009" /><testcase classname="tests.test_identity_manifest" name="test_text_layer_follows_content_to_reused_path[True-absent]" time="0.010" /><testcase classname="tests.lineage.test_supersession_chain" name="test_detect_family_groups_numeric_prefix_variants" time="0.000" /><testcase classname="tests.lineage.test_supersession_chain" name="test_build_supersession_chain_orders_by_numeric_prefix" time="0.000"><failure message="AssertionError: assert [Supersession...x_separator')] == []&#10;  &#10;  Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')&#10;  Use -v to get more diff">def test_build_supersession_chain_orders_by_numeric_prefix() -&gt; None:
+        docs = [
+            DocumentRef("01-terms.pdf", "hash-a", "manager_alpha", "lpa", "2024"),
+            DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
+            DocumentRef("03-terms.pdf", "hash-c", "manager_alpha", "lpa", "2026"),
+        ]
+&gt;       assert build_supersession_chain(docs) == []
+E       AssertionError: assert [Supersession...x_separator')] == []
+E         
+E         Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')
+E         Use -v to get more diff
+
+tests/lineage/test_supersession_chain.py:24: AssertionError</failure></testcase><testcase classname="tests.lineage.test_supersession_chain" name="test_nested_paths_use_numeric_order_and_skip_duplicate_hashes" time="0.000"><failure message="AssertionError: assert [Supersession...x_separator')] == []&#10;  &#10;  Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='folder/1-terms.pdf', successor_filename='folder/2-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')&#10;  Use -v to get more diff">def test_nested_paths_use_numeric_order_and_skip_duplicate_hashes() -&gt; None:
+        docs = [
+            DocumentRef("folder/10-terms.pdf", "hash-c", "manager_alpha", "lpa", "2026"),
+            DocumentRef("folder/2-terms.pdf", "hash-b", "manager_alpha", "lpa", "2026"),
+            DocumentRef("folder/1-terms.pdf", "hash-a", "manager_alpha", "lpa", "2026"),
+            DocumentRef("folder/3-terms.pdf", "hash-b", "manager_alpha", "lpa", "2026"),
+        ]
+&gt;       assert build_supersession_chain(docs) == []
+E       AssertionError: assert [Supersession...x_separator')] == []
+E         
+E         Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='folder/1-terms.pdf', successor_filename='folder/2-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')
+E         Use -v to get more diff
+
+tests/lineage/test_supersession_chain.py:47: AssertionError</failure></testcase><testcase classname="tests.lineage.test_supersession_chain" name="test_build_supersession_chain_deduplicates_non_adjacent_repeated_hashes" time="0.000"><failure message="AssertionError: assert [Supersession...x_separator')] == []&#10;  &#10;  Left contains one more item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')&#10;  Use -v to get more diff">def test_build_supersession_chain_deduplicates_non_adjacent_repeated_hashes() -&gt; None:
+        docs = [
+            DocumentRef("01-terms.pdf", "hash-a", "manager_alpha", "lpa", "2024"),
+            DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
+            DocumentRef("03-terms.pdf", "hash-a", "manager_alpha", "lpa", "2026"),
+        ]
+&gt;       assert build_supersession_chain(docs) == []
+E       AssertionError: assert [Supersession...x_separator')] == []
+E         
+E         Left contains one more item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')
+E         Use -v to get more diff
+
+tests/lineage/test_supersession_chain.py:67: AssertionError</failure></testcase></testsuite></testsuites>

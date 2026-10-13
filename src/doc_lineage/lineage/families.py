@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from doc_lineage.identity import normalized_supersession_group, parse_numeric_prefix
+from doc_lineage.supersession import SupersessionClaims, confirmed_supersessions
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ class SupersessionEdge:
     successor_filename: str
     numeric_prefix: int | None
     convention: str | None
+    supersession_evidence: dict[str, str]
 
 
 def detect_family(doc: DocumentRef) -> FamilyId:
@@ -53,40 +55,41 @@ def detect_family(doc: DocumentRef) -> FamilyId:
     )
 
 
-def build_supersession_chain(docs: Sequence[DocumentRef]) -> list[SupersessionEdge]:
-    """Build supersession edges using content-hash identity and numeric-prefix ordering."""
-    grouped: dict[str, list[DocumentRef]] = {}
-    for doc in docs:
-        family = detect_family(doc)
-        grouped.setdefault(family.as_key(), []).append(doc)
+def build_supersession_chain(
+    docs: Sequence[DocumentRef], *, supersession_evidence: SupersessionClaims | None = None
+) -> list[SupersessionEdge]:
+    """Publish only explicit content-bound claims; filenames remain family hints.
+
+    Evidence may connect renamed documents or override filename ordering. Duplicate
+    byte versions share an identity and use a deterministic representative path.
+    """
+    confirmed = confirmed_supersessions(supersession_evidence, {doc.content_hash for doc in docs})
+    by_hash: dict[str, DocumentRef] = {}
+    for doc in sorted(docs, key=lambda item: (item.filename, item.as_of)):
+        by_hash.setdefault(doc.content_hash, doc)
+
+    def chain_order(successor_hash: str) -> tuple[int, str]:
+        depth = 0
+        current = successor_hash
+        while current in confirmed:
+            depth += 1
+            current = confirmed[current][0]
+        return depth, successor_hash
 
     edges: list[SupersessionEdge] = []
-    for family_docs in grouped.values():
-        ordered = sorted(
-            family_docs,
-            key=lambda item: (
-                parse_numeric_prefix(Path(item.filename).name)[0] or 0,
-                item.as_of,
-                item.filename,
-            ),
-        )
-        deduped: list[DocumentRef] = []
-        seen_hashes: set[str] = set()
-        for doc in ordered:
-            if doc.content_hash in seen_hashes:
-                continue
-            seen_hashes.add(doc.content_hash)
-            deduped.append(doc)
-        for prior, successor in zip(deduped, deduped[1:], strict=False):
-            prefix, _, convention = parse_numeric_prefix(Path(successor.filename).name)
-            edges.append(
-                SupersessionEdge(
-                    prior_hash=prior.content_hash,
-                    successor_hash=successor.content_hash,
-                    prior_filename=prior.filename,
-                    successor_filename=successor.filename,
-                    numeric_prefix=prefix,
-                    convention=convention,
-                )
+    for successor_hash in sorted(confirmed, key=chain_order):
+        prior_hash, evidence = confirmed[successor_hash]
+        prior, successor = by_hash[prior_hash], by_hash[successor_hash]
+        prefix, _, convention = parse_numeric_prefix(Path(successor.filename).name)
+        edges.append(
+            SupersessionEdge(
+                prior_hash=prior_hash,
+                successor_hash=successor_hash,
+                prior_filename=prior.filename,
+                successor_filename=successor.filename,
+                numeric_prefix=prefix,
+                convention=convention,
+                supersession_evidence=dict(evidence),
             )
+        )
     return edges

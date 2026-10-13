@@ -1,0 +1,30 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /workspace
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/lineage/test_supersession_chain.py F                               [100%]
+
+=================================== FAILURES ===================================
+____________ test_build_supersession_chain_orders_by_numeric_prefix ____________
+
+    def test_build_supersession_chain_orders_by_numeric_prefix() -> None:
+        docs = [
+            DocumentRef("01-terms.pdf", "hash-a", "manager_alpha", "lpa", "2024"),
+            DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
+            DocumentRef("03-terms.pdf", "hash-c", "manager_alpha", "lpa", "2026"),
+        ]
+>       assert build_supersession_chain(docs) == []
+E       AssertionError: assert [Supersession...x_separator')] == []
+E         
+E         Left contains 2 more items, first extra item: SupersessionEdge(prior_hash='hash-a', successor_hash='hash-b', prior_filename='01-terms.pdf', successor_filename='02-terms.pdf', numeric_prefix=2, convention='numeric_prefix_separator')
+E         Use -v to get more diff
+
+tests/lineage/test_supersession_chain.py:24: AssertionError
+- generated xml file: /workspace/docs/evidence/supersession-evidence/lineage-prefix-red.xml -
+=========================== short test summary info ============================
+FAILED tests/lineage/test_supersession_chain.py::test_build_supersession_chain_orders_by_numeric_prefix
+============================== 1 failed in 0.23s ===============================
