@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="18" time="0.193" timestamp="2026-10-13T12:10:00.550531-05:00" hostname="local"><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[None-manifest]" time="0.049" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[None-lineage]" time="0.001" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence1-manifest]" time="0.002" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence1-lineage]" time="0.001" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence2-manifest]" time="0.002" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence2-lineage]" time="0.001" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence3-manifest]" time="0.002" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence3-lineage]" time="0.001" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence4-manifest]" time="0.002" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence4-lineage]" time="0.001" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence5-manifest]" time="0.002" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence5-lineage]" time="0.001" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence6-manifest]" time="0.002"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = PosixPath('/tmp/test-root')
+publisher = 'manifest'
+evidence = {'mechanism': 'owner_assertion', 'detail': ''}
+
+    @pytest.mark.parametrize("publisher", ["manifest", "lineage"])
+    @pytest.mark.parametrize(
+        "evidence",
+        [
+            None,
+            {},
+            {"detail": "notice"},
+            {"mechanism": "numeric_prefix_separator", "detail": "notice"},
+            {"mechanism": [], "detail": "notice"},
+            {"mechanism": "owner_assertion"},
+            {"mechanism": "owner_assertion", "detail": ""},
+            {"mechanism": "owner_assertion", "detail": " \n\t"},
+            {"mechanism": "owner_assertion", "detail": False},
+        ],
+    )
+    def test_malformed_supplied_evidence_is_rejected(tmp_path: Path, publisher: str, evidence) -&gt; None:
+        docs, prior, successor = _documents(tmp_path)
+        claims = {(prior, successor): evidence}
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:60: Failed</failure></testcase><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence6-lineage]" time="0.001"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = PosixPath('/tmp/test-root')
+publisher = 'lineage', evidence = {'mechanism': 'owner_assertion', 'detail': ''}
+
+    @pytest.mark.parametrize("publisher", ["manifest", "lineage"])
+    @pytest.mark.parametrize(
+        "evidence",
+        [
+            None,
+            {},
+            {"detail": "notice"},
+            {"mechanism": "numeric_prefix_separator", "detail": "notice"},
+            {"mechanism": [], "detail": "notice"},
+            {"mechanism": "owner_assertion"},
+            {"mechanism": "owner_assertion", "detail": ""},
+            {"mechanism": "owner_assertion", "detail": " \n\t"},
+            {"mechanism": "owner_assertion", "detail": False},
+        ],
+    )
+    def test_malformed_supplied_evidence_is_rejected(tmp_path: Path, publisher: str, evidence) -&gt; None:
+        docs, prior, successor = _documents(tmp_path)
+        claims = {(prior, successor): evidence}
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:60: Failed</failure></testcase><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence7-manifest]" time="0.002"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = PosixPath('/tmp/test-root')
+publisher = 'manifest'
+evidence = {'mechanism': 'owner_assertion', 'detail': ' \n\t'}
+
+    @pytest.mark.parametrize("publisher", ["manifest", "lineage"])
+    @pytest.mark.parametrize(
+        "evidence",
+        [
+            None,
+            {},
+            {"detail": "notice"},
+            {"mechanism": "numeric_prefix_separator", "detail": "notice"},
+            {"mechanism": [], "detail": "notice"},
+            {"mechanism": "owner_assertion"},
+            {"mechanism": "owner_assertion", "detail": ""},
+            {"mechanism": "owner_assertion", "detail": " \n\t"},
+            {"mechanism": "owner_assertion", "detail": False},
+        ],
+    )
+    def test_malformed_supplied_evidence_is_rejected(tmp_path: Path, publisher: str, evidence) -&gt; None:
+        docs, prior, successor = _documents(tmp_path)
+        claims = {(prior, successor): evidence}
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:60: Failed</failure></testcase><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence7-lineage]" time="0.001"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = PosixPath('/tmp/test-root')
+publisher = 'lineage'
+evidence = {'mechanism': 'owner_assertion', 'detail': ' \n\t'}
+
+    @pytest.mark.parametrize("publisher", ["manifest", "lineage"])
+    @pytest.mark.parametrize(
+        "evidence",
+        [
+            None,
+            {},
+            {"detail": "notice"},
+            {"mechanism": "numeric_prefix_separator", "detail": "notice"},
+            {"mechanism": [], "detail": "notice"},
+            {"mechanism": "owner_assertion"},
+            {"mechanism": "owner_assertion", "detail": ""},
+            {"mechanism": "owner_assertion", "detail": " \n\t"},
+            {"mechanism": "owner_assertion", "detail": False},
+        ],
+    )
+    def test_malformed_supplied_evidence_is_rejected(tmp_path: Path, publisher: str, evidence) -&gt; None:
+        docs, prior, successor = _documents(tmp_path)
+        claims = {(prior, successor): evidence}
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:60: Failed</failure></testcase><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence8-manifest]" time="0.002" /><testcase classname="tests.lineage.test_supersession_evidence" name="test_malformed_supplied_evidence_is_rejected[evidence8-lineage]" time="0.001" /></testsuite></testsuites>

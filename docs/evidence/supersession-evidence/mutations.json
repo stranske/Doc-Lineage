@@ -1,0 +1,23 @@
+[
+  {
+    "mutation": "manifest-prefix",
+    "path": "src/doc_lineage/manifest.py",
+    "command": "python3 -m pytest tests/lineage/test_supersession_evidence.py::test_prefix_only_input_publishes_no_confirmed_lineage tests/test_identity_manifest.py::test_numeric_resupply_records_supersedes_and_evidence -q",
+    "restored_sha256": "036c6b7b2f4e8b408872a5065fafa9202319df765fce1c32b9de5aac0aef8438",
+    "restored_exact": true
+  },
+  {
+    "mutation": "lineage-prefix",
+    "path": "src/doc_lineage/lineage/families.py",
+    "command": "python3 -m pytest tests/lineage/test_supersession_chain.py::test_build_supersession_chain_orders_by_numeric_prefix -q",
+    "restored_sha256": "dbb5d98ba1a2343676d07857a9eeebe34da66ffda217e4275f619dee9636d4c7",
+    "restored_exact": true
+  },
+  {
+    "mutation": "empty-detail",
+    "path": "src/doc_lineage/supersession.py",
+    "command": "python3 -m pytest tests/lineage/test_supersession_evidence.py::test_malformed_supplied_evidence_is_rejected -q",
+    "restored_sha256": "01ea99e13643294aeaf17ecc904a3882ec0122bd7d15ae990074ff7bcdf05493",
+    "restored_exact": true
+  }
+]

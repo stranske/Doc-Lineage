@@ -1,0 +1,23 @@
+{
+  "docs/evidence/supersession-evidence/README.md": "5776f0d3eff6d74bff09098467ad696cc989f81c4d36515cdd79eb346d337a3d",
+  "docs/evidence/supersession-evidence/empty-detail-green.log": "5abbf14eb4db7faa455667b94379b5cf10c9bea9696039dbb2704681dc24257c",
+  "docs/evidence/supersession-evidence/empty-detail-green.xml": "a442cf0aca10b063ef5a4ba0d10724471e3f62f2c874160ab8eb7b23db73d0a4",
+  "docs/evidence/supersession-evidence/empty-detail-red.log": "e12a48c93930f911fb9a02b7b19876fe4513d49c79f2d24722f7e2e7700824fc",
+  "docs/evidence/supersession-evidence/empty-detail-red.xml": "8a6e40aa3cbe66fc8296cb223f0119b2c54c3482fccd016caaab46704c67207c",
+  "docs/evidence/supersession-evidence/focused.log": "1c5243dcb332b12c0a994ebb77de7b7b0286ce0f7cb98786da40777aed567b0e",
+  "docs/evidence/supersession-evidence/focused.xml": "82f788d3dd519ebb15227c09a959752cc7bc2da60ebb3abdcd9d9577bd229e75",
+  "docs/evidence/supersession-evidence/full.log": "4f5bb6fcaee7a9e0d2fea61eeed0d9bbb9d4c8f3ff471545a6cdf31f303c91bd",
+  "docs/evidence/supersession-evidence/full.xml": "30596ed038520b5d43a7e52c26178e996e187577b0bc8dbe73d237fd2472c80d",
+  "docs/evidence/supersession-evidence/lineage-prefix-green.log": "da9854ae66b0d9549e9f5bc62532d5200ab9392821c00834ef308bd7c4173bd7",
+  "docs/evidence/supersession-evidence/lineage-prefix-green.xml": "4f59c40f37bc1dd368446ee11e5b85af1db2f537609033a7a3222396365e37f6",
+  "docs/evidence/supersession-evidence/lineage-prefix-red.log": "28cd274a24cc24ae997cdf532bf3852ccdb48b528f6399796e8cf166acea3a7c",
+  "docs/evidence/supersession-evidence/lineage-prefix-red.xml": "62124b6b95bf67a35672e731e5187a0f6ea94b3c7436bf554570ee7a5e751233",
+  "docs/evidence/supersession-evidence/manifest-prefix-green.log": "cce6491438a3ed8da51febb7a3e7a51ce89c70cf7d0def3205b820a784a82256",
+  "docs/evidence/supersession-evidence/manifest-prefix-green.xml": "4bf27762612dbbaa7dcc79b1d70019c1791f2ad64a14aa6255f245d2f52e6ba7",
+  "docs/evidence/supersession-evidence/manifest-prefix-red.log": "7beae2912188da123443f293189fefa52821b8b4c772f10807b52586b1dbc4af",
+  "docs/evidence/supersession-evidence/manifest-prefix-red.xml": "df781d2ca06ede90c41dd9f81603eba6ee0c187652c615db311a5d76f7f9fb48",
+  "docs/evidence/supersession-evidence/mutations.json": "84594f02056d9b7eddcf924df5c50b247e60694baa29b06bc1d7bbff80130680",
+  "docs/evidence/supersession-evidence/original.log": "234bacc6ce10b8970e2c1cc29440082407895b0e6235189de36df2cce31a8fe6",
+  "docs/evidence/supersession-evidence/original.xml": "aca2a618949c19d240d09b4bcbc8c8b8827e6a7cafb8ec3441fea766fca59702",
+  "docs/evidence/supersession-evidence/source-bindings.json": "c737919a5986b32bc148df3e06b0c428eae10a424453e687c43e2cd102081111"
+}

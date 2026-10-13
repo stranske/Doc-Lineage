@@ -21,7 +21,18 @@ def test_build_supersession_chain_orders_by_numeric_prefix() -> None:
         DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
         DocumentRef("03-terms.pdf", "hash-c", "manager_alpha", "lpa", "2026"),
     ]
-    edges = build_supersession_chain(docs)
+    assert build_supersession_chain(docs) == []
+    edges = build_supersession_chain(
+        docs,
+        supersession_evidence={
+            ("hash-a", "hash-b"): {"mechanism": "owner_assertion", "detail": "Owner, 2026-10-13"},
+            **(
+                {("hash-b", "hash-c"): {"mechanism": "source_metadata", "detail": "Version notice"}}
+                if any(doc.content_hash == "hash-c" for doc in docs)
+                else {}
+            ),
+        },
+    )
     assert len(edges) == 2
     assert edges[0].prior_hash == "hash-a"
     assert edges[0].successor_hash == "hash-b"
@@ -37,7 +48,18 @@ def test_nested_paths_use_numeric_order_and_skip_duplicate_hashes() -> None:
         DocumentRef("folder/1-terms.pdf", "hash-a", "manager_alpha", "lpa", "2026"),
         DocumentRef("folder/3-terms.pdf", "hash-b", "manager_alpha", "lpa", "2026"),
     ]
-    edges = build_supersession_chain(docs)
+    assert build_supersession_chain(docs) == []
+    edges = build_supersession_chain(
+        docs,
+        supersession_evidence={
+            ("hash-a", "hash-b"): {"mechanism": "owner_assertion", "detail": "Owner, 2026-10-13"},
+            **(
+                {("hash-b", "hash-c"): {"mechanism": "source_metadata", "detail": "Version notice"}}
+                if any(doc.content_hash == "hash-c" for doc in docs)
+                else {}
+            ),
+        },
+    )
     assert [(edge.prior_hash, edge.successor_hash) for edge in edges] == [
         ("hash-a", "hash-b"),
         ("hash-b", "hash-c"),
@@ -50,7 +72,18 @@ def test_build_supersession_chain_deduplicates_non_adjacent_repeated_hashes() ->
         DocumentRef("02-terms.pdf", "hash-b", "manager_alpha", "lpa", "2025"),
         DocumentRef("03-terms.pdf", "hash-a", "manager_alpha", "lpa", "2026"),
     ]
-    edges = build_supersession_chain(docs)
+    assert build_supersession_chain(docs) == []
+    edges = build_supersession_chain(
+        docs,
+        supersession_evidence={
+            ("hash-a", "hash-b"): {"mechanism": "owner_assertion", "detail": "Owner, 2026-10-13"},
+            **(
+                {("hash-b", "hash-c"): {"mechanism": "source_metadata", "detail": "Version notice"}}
+                if any(doc.content_hash == "hash-c" for doc in docs)
+                else {}
+            ),
+        },
+    )
     assert [(edge.prior_hash, edge.successor_hash) for edge in edges] == [
         ("hash-a", "hash-b"),
     ]

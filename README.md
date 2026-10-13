@@ -38,6 +38,46 @@ tracked-changes acceptance tests can be run from the source archive.
 - Run without servers: a Python library plus a static/offline review surface, producing HTML and CSV artifacts with one-click links back to the source document and page.
 - **Synthetic and public data only** in this repository. No proprietary manager material is ever committed or used in tests.
 
+## Confirmed document supersession
+
+Filename prefixes suggest order; they do not establish supersession. Manifest
+rows expose the suggested predecessor as `supersession_hint`, while `supersedes`
+and `supersession_evidence` remain null until explicit evidence is supplied.
+`build_supersession_chain` likewise returns no confirmed edges by default.
+
+Both Python APIs accept `supersession_evidence`, keyed by the pair
+`(prior_sha256, successor_sha256)` of original content digests:
+
+```python
+from pathlib import Path
+from doc_lineage.manifest import write_manifest
+
+claims = {
+    (prior_sha256, successor_sha256): {
+        "mechanism": "owner_assertion",
+        "detail": "Corpus owner, 2026-10-13: the revised terms replace the prior terms.",
+    }
+}
+write_manifest(Path("library"), Path("manifest.jsonl"), supersession_evidence=claims)
+```
+
+Pass the same mapping to `build_manifest_rows` or `build_supersession_chain`.
+The allowed mechanisms are `source_metadata`, `content_comparison`, and
+`owner_assertion`; each needs a specific nonempty string `detail`. The caller
+supplies the actual notice, comparison, or dated assertion; the library validates
+its structure and content binding, and does not invent or independently verify
+that assertion. Evidence can connect renamed documents independently of filename
+order. Both endpoints must exist in the supplied corpus. Self-links, multiple
+predecessors, and cycles raise `ValueError` before publication.
+
+Claims apply to content identities, so identical copies share confirmed lineage.
+Filename hints remain path-scoped. Renames preserve claims, but changed bytes
+require a new claim. Supply evidence on every manifest scan: old serialized
+claims are not silently trusted, and a scan without evidence clears old confirmed
+links, including legacy filename-only links. The existing CLI scan supplies no
+claims and therefore emits hints only. Text-layer annotations and unchanged-row
+byte preservation retain their existing behavior.
+
 ## Ingest (M1)
 
 `doc-lineage ingest` parses one document, splits it into page-anchored segments, and

@@ -21,6 +21,7 @@ from doc_lineage.identity import (
     normalized_supersession_group,
     parse_numeric_prefix,
 )
+from doc_lineage.supersession import SupersessionClaims, confirmed_supersessions
 
 TEXT_LAYER_VALUES = frozenset({"present", "absent", "unknown"})
 LOGGER = logging.getLogger(__name__)
@@ -50,7 +51,8 @@ class ManifestRow:
     mime: str
     supersedes: str | None
     text_layer: str
-    supersession_evidence: str | None = None
+    supersession_evidence: dict[str, str] | None = None
+    supersession_hint: str | None = None
 
     def to_json(self) -> str:
         payload = asdict(self)
@@ -127,11 +129,13 @@ def _read_document_under_root(root_fd: int, relative: Path) -> tuple[bytes, os.s
         os.close(directory_fd)
 
 
-def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
-    """Link increasing numeric prefixes, treating an unnumbered file as the original.
+def _assign_supersedes(
+    rows: list[ManifestRow], supersession_evidence: SupersessionClaims | None = None
+) -> list[ManifestRow]:
+    """Keep numeric-prefix hints separate from evidence-confirmed content links.
 
     Equal prefixes do not establish an order. If a rank has conflicting contents,
-    leave links to and from that rank unset rather than choosing by path order.
+    leave hints to and from that rank unset rather than choosing by path order.
     """
     by_directory: dict[Path, list[tuple[ManifestRow, int | None, str | None]]] = defaultdict(list)
     for row in rows:
@@ -140,7 +144,6 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
         by_directory[path.parent].append((row, prefix, convention))
 
     superseded_by: dict[str, str] = {}
-    evidence_by_target: dict[str, str] = {}
     for directory_rows in by_directory.values():
         groups: dict[str, list[tuple[ManifestRow, int | None, str | None]]] = defaultdict(list)
         for row, prefix, convention in directory_rows:
@@ -157,41 +160,32 @@ def _assign_supersedes(rows: list[ManifestRow]) -> list[ManifestRow]:
                     continue
                 older_id = next(iter(older_ids))
                 if older_ids == newer_ids:
-                    # A byte-identical re-supply retains the prior version link;
+                    # A byte-identical re-supply retains the prior ordering hint;
                     # it must not supersede its own content identity.
                     predecessor = superseded_by.get(ranks[older_rank][0][0].path)
                     if predecessor is None:
                         continue
                     older_id = predecessor
-                for newer_row, newer_conv in ranks[newer_rank]:
+                for newer_row, _newer_conv in ranks[newer_rank]:
                     superseded_by[newer_row.path] = older_id
-                    if newer_conv:
-                        evidence_by_target[newer_row.path] = newer_conv
 
-    updated: list[ManifestRow] = []
-    for row in rows:
-        supersedes = superseded_by.get(row.path)
-        evidence = evidence_by_target.get(row.path)
-        updated.append(
-            ManifestRow(
-                stable_id=row.stable_id,
-                sha256=row.sha256,
-                path=row.path,
-                entity_slug=row.entity_slug,
-                category=row.category,
-                as_of=row.as_of,
-                received_at=row.received_at,
-                bytes=row.bytes,
-                mime=row.mime,
-                supersedes=supersedes,
-                text_layer=row.text_layer,
-                supersession_evidence=evidence,
-            )
+    confirmed = confirmed_supersessions(supersession_evidence, {row.sha256 for row in rows})
+    return [
+        replace(
+            row,
+            supersedes=confirmed[row.sha256][0] if row.sha256 in confirmed else None,
+            supersession_evidence=(
+                dict(confirmed[row.sha256][1]) if row.sha256 in confirmed else None
+            ),
+            supersession_hint=superseded_by.get(row.path),
         )
-    return updated
+        for row in rows
+    ]
 
 
-def build_manifest_rows(root: Path) -> list[ManifestRow]:
+def build_manifest_rows(
+    root: Path, *, supersession_evidence: SupersessionClaims | None = None
+) -> list[ManifestRow]:
     """Scan ``root`` and return sorted manifest rows."""
     root = root.resolve()
     if not root.is_dir():
@@ -225,7 +219,7 @@ def build_manifest_rows(root: Path) -> list[ManifestRow]:
             )
     finally:
         os.close(root_fd)
-    rows = _assign_supersedes(rows)
+    rows = _assign_supersedes(rows, supersession_evidence)
     return sorted(rows, key=lambda row: row.path)
 
 
@@ -242,13 +236,15 @@ def read_manifest(path: Path) -> dict[str, str]:
     return lines
 
 
-def write_manifest(root: Path, output_path: Path) -> None:
+def write_manifest(
+    root: Path, output_path: Path, *, supersession_evidence: SupersessionClaims | None = None
+) -> None:
     """Write an incremental manifest, preserving unchanged rows byte-for-byte."""
     root = root.resolve()
     output_path = output_path.resolve()
     if output_path.is_relative_to(root) and output_path.suffix.lower() in DOCUMENT_SUFFIXES:
         raise ValueError("manifest output must not be a document path inside the input root")
-    rows = build_manifest_rows(root)
+    rows = build_manifest_rows(root, supersession_evidence=supersession_evidence)
     previous_lines = read_manifest(output_path)
     # Text checks describe bytes, so even a reused path can inherit a result.
     annotations_by_identity: dict[tuple[str, str], set[str]] = defaultdict(set)
