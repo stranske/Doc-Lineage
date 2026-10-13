@@ -1,0 +1,23 @@
+src/doc_lineage/identity.py:25:    supersession_evidence: str | None = None
+src/doc_lineage/manifest.py:52:    supersedes: str | None
+src/doc_lineage/manifest.py:54:    supersession_evidence: dict[str, str] | None = None
+src/doc_lineage/manifest.py:132:def _assign_supersedes(
+src/doc_lineage/manifest.py:133:    rows: list[ManifestRow], supersession_evidence: SupersessionClaims | None = None
+src/doc_lineage/manifest.py:172:    confirmed = confirmed_supersessions(supersession_evidence, {row.sha256 for row in rows})
+src/doc_lineage/manifest.py:176:            supersedes=confirmed[row.sha256][0] if row.sha256 in confirmed else None,
+src/doc_lineage/manifest.py:177:            supersession_evidence=(
+src/doc_lineage/manifest.py:187:    root: Path, *, supersession_evidence: SupersessionClaims | None = None
+src/doc_lineage/manifest.py:216:                    supersedes=None,
+src/doc_lineage/manifest.py:222:    rows = _assign_supersedes(rows, supersession_evidence)
+src/doc_lineage/manifest.py:240:    root: Path, output_path: Path, *, supersession_evidence: SupersessionClaims | None = None
+src/doc_lineage/manifest.py:247:    rows = build_manifest_rows(root, supersession_evidence=supersession_evidence)
+src/doc_lineage/emit/evidence.py:104:    locator: dict[str, Any] | None = None,
+src/doc_lineage/emit/evidence.py:121:    resolved_locator: dict[str, Any] = dict(locator) if locator else {}
+src/doc_lineage/emit/evidence.py:122:    resolved_locator["page"] = span.page
+src/doc_lineage/emit/evidence.py:123:    resolved_locator["order"] = span.order
+src/doc_lineage/emit/evidence.py:137:        "locator": resolved_locator,
+src/doc_lineage/lineage/families.py:46:    supersession_evidence: dict[str, str]
+src/doc_lineage/lineage/families.py:59:    docs: Sequence[DocumentRef], *, supersession_evidence: SupersessionClaims | None = None
+src/doc_lineage/lineage/families.py:66:    confirmed = confirmed_supersessions(supersession_evidence, {doc.content_hash for doc in docs})
+src/doc_lineage/lineage/families.py:92:                supersession_evidence=dict(evidence),
+src/doc_lineage/extract/cache.py:113:                    page=item["page"],
