@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.183" timestamp="2026-10-13T11:09:13.757847-05:00" hostname="redacted-host"><testcase classname="tests.ingest.test_docling_segmenter" name="test_docling_item_boundaries_reach_segments[items0]" time="0.045"><failure message="AssertionError: assert ['Agreement 1...m is annual.'] == ['Agreement',...m is annual.']&#10;  &#10;  At index 0 diff: 'Agreement 1. FEES The fee is fixed. 2. TERM The term is annual.' != 'Agreement'&#10;  Right contains 2 more items, first extra item: '1. FEES The fee is fixed.'&#10;  Use -v to get more diff">docling_items = &lt;function docling_items.&lt;locals&gt;.install at 0x10b27f1a0&gt;
+items = ['Agreement', '1. FEES The fee is fixed.', '2. TERM The term is annual.']
+
+    @pytest.mark.parametrize(
+        "items",
+        [
+            ["Agreement", "1. FEES The fee is fixed.", "2. TERM The term is annual."],
+            ["Agreement", "1. FEES", "The fee is fixed.", "2. TERM", "The term is annual."],
+        ],
+    )
+    def test_docling_item_boundaries_reach_segments(
+        docling_items: Callable[[Sequence[tuple[int, str]]], None], items: list[str]
+    ) -&gt; None:
+        from doc_lineage.blackline import build_section_tree
+        from doc_lineage.ingest import segment_pages
+    
+        docling_items([(1, text) for text in items])
+        parsed = segment_document(FIXTURE)
+        segments = segment_pages(parsed, source_sha256="a" * 64)
+    
+        assert parsed.backend == DOCLING_BACKEND
+&gt;       assert [segment.text for segment in segments] == items
+E       AssertionError: assert ['Agreement 1...m is annual.'] == ['Agreement',...m is annual.']
+E         
+E         At index 0 diff: 'Agreement 1. FEES The fee is fixed. 2. TERM The term is annual.' != 'Agreement'
+E         Right contains 2 more items, first extra item: '1. FEES The fee is fixed.'
+E         Use -v to get more diff
+
+tests/ingest/test_docling_segmenter.py:454: AssertionError</failure></testcase><testcase classname="tests.ingest.test_docling_segmenter" name="test_docling_item_boundaries_reach_segments[items1]" time="0.001"><failure message="AssertionError: assert ['Agreement 1...m is annual.'] == ['Agreement',...m is annual.']&#10;  &#10;  At index 0 diff: 'Agreement 1. FEES The fee is fixed. 2. TERM The term is annual.' != 'Agreement'&#10;  Right contains 4 more items, first extra item: '1. FEES'&#10;  Use -v to get more diff">docling_items = &lt;function docling_items.&lt;locals&gt;.install at 0x10c1a4ae0&gt;
+items = ['Agreement', '1. FEES', 'The fee is fixed.', '2. TERM', 'The term is annual.']
+
+    @pytest.mark.parametrize(
+        "items",
+        [
+            ["Agreement", "1. FEES The fee is fixed.", "2. TERM The term is annual."],
+            ["Agreement", "1. FEES", "The fee is fixed.", "2. TERM", "The term is annual."],
+        ],
+    )
+    def test_docling_item_boundaries_reach_segments(
+        docling_items: Callable[[Sequence[tuple[int, str]]], None], items: list[str]
+    ) -&gt; None:
+        from doc_lineage.blackline import build_section_tree
+        from doc_lineage.ingest import segment_pages
+    
+        docling_items([(1, text) for text in items])
+        parsed = segment_document(FIXTURE)
+        segments = segment_pages(parsed, source_sha256="a" * 64)
+    
+        assert parsed.backend == DOCLING_BACKEND
+&gt;       assert [segment.text for segment in segments] == items
+E       AssertionError: assert ['Agreement 1...m is annual.'] == ['Agreement',...m is annual.']
+E         
+E         At index 0 diff: 'Agreement 1. FEES The fee is fixed. 2. TERM The term is annual.' != 'Agreement'
+E         Right contains 4 more items, first extra item: '1. FEES'
+E         Use -v to get more diff
+
+tests/ingest/test_docling_segmenter.py:454: AssertionError</failure></testcase><testcase classname="tests.blackline.test_section_id_pairing" name="test_docling_items_survive_ingest_and_section_pairing[False]" time="0.006"><failure message="AssertionError: assert [(1, '1. FEES... is annual.')] == [(1, '1. FEES... is annual.')]&#10;  &#10;  At index 0 diff: (1, '1. FEES The fee is fixed. 2. TERM') != (1, '1. FEES')&#10;  Right contains 2 more items, first extra item: (1, '2. TERM')&#10;  Use -v to get more diff">tmp_path = PosixPath('/redacted/temp/test-session')
+docling_items = &lt;function docling_items.&lt;locals&gt;.install at 0x10c1a54e0&gt;
+preamble = False
+
+    @pytest.mark.parametrize("preamble", [False, True])
+    def test_docling_items_survive_ingest_and_section_pairing(
+        tmp_path: Path,
+        docling_items: Callable[[Sequence[tuple[int, str]]], None],
+        preamble: bool,
+    ) -&gt; None:
+        source = FIXTURES.parent / "synthetic_lpa.pdf"
+        items = [(1, "Agreement")] if preamble else []
+        items += [
+            (1, "1. FEES"),
+            (1, "The fee is fixed."),
+            (1, "2. TERM"),
+            (2, "The term is annual."),
+        ]
+        docling_items(items)
+        before = ingest_document(source, output_dir=tmp_path / "before")
+        repeat = ingest_document(source, output_dir=tmp_path / "repeat")
+        assert before.backend == "docling"
+        assert before.segments == repeat.segments
+&gt;       assert [(segment.page, segment.text) for segment in before.segments] == items
+E       AssertionError: assert [(1, '1. FEES... is annual.')] == [(1, '1. FEES... is annual.')]
+E         
+E         At index 0 diff: (1, '1. FEES The fee is fixed. 2. TERM') != (1, '1. FEES')
+E         Right contains 2 more items, first extra item: (1, '2. TERM')
+E         Use -v to get more diff
+
+tests/blackline/test_section_id_pairing.py:276: AssertionError</failure></testcase><testcase classname="tests.blackline.test_section_id_pairing" name="test_docling_items_survive_ingest_and_section_pairing[True]" time="0.004"><failure message="AssertionError: assert [(1, 'Agreeme... is annual.')] == [(1, 'Agreeme... is annual.')]&#10;  &#10;  At index 0 diff: (1, 'Agreement 1. FEES The fee is fixed. 2. TERM') != (1, 'Agreement')&#10;  Right contains 3 more items, first extra item: (1, 'The fee is fixed.')&#10;  Use -v to get more diff">tmp_path = PosixPath('/redacted/temp/test-session')
+docling_items = &lt;function docling_items.&lt;locals&gt;.install at 0x10c1a6b60&gt;
+preamble = True
+
+    @pytest.mark.parametrize("preamble", [False, True])
+    def test_docling_items_survive_ingest_and_section_pairing(
+        tmp_path: Path,
+        docling_items: Callable[[Sequence[tuple[int, str]]], None],
+        preamble: bool,
+    ) -&gt; None:
+        source = FIXTURES.parent / "synthetic_lpa.pdf"
+        items = [(1, "Agreement")] if preamble else []
+        items += [
+            (1, "1. FEES"),
+            (1, "The fee is fixed."),
+            (1, "2. TERM"),
+            (2, "The term is annual."),
+        ]
+        docling_items(items)
+        before = ingest_document(source, output_dir=tmp_path / "before")
+        repeat = ingest_document(source, output_dir=tmp_path / "repeat")
+        assert before.backend == "docling"
+        assert before.segments == repeat.segments
+&gt;       assert [(segment.page, segment.text) for segment in before.segments] == items
+E       AssertionError: assert [(1, 'Agreeme... is annual.')] == [(1, 'Agreeme... is annual.')]
+E         
+E         At index 0 diff: (1, 'Agreement 1. FEES The fee is fixed. 2. TERM') != (1, 'Agreement')
+E         Right contains 3 more items, first extra item: (1, 'The fee is fixed.')
+E         Use -v to get more diff
+
+tests/blackline/test_section_id_pairing.py:276: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,11 @@
+{
+  "mutation": "Restore only original single-newline join between Docling items",
+  "source": "src/doc_lineage/adapters/docling_segmenter.py",
+  "original_main_sha256": "80f4f4d263bc3697cab9da4b1aaa1d309cbc423c2b3adc2a9af9e8e2f788e001",
+  "fixed_sha256": "db52d17434e68c5178fc22a087faa78b557d95d3a6da6914ea0dcda3de2413a4",
+  "mutated_sha256": "480f12e90293f456ac6d302c99fe007d39556d550e2af2c48a37fee35fa85379",
+  "restored_sha256": "db52d17434e68c5178fc22a087faa78b557d95d3a6da6914ea0dcda3de2413a4",
+  "original_exit": 1,
+  "mutation_exit": 1,
+  "restored_exit": 0
+}

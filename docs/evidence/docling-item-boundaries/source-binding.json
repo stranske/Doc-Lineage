@@ -1,0 +1,12 @@
+{
+  "base_commit": "ad55027827bff033d637bd8171f200e2e60a2d3f",
+  "source_hashes": {
+    "src/doc_lineage/adapters/docling_segmenter.py": "db52d17434e68c5178fc22a087faa78b557d95d3a6da6914ea0dcda3de2413a4",
+    "src/doc_lineage/ingest.py": "fe1ad8ef72f6a2e5279c48062f12345cf29e292f70e80dd91466c009605c57d7",
+    "tests/conftest.py": "619de1907a34f89736554df29227bc423ef53e6665b8e619e243790506b8baa1",
+    "tests/ingest/test_docling_segmenter.py": "07b53c51663df26e7f084dbe657eb2583e558dd9e16ad49c1bbe4386435eb49e",
+    "tests/blackline/test_section_id_pairing.py": "45ce3d22cdb18dcc86288eb2cd5f3d8340722be7f139705e5fbd9fb84395ad93",
+    "tests/fixtures/synthetic_lpa.pdf": "b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f"
+  },
+  "scope": "Production adapter/segmentation/persisted ingest/section pairing with optional converter stub; not real Docling model acceptance"
+}

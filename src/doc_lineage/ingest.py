@@ -80,6 +80,9 @@ class IngestResult:
 def segment_pages(result: SegmenterResult, *, source_sha256: str) -> tuple[Segment, ...]:
     """Split per-page text into paragraph segments with stable ids.
 
+    Docling items arrive separated by blank lines; normalize whitespace only
+    within each block so numbered headers remain visible to section pairing.
+
     The id is derived from the source digest plus the page and ordinal, so the
     same bytes always yield the same segment ids across machines and runs.
     """
