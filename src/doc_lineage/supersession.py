@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Set
 
 SupersessionClaims = Mapping[tuple[str, str], Mapping[str, object]]
 MECHANISMS = frozenset({"source_metadata", "content_comparison", "owner_assertion"})
+
+
+def _validate_content_hash(digest: str) -> None:
+    if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+        raise ValueError("supersession content identities must be lowercase SHA-256 digests")
 
 
 def confirmed_supersessions(
@@ -15,16 +21,18 @@ def confirmed_supersessions(
 
     Pair keys bind assertions to original content, independently of filename rank.
     No claims means no confirmed lineage. Validate all inputs before publication.
+    Digest syntax does not prove that a caller hashed the original bytes.
     """
+    for digest in available_hashes:
+        _validate_content_hash(digest)
+
     confirmed: dict[str, tuple[str, dict[str, str]]] = {}
     for pair, evidence in (claims or {}).items():
-        if (
-            not isinstance(pair, tuple)
-            or len(pair) != 2
-            or any(not isinstance(digest, str) or not digest.strip() for digest in pair)
-        ):
+        if not isinstance(pair, tuple) or len(pair) != 2:
             raise ValueError("supersession claims require (prior_hash, successor_hash) keys")
         prior, successor = pair
+        _validate_content_hash(prior)
+        _validate_content_hash(successor)
         if prior == successor:
             raise ValueError("a document cannot supersede its own content identity")
         if prior not in available_hashes or successor not in available_hashes:

@@ -1,0 +1,6 @@
+{
+  "src/doc_lineage/supersession.py": "74da73d19c0387a9f8ae3edbbe87c73ab2146b1e9c17bbec046deff570148cb8",
+  "src/doc_lineage/lineage/families.py": "a5f867470ac2e37eb07a8b7375bc5ffd502bec6d13481a76e5236e5309128047",
+  "tests/lineage/test_supersession_evidence.py": "b3e2d76073df8c915f65fa3057a8f8e06d2f9a77df31c7aa307ab688d3bc1396",
+  "tests/lineage/test_supersession_chain.py": "c50a8a6e098dd607ece25874076b8a81eaaf84ed7e6a8897224d01930be5266d"
+}

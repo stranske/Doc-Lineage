@@ -62,6 +62,8 @@ def build_supersession_chain(
 
     Evidence may connect renamed documents or override filename ordering. Duplicate
     byte versions share an identity and use a deterministic representative path.
+    All supplied content hashes and claim endpoints must be lowercase SHA-256
+    digests, including records without a claim. Callers own original-byte provenance.
     """
     confirmed = confirmed_supersessions(supersession_evidence, {doc.content_hash for doc in docs})
     by_hash: dict[str, DocumentRef] = {}

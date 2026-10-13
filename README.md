@@ -70,6 +70,12 @@ that assertion. Evidence can connect renamed documents independently of filename
 order. Both endpoints must exist in the supplied corpus. Self-links, multiple
 predecessors, and cycles raise `ValueError` before publication.
 
+All supplied lineage content IDs and claim endpoints must be lowercase SHA-256
+digests, including records without claims. Invalid IDs raise before publication;
+syntax validation cannot authenticate the caller's original-byte provenance.
+See [the content identity boundary](docs/lineage-content-identity.md) for the
+contract, migration from placeholder IDs, and public-API verification commands.
+
 Claims apply to content identities, so identical copies share confirmed lineage.
 Filename hints remain path-scoped. Renames preserve claims, but changed bytes
 require a new claim. Supply evidence on every manifest scan: old serialized

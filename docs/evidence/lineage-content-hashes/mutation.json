@@ -1,0 +1,9 @@
+{
+  "source": "src/doc_lineage/supersession.py",
+  "corrected_sha256": "74da73d19c0387a9f8ae3edbbe87c73ab2146b1e9c17bbec046deff570148cb8",
+  "bypassed_sha256": "4dbd6f257c0a3fb7a3afdc6151179cde5f42477b2593f13bbc3df6017f6215f1",
+  "restored_sha256": "74da73d19c0387a9f8ae3edbbe87c73ab2146b1e9c17bbec046deff570148cb8",
+  "red_exit": 1,
+  "green_exit": 0,
+  "command": "python3 -m pytest tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected -q"
+}
