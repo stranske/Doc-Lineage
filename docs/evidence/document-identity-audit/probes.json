@@ -1,0 +1,24 @@
+{
+  "expected_physical_page_one_locator": 0,
+  "filename_only_claim_suppressed": true,
+  "invalid_lineage_hashes": {
+    "edges": [
+      {
+        "convention": "numeric_prefix_separator",
+        "numeric_prefix": 2,
+        "prior_filename": "1_old.pdf",
+        "prior_hash": "hash-old",
+        "successor_filename": "2_new.pdf",
+        "successor_hash": "hash-new",
+        "supersession_evidence": {
+          "detail": "Synthetic dated assertion 2026-10-13",
+          "mechanism": "owner_assertion"
+        }
+      }
+    ],
+    "rejected": false
+  },
+  "physical_page_one_locator": 1,
+  "schema_only_validator_accepts_page_mismatch": true,
+  "valid_hash_claim_published": true
+}

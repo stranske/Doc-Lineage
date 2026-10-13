@@ -1,0 +1,36 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: <checkout>
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 242 items
+
+tests/emit/test_evidence_object.py ..............                        [  5%]
+tests/test_identity.py ..............                                    [ 11%]
+tests/test_identity_manifest.py ........................................ [ 28%]
+.............                                                            [ 33%]
+tests/lineage/test_supersession_chain.py ....                            [ 35%]
+tests/lineage/test_supersession_evidence.py ............................ [ 46%]
+......                                                                   [ 49%]
+tests/ingest/test_ingest_synthetic_pdf.py ..............                 [ 54%]
+tests/test_extract_coverage.py ............                              [ 59%]
+tests/render/test_triple_link_resolver.py .............................. [ 72%]
+.......                                                                  [ 75%]
+tests/export/test_docx_redline.py .....                                  [ 77%]
+tests/export/test_fact_key_map.py .....................                  [ 85%]
+tests/export/test_fact_key_map_cli.py ......                             [ 88%]
+tests/harvest/test_edgar_ex10_offline.py ..........                      [ 92%]
+tests/test_schema_wire_names.py ..................                       [100%]
+
+=============================== warnings summary ===============================
+tests/test_extract_coverage.py::test_ocr_disabled_reports_unreadable_not_empty_success
+  <python-runtime>/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/test_extract_coverage.py::test_ocr_disabled_reports_unreadable_not_empty_success
+  <python-runtime>/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 242 passed, 2 warnings in 8.38s ========================

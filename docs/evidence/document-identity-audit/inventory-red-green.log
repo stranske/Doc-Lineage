@@ -1,0 +1,11 @@
+Original GREEN: PASS: 23 exact source matches inventoried once
+Removed-row RED exit 1
+Traceback (most recent call last):
+  File "<checkout>/docs/evidence/document-identity-audit/check_inventory.py", line 26, in <module>
+    check(REPORT.read_text())
+  File "<checkout>/docs/evidence/document-identity-audit/check_inventory.py", line 21, in check
+    assert set(rows) == expected, f"missing={expected - set(rows)} extra={set(rows) - expected}"
+AssertionError: missing={('src/doc_lineage/identity.py', '25')} extra=set()
+
+Restored GREEN: PASS: 23 exact source matches inventoried once
+report SHA256 before/after 40ff95793a0e857378845e0a8790ab3d7ac6b6d76bbd7abf70338fcf9ef24eea
