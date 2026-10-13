@@ -101,6 +101,24 @@ output is never mistaken for a Docling parse. Pages with no readable text layer 
 reported in `pages_without_text_layer` rather than dropped — recognition (issue #3) is a
 required stage here, so a page that yields nothing is a finding, not a silence.
 
+Ingest now attempts local OCR for PDF pages the segmenter could not read, using
+its existing bounded source-byte snapshot. Install the optional `ocr` extra and
+local Tesseract to enable recognition; neither is mandatory. Python callers can
+supply `ingest_document(..., ocr_backend=backend)` and disable recognition with
+`ocr_enabled=False`; the CLI provides `--no-ocr`.
+
+`segments.json` records each segment's `method` (`text`, `parser`, or `ocr`),
+`unreadable_pages`, and `coverage` with `status` (`complete` or `partial`), total,
+native, recognized, and unreadable page counts. `pages_without_text_layer`
+retains the original segmenter's page findings even after recovery; only
+`unreadable_pages` represents outstanding recovery. Page lists and segments are
+one-based; emitted evidence locators follow the contract's zero-based pages.
+The CLI prints coverage and warns about outstanding unreadable pages. Partial
+ingest can still return 0 with that warning; an entirely unrecoverable document
+returns 1 and publishes nothing. Recognition failure or a missing renderer never
+creates placeholder text. Deterministic recognizer tests validate integration,
+not Tesseract transcription accuracy.
+
 ## PDF extraction for metric consumers
 
 The public extraction API returns page-attributed spans with two text views:

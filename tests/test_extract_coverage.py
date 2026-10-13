@@ -319,3 +319,53 @@ def test_deliberate_break_per_document_detection_violates_mixed_pdf_contract(
     assert correct.coverage.pages_recognized == 1
     wrong_pages_with_text_layer = 2
     assert wrong_pages_with_text_layer != correct.coverage.pages_with_text_layer
+
+
+@pytest.mark.parametrize("result", ["empty", "exception"])
+def test_failing_recognizer_reports_unreadable_without_spans(
+    tmp_path: Path,
+    cache_dir: Path,
+    result: str,
+) -> None:
+    pdf_path = tmp_path / "scanned.pdf"
+    _write_image_only_pdf(pdf_path)
+
+    def recognize(image, *, rotation=0):
+        if result == "exception":
+            raise RuntimeError("local recognizer unavailable")
+        return "   "
+
+    document = extract(
+        pdf_path,
+        ocr_backend=CallableOCRBackend(recognize),
+        cache=ExtractCache(cache_dir),
+    )
+    assert document.spans == []
+    assert document.coverage.pages_recognized == 0
+    assert document.coverage.pages_unreadable == 1
+
+
+def test_snapshot_page_recovery_can_recover_native_text_and_reject_bad_pages(
+    tmp_path: Path,
+) -> None:
+    from doc_lineage.extract.pdf import recover_pdf_pages
+
+    pdf_path = tmp_path / "native.pdf"
+    _write_text_pdf(pdf_path, ["Native recovery"])
+    spans = recover_pdf_pages(
+        pdf_path.read_bytes(),
+        [0, 1, 2],
+        ocr_backend=CallableOCRBackend(lambda image, rotation=0: pytest.fail("native page OCR")),
+    )
+    assert len(spans) == 1 and spans[0].source == "text_layer" and spans[0].page == 1
+    assert spans[0].text == "Native recovery"
+    assert (
+        recover_pdf_pages(
+            b"%PDF-1.4\n%%EOF\n",
+            [1],
+            ocr_backend=CallableOCRBackend(
+                lambda image, rotation=0: pytest.fail("invalid PDF OCR"),
+            ),
+        )
+        == ()
+    )

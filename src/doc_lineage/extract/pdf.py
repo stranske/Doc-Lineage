@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -60,6 +62,36 @@ def extract_pdf(
     return Document(stable_id=stable_id, spans=spans, coverage=coverage)
 
 
+def recover_pdf_pages(
+    data: bytes, page_numbers: Sequence[int], *, ocr_backend: OCRBackend
+) -> tuple[Span, ...]:
+    """Recover selected one-based pages from the caller's immutable snapshot.
+
+    Reuse the extraction API's real rendering/recognition boundary without
+    changing or populating its cache. Malformed PDFs and unavailable page
+    recovery leave the caller's original unreadable-page finding intact.
+    """
+    from pypdf import PdfReader
+    from pypdf.errors import PdfReadError
+
+    try:
+        reader = PdfReader(BytesIO(data))
+    except (PdfReadError, OSError, ValueError):
+        return ()
+    spans: list[Span] = []
+    for page_number in page_numbers:
+        try:
+            if not 1 <= page_number <= len(reader.pages):
+                continue
+            recovered, _outcome = _extract_pdf_page(
+                reader.pages[page_number - 1], page_number, ocr_backend, True
+            )
+        except (PdfReadError, OSError, ValueError, RuntimeError):
+            continue
+        spans.extend(recovered)
+    return tuple(spans)
+
+
 def _page_outcome(spans: list[Span]) -> str:
     if not spans:
         return "unreadable"
@@ -99,7 +131,12 @@ def _extract_pdf_page(
         # No page renderer available, so this page was never actually looked at.
         # Reporting it as unreadable is the whole point of the coverage contract.
         return [], "unreadable"
-    recognized = ocr_backend.recognize(image, rotation=rotation)
+    try:
+        recognized = (ocr_backend.recognize(image, rotation=rotation) or "").strip()
+    except (OSError, RuntimeError, ValueError):
+        # An installed backend can still fail on one page. Keep that page
+        # explicitly unreadable and allow other pages to make progress.
+        return [], "unreadable"
     if recognized:
         span = Span(
             text=recognized,

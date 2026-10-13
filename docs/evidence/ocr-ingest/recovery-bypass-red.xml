@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.241" timestamp="2026-10-13T13:10:31.017598-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_ingest_recovers_image_only_page" time="0.102"><failure message="ValueError: no text segments recovered from TEMP_PATH via backend offline-pdf-text; a recognition fallback is required before this document can be ingested">tmp_path = PosixPath('TEMP_PATH')
+
+    def test_ingest_recovers_image_only_page(tmp_path: Path) -&gt; None:
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+        digest = _sha256(source)
+        seen = []
+    
+        def recognize(image, *, rotation=0):
+            seen.append(image.size)
+            assert image.convert("L").getextrema()[0] &lt; 255
+            return "Recovered scanned clause\n\nSecond paragraph"
+    
+&gt;       result = ingest_document(
+            source,
+            output_dir=tmp_path / "out",
+            allow_docling=False,
+            ocr_backend=CallableOCRBackend(recognize),
+        )
+
+tests/ingest/test_ingest_synthetic_pdf.py:315: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('TEMP_PATH')
+output_dir = PosixPath('TEMP_PATH')
+run_id = None, git_sha = None, created_at = None, allow_docling = False
+ocr_enabled = True
+ocr_backend = &lt;doc_lineage.extract.ocr.CallableOCRBackend object at 0x112452a50&gt;
+
+    def ingest_document(
+        path: Path,
+        *,
+        output_dir: Path,
+        run_id: str | None = None,
+        git_sha: str | None = None,
+        created_at: str | None = None,
+        allow_docling: bool = True,
+        ocr_enabled: bool = True,
+        ocr_backend: OCRBackend | None = None,
+    ) -&gt; IngestResult:
+        """Parse, segment, and manifest one document into ``output_dir``.
+    
+        Raises ``FileNotFoundError`` when ``path`` is missing and ``ValueError``
+        when the document yields no segments, because an empty manifest cannot
+        satisfy the contract's ``minItems: 1`` and an empty result is a finding,
+        not a success.
+        """
+        source = path.expanduser().resolve()
+        if not source.is_file():
+            raise FileNotFoundError(f"document to ingest does not exist: {source}")
+    
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        source_sha256 = sha256_bytes(raw)
+        effective_run_id = (run_id or f"ingest-{source_sha256[:12]}").strip()
+        if not effective_run_id:
+            raise ValueError("run_id must be a non-empty string")
+        segmented = segment_document(source, allow_docling=allow_docling, data=raw)
+        pages_without_text_layer = segmented.pages_without_text_layer
+        page_methods: dict[int, str] = {}
+        if False and pages_without_text_layer and ocr_enabled and raw.startswith(b"%PDF"):
+            backend = ocr_backend if ocr_backend is not None else default_ocr_backend()
+            if backend is not None:
+                recovered = {
+                    span.page: span
+                    for span in recover_pdf_pages(raw, pages_without_text_layer, ocr_backend=backend)
+                }
+                segmented = replace(
+                    segmented,
+                    pages=tuple(
+                        (
+                            replace(page, text=recovered[page.page].text)
+                            if page.page in recovered
+                            else page
+                        )
+                        for page in segmented.pages
+                    ),
+                )
+                page_methods = {
+                    page: "ocr" if span.source == "ocr" else "text" for page, span in recovered.items()
+                }
+        segments = segment_pages(segmented, source_sha256=source_sha256, page_methods=page_methods)
+        unreadable_pages = tuple(page.page for page in segmented.pages if not page.text.strip())
+        coverage_status = "partial" if unreadable_pages else "complete"
+        recognized_pages = {segment.page for segment in segments if segment.method == "ocr"}
+        coverage = {
+            "status": coverage_status,
+            "pages_total": len(segmented.pages),
+            "pages_with_text_layer": len(segmented.pages)
+            - len(unreadable_pages)
+            - len(recognized_pages),
+            "pages_recognized": len(recognized_pages),
+            "pages_unreadable": len(unreadable_pages),
+        }
+        if not segments:
+&gt;           raise ValueError(
+                f"no text segments recovered from {source} via backend {segmented.backend}; "
+                "a recognition fallback is required before this document can be ingested"
+            )
+E           ValueError: no text segments recovered from TEMP_PATH via backend offline-pdf-text; a recognition fallback is required before this document can be ingested
+
+src/doc_lineage/ingest.py:231: ValueError</failure></testcase></testsuite></testsuites>

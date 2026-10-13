@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.297" timestamp="2026-10-13T13:10:33.628840-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_mixed_ingest_keeps_page_methods_and_partial_coverage" time="0.165"><failure message="AssertionError: assert [(0, 'text'), (1, 'text')] == [(0, 'text'), (1, 'ocr')]&#10;  &#10;  At index 1 diff: (1, 'text') != (1, 'ocr')&#10;  Use -v to get more diff">tmp_path = PosixPath('TEMP_PATH')
+
+    def test_mixed_ingest_keeps_page_methods_and_partial_coverage(tmp_path: Path) -&gt; None:
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True, scanned_pages=2)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            return "Recovered page two" if len(calls) == 1 else None
+    
+        result = ingest_document(
+            source,
+            output_dir=tmp_path / "out",
+            allow_docling=False,
+            ocr_backend=CallableOCRBackend(recognize),
+        )
+        payload = json.loads(result.segments_path.read_text())
+        assert len(calls) == 2  # never OCR the native page
+        assert [(s.page, s.method) for s in result.segments] == [(1, "text"), (2, "ocr")]
+&gt;       assert [(e["locator"]["page"], e["method"]) for e in result.evidence] == [
+            (0, "text"),
+            (1, "ocr"),
+        ]
+E       AssertionError: assert [(0, 'text'), (1, 'text')] == [(0, 'text'), (1, 'ocr')]
+E         
+E         At index 1 diff: (1, 'text') != (1, 'ocr')
+E         Use -v to get more diff
+
+tests/ingest/test_ingest_synthetic_pdf.py:374: AssertionError</failure></testcase></testsuite></testsuites>
