@@ -1,0 +1,100 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: [WORKTREE]
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 38 items / 33 deselected / 5 selected
+
+tests/emit/test_evidence_object.py FFFF                                  [ 80%]
+tests/ingest/test_ingest_synthetic_pdf.py F                              [100%]
+
+=================================== FAILURES ===================================
+___________________ test_locator_carries_the_page_pointer[1] ___________________
+
+source_page = 1
+
+    @pytest.mark.parametrize("source_page", [1, 2, 17])
+    def test_locator_carries_the_page_pointer(source_page: int) -> None:
+        span = replace(_span(), page=source_page)
+        evidence = emit_evidence_object(
+            span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        )
+    
+>       assert evidence["locator"]["page"] == source_page - 1
+E       assert 1 == (1 - 1)
+
+tests/emit/test_evidence_object.py:155: AssertionError
+___________________ test_locator_carries_the_page_pointer[2] ___________________
+
+source_page = 2
+
+    @pytest.mark.parametrize("source_page", [1, 2, 17])
+    def test_locator_carries_the_page_pointer(source_page: int) -> None:
+        span = replace(_span(), page=source_page)
+        evidence = emit_evidence_object(
+            span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        )
+    
+>       assert evidence["locator"]["page"] == source_page - 1
+E       assert 2 == (2 - 1)
+
+tests/emit/test_evidence_object.py:155: AssertionError
+__________________ test_locator_carries_the_page_pointer[17] ___________________
+
+source_page = 17
+
+    @pytest.mark.parametrize("source_page", [1, 2, 17])
+    def test_locator_carries_the_page_pointer(source_page: int) -> None:
+        span = replace(_span(), page=source_page)
+        evidence = emit_evidence_object(
+            span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        )
+    
+>       assert evidence["locator"]["page"] == source_page - 1
+E       assert 17 == (17 - 1)
+
+tests/emit/test_evidence_object.py:155: AssertionError
+___________ test_locator_page_and_order_are_not_overridden_by_caller ___________
+
+    def test_locator_page_and_order_are_not_overridden_by_caller() -> None:
+        locator = {"page": 99, "order": 99, "section": "6.1"}
+        evidence = emit_evidence_object(
+            _span(),
+            source_id="sha256:deadbeef",
+            method="text",
+            locator=locator,
+        )
+    
+>       assert evidence["locator"]["page"] == 0
+E       assert 1 == 0
+
+tests/emit/test_evidence_object.py:170: AssertionError
+____________ test_evidence_locators_identify_the_physical_pdf_page _____________
+
+tmp_path = PosixPath('[TEMP]')
+
+    def test_evidence_locators_identify_the_physical_pdf_page(tmp_path: Path) -> None:
+        from pypdf import PdfReader
+    
+        reader = PdfReader(FIXTURE)
+        result = ingest_document(FIXTURE, output_dir=tmp_path, allow_docling=False)
+        assert len(reader.pages) == result.page_count == 2
+        segments = {segment.segment_id: segment for segment in result.segments}
+        for path in (tmp_path / "evidence").glob("*.json"):
+            evidence = json.loads(path.read_text(encoding="utf-8"))
+            page = evidence["locator"]["page"]
+>           assert 0 <= page < len(reader.pages)
+E           assert 2 < 2
+E            +  where 2 = len(<pypdf._page._VirtualList object at 0x114f47ec0>)
+E            +    where <pypdf._page._VirtualList object at 0x114f47ec0> = <pypdf._reader.PdfReader object at 0x1141ae960>.pages
+
+tests/ingest/test_ingest_synthetic_pdf.py:94: AssertionError
+- generated xml file: [RUN]/conversion-red.xml -
+=========================== short test summary info ============================
+FAILED tests/emit/test_evidence_object.py::test_locator_carries_the_page_pointer[1]
+FAILED tests/emit/test_evidence_object.py::test_locator_carries_the_page_pointer[2]
+FAILED tests/emit/test_evidence_object.py::test_locator_carries_the_page_pointer[17]
+FAILED tests/emit/test_evidence_object.py::test_locator_page_and_order_are_not_overridden_by_caller
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_evidence_locators_identify_the_physical_pdf_page
+======================= 5 failed, 33 deselected in 0.49s =======================

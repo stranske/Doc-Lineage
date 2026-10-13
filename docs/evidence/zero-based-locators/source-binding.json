@@ -1,0 +1,8 @@
+{
+  "src/doc_lineage/emit/evidence.py": "74b09902efa2d18c811ef4719bd3e3c1075214f6ab4ed8af2e7c9e824e76e386",
+  "tests/emit/test_evidence_object.py": "04bd20b6139ae9b943f780786c46935af23f15e20891e905ff6789096e42d662",
+  "tests/ingest/test_ingest_synthetic_pdf.py": "9775af5723e79568573f24303ded7993048a4902d5a0239861943efbf619c198",
+  "tests/fixtures/synthetic_lpa.pdf": "b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f",
+  "base_commit": "ad55027827bff033d637bd8171f200e2e60a2d3f",
+  "original_emitter_sha256": "e56cb6de3d02cefd3e692bb3dc1b5f4c4ba6edab37adc1f39af1ea55dc6718bc"
+}

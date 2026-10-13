@@ -67,6 +67,9 @@ def test_segments_carry_page_pointers_and_stable_ids(tmp_path: Path) -> None:
 
     assert first.page_count == 2
     assert {segment.page for segment in first.segments} == {1, 2}
+    assert {evidence["locator"]["page"] for evidence in first.evidence} == {0, 1}
+    for segment in first.segments:
+        assert f"-p{segment.page:04d}-" in segment.segment_id
     assert [segment.segment_id for segment in first.segments] == [
         segment.segment_id for segment in second.segments
     ]
@@ -76,6 +79,25 @@ def test_segments_carry_page_pointers_and_stable_ids(tmp_path: Path) -> None:
     assert "Key Person Event" in text
     assert all(segment.char_count == len(segment.text) for segment in first.segments)
     assert all(segment.word_count > 0 for segment in first.segments)
+
+
+def test_evidence_locators_identify_the_physical_pdf_page(tmp_path: Path) -> None:
+    from pypdf import PdfReader
+
+    reader = PdfReader(FIXTURE)
+    result = ingest_document(FIXTURE, output_dir=tmp_path, allow_docling=False)
+    assert len(reader.pages) == result.page_count == 2
+    segments = {segment.segment_id: segment for segment in result.segments}
+    for path in (tmp_path / "evidence").glob("*.json"):
+        evidence = json.loads(path.read_text(encoding="utf-8"))
+        page = evidence["locator"]["page"]
+        assert 0 <= page < len(reader.pages)
+        segment = segments[evidence["fact_ref"].removeprefix("segment:")]
+        assert page == segment.page - 1
+        assert evidence["excerpt"] == segment.text
+        page_text = " ".join(reader.pages[page].extract_text().split())
+        assert evidence["excerpt"] in page_text
+    assert len(list((tmp_path / "evidence").glob("*.json"))) == len(result.segments)
 
 
 def test_reused_output_removes_previous_document_evidence(tmp_path: Path) -> None:

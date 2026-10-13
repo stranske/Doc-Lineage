@@ -8,6 +8,7 @@ so a contract change cannot pass silently here.
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -24,6 +25,7 @@ from doc_lineage.emit import (
     emit_evidence_object,
     evidence_id_for,
 )
+from doc_lineage.identity import sha256_bytes
 from doc_lineage.ingest import Segment, evidence_method_for, ingest_document
 from doc_lineage.schema.validation import load_contract_schema
 
@@ -88,6 +90,7 @@ def test_evidence_is_referenced_from_the_run_manifest(tmp_path: Path) -> None:
         artifact = referenced[f"{EVIDENCE_DIRNAME}/{evidence['evidence_id']}.json"]
         written = tmp_path / artifact["path"]
         assert artifact["bytes"] == written.stat().st_size
+        assert artifact["sha256"] == sha256_bytes(written.read_bytes())
 
 
 def test_evidence_ids_are_deterministic() -> None:
@@ -142,27 +145,42 @@ def test_empty_source_id_is_rejected() -> None:
         emit_evidence_object(_span(), source_id="", method="text")
 
 
-def test_locator_carries_the_page_pointer() -> None:
+@pytest.mark.parametrize("source_page", [1, 2, 17])
+def test_locator_carries_the_page_pointer(source_page: int) -> None:
+    span = replace(_span(), page=source_page)
     evidence = emit_evidence_object(
-        _span(), source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
     )
 
-    assert evidence["locator"]["page"] == 1
+    assert evidence["locator"]["page"] == source_page - 1
+    assert span.page == source_page
     assert evidence["locator"]["order"] == 1
     assert evidence["locator"]["section"] == "6.1"
 
 
 def test_locator_page_and_order_are_not_overridden_by_caller() -> None:
+    locator = {"page": 99, "order": 99, "section": "6.1"}
     evidence = emit_evidence_object(
         _span(),
         source_id="sha256:deadbeef",
         method="text",
-        locator={"page": 99, "order": 99, "section": "6.1"},
+        locator=locator,
     )
 
-    assert evidence["locator"]["page"] == 1
+    assert evidence["locator"]["page"] == 0
     assert evidence["locator"]["order"] == 1
     assert evidence["locator"]["section"] == "6.1"
+    assert locator == {"page": 99, "order": 99, "section": "6.1"}
+
+
+@pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+def test_locator_rejects_invalid_source_page(page: object) -> None:
+    # The emitter accepts structural spans; malformed callers need runtime validation.
+    from types import SimpleNamespace
+
+    span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+    with pytest.raises(ValueError, match="page must be an integer >= 1"):
+        emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
 
 
 def test_evidence_method_for_docling_backend_returns_parser() -> None:
