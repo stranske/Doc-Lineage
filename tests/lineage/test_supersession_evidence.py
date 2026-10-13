@@ -76,7 +76,7 @@ def test_ambiguous_or_stale_content_claims_are_rejected(
     evidence = {"mechanism": "source_metadata", "detail": "Document version notice"}
     pairs = {
         "self": [(prior, prior)],
-        "unavailable": [("missing", successor)],
+        "unavailable": [(sha256_bytes(b"missing"), successor)],
         "conflict": [(prior, successor), (third, successor)],
         "cycle": [(prior, successor), (successor, prior)],
         "bad-key": ["not a pair"],
@@ -135,14 +135,67 @@ def test_prefix_only_input_publishes_no_confirmed_lineage(tmp_path: Path) -> Non
 
 def test_confirmed_chain_order_follows_evidence_instead_of_hash_or_filename_order() -> None:
     docs = [
-        DocumentRef("3_c.pdf", "hash-a", "alpha", "reports", "2026"),
-        DocumentRef("1_a.pdf", "hash-z", "alpha", "reports", "2026"),
-        DocumentRef("2_b.pdf", "hash-y", "alpha", "reports", "2026"),
+        DocumentRef("3_c.pdf", sha256_bytes(b"version-a"), "alpha", "reports", "2026"),
+        DocumentRef("1_a.pdf", sha256_bytes(b"version-z"), "alpha", "reports", "2026"),
+        DocumentRef("2_b.pdf", sha256_bytes(b"version-y"), "alpha", "reports", "2026"),
     ]
     evidence = {"mechanism": "source_metadata", "detail": "Explicit version notices"}
-    claims = {("hash-y", "hash-a"): evidence, ("hash-z", "hash-y"): evidence}
+    claims = {
+        (sha256_bytes(b"version-y"), sha256_bytes(b"version-a")): evidence,
+        (sha256_bytes(b"version-z"), sha256_bytes(b"version-y")): evidence,
+    }
     edges = build_supersession_chain(docs, supersession_evidence=claims)
     assert [(edge.prior_hash, edge.successor_hash) for edge in edges] == [
-        ("hash-z", "hash-y"),
-        ("hash-y", "hash-a"),
+        (sha256_bytes(b"version-z"), sha256_bytes(b"version-y")),
+        (sha256_bytes(b"version-y"), sha256_bytes(b"version-a")),
     ]
+
+
+@pytest.mark.parametrize(
+    "malformed",
+    ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+)
+@pytest.mark.parametrize("endpoint", ["prior", "successor"])
+@pytest.mark.parametrize("with_claim", [False, True])
+def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+    """Public publication rejects invalid records even with no supplied claims."""
+    prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+    if endpoint == "prior":
+        prior = malformed
+    else:
+        successor = malformed
+    docs = [
+        DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+        DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+    ]
+    claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+    with pytest.raises(ValueError):
+        build_supersession_chain(docs, supersession_evidence=claims if with_claim else None)
+
+
+def test_unclaimed_malformed_record_prevents_confirmed_publication(tmp_path: Path) -> None:
+    docs, prior, successor = _documents(tmp_path)
+    docs.append(DocumentRef("unclaimed.pdf", "not-a-digest", "other", "reports", "2026"))
+    claims = {(prior, successor): {"mechanism": "source_metadata", "detail": "Version notice"}}
+    with pytest.raises(ValueError, match="lowercase SHA-256"):
+        build_supersession_chain(docs, supersession_evidence=claims)
+
+
+@pytest.mark.parametrize("publisher", ["lineage", "manifest"])
+@pytest.mark.parametrize("endpoint", ["prior", "successor"])
+def test_malformed_claim_ids_rejected_before_membership(
+    tmp_path: Path, publisher: str, endpoint: str
+) -> None:
+    docs, prior, successor = _documents(tmp_path)
+    pair = ("hash-old", successor) if endpoint == "prior" else (prior, "hash-new")
+    claims = {pair: {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+    if publisher == "lineage":
+        with pytest.raises(ValueError, match="lowercase SHA-256"):
+            build_supersession_chain(docs, supersession_evidence=claims)
+    else:
+        output = tmp_path / "manifest.jsonl"
+        write_manifest(tmp_path, output)
+        before = output.read_bytes()
+        with pytest.raises(ValueError, match="lowercase SHA-256"):
+            write_manifest(tmp_path, output, supersession_evidence=claims)
+        assert output.read_bytes() == before

@@ -1,0 +1,1010 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: <WORKTREE>
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 36 items
+
+tests/lineage/test_supersession_evidence.py FFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 77%]
+FFFFFFFF                                                                 [100%]
+
+=================================== FAILURES ===================================
+_____________ test_malformed_content_hashes_rejected[False-prior-] _____________
+
+malformed = '', endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+__________ test_malformed_content_hashes_rejected[False-prior- \n\t] ___________
+
+malformed = ' \n\t', endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_________ test_malformed_content_hashes_rejected[False-prior-hash-old] _________
+
+malformed = 'hash-old', endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-prior-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA] _
+
+malformed = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-prior-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg] _
+
+malformed = 'gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'
+endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n'
+endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-prior-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41] _
+
+malformed = 'ａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａ'
+endpoint = 'prior', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+___________ test_malformed_content_hashes_rejected[False-successor-] ___________
+
+malformed = '', endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+________ test_malformed_content_hashes_rejected[False-successor- \n\t] _________
+
+malformed = ' \n\t', endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_______ test_malformed_content_hashes_rejected[False-successor-hash-old] _______
+
+malformed = 'hash-old', endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-successor-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA] _
+
+malformed = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-successor-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg] _
+
+malformed = 'gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'
+endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n'
+endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[False-successor-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41] _
+
+malformed = 'ａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａ'
+endpoint = 'successor', with_claim = False
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_____________ test_malformed_content_hashes_rejected[True-prior-] ______________
+
+malformed = '', endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+___________ test_malformed_content_hashes_rejected[True-prior- \n\t] ___________
+
+malformed = ' \n\t', endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_________ test_malformed_content_hashes_rejected[True-prior-hash-old] __________
+
+malformed = 'hash-old', endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-prior-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA] _
+
+malformed = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-prior-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg] _
+
+malformed = 'gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'
+endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n'
+endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-prior-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41] _
+
+malformed = 'ａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａ'
+endpoint = 'prior', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+___________ test_malformed_content_hashes_rejected[True-successor-] ____________
+
+malformed = '', endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_________ test_malformed_content_hashes_rejected[True-successor- \n\t] _________
+
+malformed = ' \n\t', endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_______ test_malformed_content_hashes_rejected[True-successor-hash-old] ________
+
+malformed = 'hash-old', endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-successor-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA] _
+
+malformed = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-successor-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg] _
+
+malformed = 'gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'
+endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n] _
+
+malformed = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n'
+endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+_ test_malformed_content_hashes_rejected[True-successor-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41] _
+
+malformed = 'ａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａａ'
+endpoint = 'successor', with_claim = True
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["", " \n\t", "hash-old", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", "ａ" * 64],
+    )
+    @pytest.mark.parametrize("endpoint", ["prior", "successor"])
+    @pytest.mark.parametrize("with_claim", [False, True])
+    def test_malformed_content_hashes_rejected(malformed: str, endpoint: str, with_claim: bool) -> None:
+        """Public publication rejects invalid records even with no supplied claims."""
+        prior, successor = sha256_bytes(b"old"), sha256_bytes(b"new")
+        if endpoint == "prior":
+            prior = malformed
+        else:
+            successor = malformed
+        docs = [
+            DocumentRef("old.pdf", prior, "alpha", "reports", "2026"),
+            DocumentRef("new.pdf", successor, "alpha", "reports", "2026"),
+        ]
+        claims = {(prior, successor): {"mechanism": "owner_assertion", "detail": "Dated assertion"}}
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/lineage/test_supersession_evidence.py:172: Failed
+=========================== short test summary info ============================
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior- \n\t]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-hash-old]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-prior-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor- \n\t]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-hash-old]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[False-successor-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior- \n\t]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-hash-old]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-prior-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor- \n\t]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-hash-old]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n]
+FAILED tests/lineage/test_supersession_evidence.py::test_malformed_content_hashes_rejected[True-successor-\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41\uff41]
+============================== 36 failed in 0.41s ==============================
