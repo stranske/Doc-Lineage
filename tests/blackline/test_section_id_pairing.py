@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from doc_lineage.blackline import (
     build_section_tree,
     emit_lineage_edges_ndjson,
 )
-from doc_lineage.ingest import Segment
+from doc_lineage.ingest import Segment, ingest_document
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "blackline"
 
@@ -251,3 +252,56 @@ def test_deliberate_break_semantic_only_pairs_wrong_sections() -> None:
             and id_pair.right.section_id == semantic_pair.right.section_id
             for id_pair, semantic_pair in zip(id_pairs, semantic_pairs, strict=True)
         )
+
+
+@pytest.mark.parametrize("preamble", [False, True])
+def test_docling_items_survive_ingest_and_section_pairing(
+    tmp_path: Path,
+    docling_items: Callable[[Sequence[tuple[int, str]]], None],
+    preamble: bool,
+) -> None:
+    source = FIXTURES.parent / "synthetic_lpa.pdf"
+    items = [(1, "Agreement")] if preamble else []
+    items += [
+        (1, "1. FEES"),
+        (1, "The fee is fixed."),
+        (1, "2. TERM"),
+        (2, "The term is annual."),
+    ]
+    docling_items(items)
+    before = ingest_document(source, output_dir=tmp_path / "before")
+    repeat = ingest_document(source, output_dir=tmp_path / "repeat")
+    assert before.backend == "docling"
+    assert before.segments == repeat.segments
+    assert [(segment.page, segment.text) for segment in before.segments] == items
+    assert [segment.segment_id for segment in before.segments] == [
+        f"{before.source_sha256[:16]}-p{page:04d}-s{order:04d}"
+        for order, (page, _text) in enumerate(items, start=1)
+    ]
+    # Persisted ingest artifacts retain the item boundaries, not only in-memory output.
+    persisted = json.loads(before.segments_path.read_text())["segments"]
+    assert [(segment["page"], segment["text"]) for segment in persisted] == items
+    for artifact in before.manifest["artifacts"]:
+        from doc_lineage.identity import sha256_bytes
+
+        payload = (before.output_dir / artifact["path"]).read_bytes()
+        assert sha256_bytes(payload) == artifact["sha256"]
+        assert len(payload) == artifact["bytes"]
+
+    doc_a = build_section_tree(before.segments, source_sha256=before.source_sha256)
+    assert [section.section_id for section in doc_a.sections] == ["1", "2"]
+    assert doc_a.sections[0].text == "1. FEES\nThe fee is fixed."
+    assert doc_a.sections[1].text == "2. TERM\nThe term is annual."
+    assert doc_a.sections[1].segment_ids[-1] == before.segments[-1].segment_id
+    assert before.segments[-1].page == 2
+
+    docling_items([*items[:-1], (2, "The term is monthly.")])
+    after = ingest_document(source, output_dir=tmp_path / "after")
+    doc_b = build_section_tree(after.segments, source_sha256=after.source_sha256)
+    pairs = align_sections(doc_a, doc_b)
+    assert [pair.section_id for pair in pairs] == ["1", "2"]
+    assert all(pair.pairing_method == "section_id" for pair in pairs)
+    assert pairs[0].left is not None and pairs[0].right is not None
+    assert pairs[1].left is not None and pairs[1].right is not None
+    assert pairs[0].left.text == pairs[0].right.text
+    assert pairs[1].left.text != pairs[1].right.text

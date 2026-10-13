@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 import types
 import zlib
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -430,3 +431,31 @@ def test_contents_object_without_a_stream_is_skipped(tmp_path: Path) -> None:
     result = segment_document(source, allow_docling=False)
 
     assert result.pages_without_text_layer == (1,)
+
+
+@pytest.mark.parametrize(
+    "items",
+    [
+        ["Agreement", "1. FEES The fee is fixed.", "2. TERM The term is annual."],
+        ["Agreement", "1. FEES", "The fee is fixed.", "2. TERM", "The term is annual."],
+    ],
+)
+def test_docling_item_boundaries_reach_segments(
+    docling_items: Callable[[Sequence[tuple[int, str]]], None], items: list[str]
+) -> None:
+    from doc_lineage.blackline import build_section_tree
+    from doc_lineage.ingest import segment_pages
+
+    docling_items([(1, text) for text in items])
+    parsed = segment_document(FIXTURE)
+    segments = segment_pages(parsed, source_sha256="a" * 64)
+
+    assert parsed.backend == DOCLING_BACKEND
+    assert [segment.text for segment in segments] == items
+    tree = build_section_tree(segments, source_sha256="a" * 64)
+    assert [section.section_id for section in tree.sections] == ["1", "2"]
+    assert [segment.page for segment in segments] == [1] * len(items)
+    assert [segment.segment_id for segment in segments] == [
+        f"{'a' * 16}-p0001-s{order:04d}" for order in range(1, len(items) + 1)
+    ]
+    assert segment_pages(segment_document(FIXTURE), source_sha256="a" * 64) == segments

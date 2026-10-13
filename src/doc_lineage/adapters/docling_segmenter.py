@@ -149,7 +149,8 @@ def _try_docling(path: Path, data: bytes) -> tuple[PageText, ...] | None:
     return tuple(
         PageText(
             page=page,
-            text="\n".join(by_page.get(page, [])),
+            # Blank lines carry item boundaries into ingest.segment_pages.
+            text="\n\n".join(by_page.get(page, [])),
             has_text_layer=bool(by_page.get(page)),
         )
         for page in range(1, total_pages + 1)
