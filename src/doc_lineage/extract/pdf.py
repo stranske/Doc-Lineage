@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from io import BytesIO
 from pathlib import Path
@@ -14,6 +15,9 @@ if TYPE_CHECKING:
 
     from doc_lineage.extract.cache import ExtractCache, OCRMode
     from doc_lineage.extract.ocr import OCRBackend
+
+
+_logger = logging.getLogger(__name__)
 
 
 def extract_pdf(
@@ -48,11 +52,12 @@ def extract_pdf(
             outcome = _page_outcome(cached)
         else:
             page_spans, outcome = _extract_pdf_page(page, page_index, ocr_backend, ocr_enabled)
-            cache.put(stable_id, page_index, page_spans, mode)
+            if outcome != "retryable":
+                cache.put(stable_id, page_index, page_spans, mode)
             spans.extend(page_spans)
         pages_with_text_layer += int(outcome == "text_layer")
         pages_recognized += int(outcome == "ocr")
-        pages_unreadable += int(outcome == "unreadable")
+        pages_unreadable += int(outcome in {"unreadable", "retryable"})
 
     coverage = CoverageStats(
         pages_with_text_layer=pages_with_text_layer,
@@ -76,7 +81,8 @@ def recover_pdf_pages(
 
     try:
         reader = PdfReader(BytesIO(data))
-    except (PdfReadError, OSError, ValueError):
+    except (PdfReadError, OSError, ValueError) as exc:
+        _logger.warning("PDF recovery parsing failed (%s)", type(exc).__name__)
         return ()
     spans: list[Span] = []
     for page_number in page_numbers:
@@ -86,7 +92,8 @@ def recover_pdf_pages(
             recovered, _outcome = _extract_pdf_page(
                 reader.pages[page_number - 1], page_number, ocr_backend, True
             )
-        except (PdfReadError, OSError, ValueError, RuntimeError):
+        except (PdfReadError, OSError, ValueError, RuntimeError) as exc:
+            _logger.warning("PDF recovery failed for page %s (%s)", page_number, type(exc).__name__)
             continue
         spans.extend(recovered)
     return tuple(spans)
@@ -130,13 +137,14 @@ def _extract_pdf_page(
     if image is None:
         # No page renderer available, so this page was never actually looked at.
         # Reporting it as unreadable is the whole point of the coverage contract.
-        return [], "unreadable"
+        return [], "retryable"
     try:
         recognized = (ocr_backend.recognize(image, rotation=rotation) or "").strip()
-    except (OSError, RuntimeError, ValueError):
+    except (OSError, RuntimeError, ValueError) as exc:
+        _logger.warning("OCR recognizer failed for page %s (%s)", page_number, type(exc).__name__)
         # An installed backend can still fail on one page. Keep that page
         # explicitly unreadable and allow other pages to make progress.
-        return [], "unreadable"
+        return [], "retryable"
     if recognized:
         span = Span(
             text=recognized,

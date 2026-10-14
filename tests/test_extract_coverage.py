@@ -369,3 +369,30 @@ def test_snapshot_page_recovery_can_recover_native_text_and_reject_bad_pages(
         )
         == ()
     )
+
+
+def test_failed_recognizer_remains_retryable_with_same_disk_cache(cache_dir, tmp_path, caplog):
+    pdf_path = tmp_path / "retryable.pdf"
+    _write_image_only_pdf(pdf_path)
+    calls = []
+
+    def failing(image, *, rotation=0):
+        calls.append(image.size)
+        raise RuntimeError("private document text must not enter logs")
+
+    first = extract(
+        pdf_path, ocr_backend=CallableOCRBackend(failing), cache=ExtractCache(cache_dir)
+    )
+    assert first.coverage.pages_unreadable == 1
+    assert first.spans == []
+    second = extract(
+        pdf_path,
+        ocr_backend=CallableOCRBackend(lambda image, rotation=0: "recovered after failure"),
+        cache=ExtractCache(cache_dir),
+    )
+    assert calls
+    assert second.coverage.pages_recognized == 1
+    assert second.coverage.pages_unreadable == 0
+    assert [span.text for span in second.spans] == ["recovered after failure"]
+    assert "page 1" in caplog.text and "RuntimeError" in caplog.text
+    assert "private document text" not in caplog.text

@@ -1,0 +1,7 @@
+{
+  "src/doc_lineage/ingest.py": "891d8cb788a9f215233f88b3dcb53e812377d19d8b63c510ac5a0d6c7296bcbb",
+  "src/doc_lineage/extract/pdf.py": "fe6513facee9f5f5d6c6c45de404aa726d7cad640a35e8bc36a7538420737c2b",
+  "src/doc_lineage/cli.py": "7a109fd42eef1873b7976ab3894540c136c022270237c71467626ce47473b096",
+  "tests/ingest/test_ingest_synthetic_pdf.py": "b8d856457fbe01e4f38f3018915d79af00b20ce9bbfa158ca73703e7bb3d9e9d",
+  "tests/test_extract_coverage.py": "63325d22d6b62cc5126268615255d18b5111704a3b13aac697aba77188015fdc"
+}
