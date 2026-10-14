@@ -1,0 +1,7 @@
+{
+  "source_base": "e816478bf30402766976b5cd0de40e578868e7f9",
+  "source_module_sha256": "c7015e65dab830fe83e4ea6775d74b2cfd6f969e4db3dff644a709e46d6cfd97",
+  "observed": "ValueError: no text segments recovered; recognition fallback required",
+  "published_output": false,
+  "fixture_sha256": "1f4a8991a6ae88296aa0fdcc53046f31a0d8052336336838c06ca07c4004f8c4"
+}

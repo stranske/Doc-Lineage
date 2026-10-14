@@ -1,0 +1,44 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: $WORKTREE
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_extract_coverage.py F                                         [100%]
+
+=================================== FAILURES ===================================
+________ test_failed_recognizer_remains_retryable_with_same_disk_cache _________
+
+cache_dir = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1754/test_failed_recognizer_remains0/cache')
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1754/test_failed_recognizer_remains0')
+caplog = <_pytest.logging.LogCaptureFixture object at 0x11e31db20>
+
+    def test_failed_recognizer_remains_retryable_with_same_disk_cache(cache_dir, tmp_path, caplog):
+        pdf_path = tmp_path / "retryable.pdf"
+        _write_image_only_pdf(pdf_path)
+        calls = []
+    
+        def failing(image, *, rotation=0):
+            calls.append(image.size)
+            raise RuntimeError("private document text must not enter logs")
+    
+        first = extract(pdf_path, ocr_backend=CallableOCRBackend(failing), cache=ExtractCache(cache_dir))
+        assert first.coverage.pages_unreadable == 1
+        assert first.spans == []
+        second = extract(
+            pdf_path,
+            ocr_backend=CallableOCRBackend(lambda image, rotation=0: "recovered after failure"),
+            cache=ExtractCache(cache_dir),
+        )
+        assert calls
+>       assert second.coverage.pages_recognized == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = CoverageStats(pages_with_text_layer=0, pages_recognized=0, pages_unreadable=1).pages_recognized
+E        +    where CoverageStats(pages_with_text_layer=0, pages_recognized=0, pages_unreadable=1) = Document(stable_id='359a67ea376122ec08369b1540efca890e7ccf335b2a22677e576c6c814dfdc1', spans=[], coverage=CoverageStats(pages_with_text_layer=0, pages_recognized=0, pages_unreadable=1)).coverage
+
+tests/test_extract_coverage.py:392: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_extract_coverage.py::test_failed_recognizer_remains_retryable_with_same_disk_cache
+============================== 1 failed in 0.83s ===============================

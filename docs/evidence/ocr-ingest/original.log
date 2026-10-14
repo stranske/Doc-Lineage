@@ -1,0 +1,256 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: WORKTREE
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 24 items / 15 deselected / 9 selected
+
+tests/ingest/test_ingest_synthetic_pdf.py FFFFFFFFF                      [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_ingest_recovers_image_only_page _____________________
+
+tmp_path = PosixPath('TEMP_PATH')
+
+    def test_ingest_recovers_image_only_page(tmp_path: Path) -> None:
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+        digest = _sha256(source)
+        seen = []
+    
+        def recognize(image, *, rotation=0):
+            seen.append(image.size)
+            assert image.convert("L").getextrema()[0] < 255
+            return "Recovered scanned clause\n\nSecond paragraph"
+    
+>       result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False,
+            ocr_backend=CallableOCRBackend(recognize),
+        )
+E       TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:315: TypeError
+__________ test_mixed_ingest_keeps_page_methods_and_partial_coverage ___________
+
+tmp_path = PosixPath('TEMP_PATH')
+
+    def test_mixed_ingest_keeps_page_methods_and_partial_coverage(tmp_path: Path) -> None:
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True, scanned_pages=2)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            return "Recovered page two" if len(calls) == 1 else None
+    
+>       result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False,
+            ocr_backend=CallableOCRBackend(recognize),
+        )
+E       TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:357: TypeError
+__________ test_unavailable_ingest_ocr_never_fabricates_text[absent] ___________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11abbd250>
+failure = 'absent'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+>       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: <module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'> has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError
+___________ test_unavailable_ingest_ocr_never_fabricates_text[empty] ___________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11abbe750>
+failure = 'empty'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+>       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: <module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'> has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError
+_________ test_unavailable_ingest_ocr_never_fabricates_text[exception] _________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11abbf440>
+failure = 'exception'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+>       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: <module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'> has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError
+_________ test_unavailable_ingest_ocr_never_fabricates_text[disabled] __________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11ac0c140>
+failure = 'disabled'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+>       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: <module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'> has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError
+_________ test_unavailable_ingest_ocr_never_fabricates_text[renderer] __________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11ac0c050>
+failure = 'renderer'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+>       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: <module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'> has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError
+________________ test_ocr_ingest_uses_immutable_source_snapshot ________________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11abbfda0>
+
+    def test_ocr_ingest_uses_immutable_source_snapshot(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+        expected_sha, expected_size = _sha256(source), source.stat().st_size
+        read = ingest_module.read_bounded_bytes
+    
+        def snapshot_then_mutate(path, limit):
+            data = read(path, limit)
+            path.write_bytes(b"changed after snapshot")
+            return data
+    
+        monkeypatch.setattr(ingest_module, "read_bounded_bytes", snapshot_then_mutate)
+>       result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False,
+            ocr_backend=CallableOCRBackend(lambda image, rotation=0: "snapshot OCR clause"),
+        )
+E       TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:425: TypeError
+_______________ test_cli_ocr_coverage_and_unrecoverable_failure ________________
+
+tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11abbd850>
+capsys = <_pytest.capture.CaptureFixture object at 0x11abbf2c0>
+
+    def test_cli_ocr_coverage_and_unrecoverable_failure(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+>       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: CallableOCRBackend(
+            lambda image, rotation=0: "local OCR clause",
+        ))
+E       AttributeError: <module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'> has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:443: AttributeError
+- generated xml file: LOCAL_HOME/.codex/automations/pd-workloop-resume/run-20261013T1758Z/original.xml -
+=========================== short test summary info ============================
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_ingest_recovers_image_only_page
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_mixed_ingest_keeps_page_methods_and_partial_coverage
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_unavailable_ingest_ocr_never_fabricates_text[absent]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_unavailable_ingest_ocr_never_fabricates_text[empty]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_unavailable_ingest_ocr_never_fabricates_text[exception]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_unavailable_ingest_ocr_never_fabricates_text[disabled]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_unavailable_ingest_ocr_never_fabricates_text[renderer]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_ocr_ingest_uses_immutable_source_snapshot
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_cli_ocr_coverage_and_unrecoverable_failure
+======================= 9 failed, 15 deselected in 0.52s =======================

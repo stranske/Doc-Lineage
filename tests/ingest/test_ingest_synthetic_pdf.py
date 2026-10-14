@@ -280,3 +280,238 @@ def test_cli_warns_about_pages_without_a_text_layer(
 
     assert exit_code == 0
     assert "no text layer on page(s) 2" in capsys.readouterr().out
+
+
+def _write_ocr_ingest_pdf(path: Path, *, native: bool = False, scanned_pages: int = 1) -> None:
+    from PIL import Image, ImageDraw
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
+    image = Image.new("RGB", (240, 120), "white")
+    ImageDraw.Draw(image).text((20, 50), "SYNTHETIC SCANNED CLAUSE", fill="black")
+    pdf = canvas.Canvas(str(path), pageCompression=0)
+    if native:
+        pdf.drawString(72, 720, "Native management fee clause")
+        pdf.showPage()
+    for _ in range(scanned_pages):
+        pdf.drawImage(ImageReader(image), 72, 600, width=240, height=120)
+        pdf.showPage()
+    pdf.save()
+
+
+def test_ingest_recovers_image_only_page(tmp_path: Path) -> None:
+    from doc_lineage.extract.ocr import CallableOCRBackend
+
+    source = tmp_path / "scanned.pdf"
+    _write_ocr_ingest_pdf(source)
+    digest = _sha256(source)
+    seen = []
+
+    def recognize(image, *, rotation=0):
+        seen.append(image.size)
+        assert image.convert("L").getextrema()[0] < 255
+        return "Recovered scanned clause\n\nSecond paragraph"
+
+    result = ingest_document(
+        source,
+        output_dir=tmp_path / "out",
+        allow_docling=False,
+        ocr_backend=CallableOCRBackend(recognize),
+    )
+    payload = json.loads(result.segments_path.read_text())
+    assert seen and min(seen[0]) > 1
+    assert payload["source_sha256"] == digest == result.manifest["source"]["sha256"]
+    assert payload["pages_without_text_layer"] == [1]
+    assert payload["unreadable_pages"] == []
+    assert payload["coverage"] == {
+        "status": "complete",
+        "pages_total": 1,
+        "pages_with_text_layer": 0,
+        "pages_recognized": 1,
+        "pages_unreadable": 0,
+    }
+    assert [s["text"] for s in payload["segments"]] == [
+        "Recovered scanned clause",
+        "Second paragraph",
+    ]
+    assert all(s["method"] == "ocr" and s["page"] == 1 for s in payload["segments"])
+    assert all(e["method"] == "ocr" and e["locator"]["page"] == 0 for e in result.evidence)
+    assert result.evidence[0]["excerpt"] == "Recovered scanned clause"
+    for artifact in result.manifest["artifacts"]:
+        actual = result.output_dir / artifact["path"]
+        assert _sha256(actual) == artifact["sha256"]
+        assert actual.stat().st_size == artifact["bytes"]
+    repeated = ingest_document(
+        source,
+        output_dir=tmp_path / "repeat",
+        allow_docling=False,
+        ocr_backend=CallableOCRBackend(recognize),
+    )
+    assert [s.segment_id for s in repeated.segments] == [s.segment_id for s in result.segments]
+    assert repeated.evidence == result.evidence
+
+
+def test_mixed_ingest_keeps_page_methods_and_partial_coverage(tmp_path: Path) -> None:
+    from doc_lineage.extract.ocr import CallableOCRBackend
+
+    source = tmp_path / "mixed.pdf"
+    _write_ocr_ingest_pdf(source, native=True, scanned_pages=2)
+    calls = []
+
+    def recognize(image, *, rotation=0):
+        calls.append(image.size)
+        return "Recovered page two" if len(calls) == 1 else None
+
+    result = ingest_document(
+        source,
+        output_dir=tmp_path / "out",
+        allow_docling=False,
+        ocr_backend=CallableOCRBackend(recognize),
+    )
+    payload = json.loads(result.segments_path.read_text())
+    assert len(calls) == 2  # never OCR the native page
+    assert [(s.page, s.method) for s in result.segments] == [(1, "text"), (2, "ocr")]
+    assert [(e["locator"]["page"], e["method"]) for e in result.evidence] == [
+        (0, "text"),
+        (1, "ocr"),
+    ]
+    assert payload["pages_without_text_layer"] == [2, 3]
+    assert payload["unreadable_pages"] == [3]
+    assert payload["coverage"] == {
+        "status": "partial",
+        "pages_total": 3,
+        "pages_with_text_layer": 1,
+        "pages_recognized": 1,
+        "pages_unreadable": 1,
+    }
+    assert result.unreadable_pages == (3,)
+    assert result.coverage_status == "partial"
+
+
+@pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+def test_unavailable_ingest_ocr_never_fabricates_text(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure: str,
+) -> None:
+    from doc_lineage import ingest as ingest_module
+    from doc_lineage.extract import pdf as pdf_module
+    from doc_lineage.extract.ocr import CallableOCRBackend
+
+    source = tmp_path / "mixed.pdf"
+    _write_ocr_ingest_pdf(source, native=True)
+    calls = []
+
+    def recognize(image, *, rotation=0):
+        calls.append(image.size)
+        if failure == "exception":
+            raise RuntimeError("recognition unavailable")
+        return "   "
+
+    monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+    if failure == "renderer":
+        monkeypatch.setattr(pdf_module, "_render_page_image", lambda page: None)
+    result = ingest_document(
+        source,
+        output_dir=tmp_path / "out",
+        allow_docling=False,
+        ocr_backend=None if failure == "absent" else CallableOCRBackend(recognize),
+        ocr_enabled=failure != "disabled",
+    )
+    payload = json.loads(result.segments_path.read_text())
+    assert result.unreadable_pages == (2,)
+    assert result.coverage_status == "partial"
+    assert payload["unreadable_pages"] == [2]
+    assert payload["coverage"]["pages_recognized"] == 0
+    assert len(result.segments) == 1 and result.segments[0].method == "text"
+    assert bool(calls) == (failure in {"empty", "exception"})
+
+    scanned = tmp_path / "all-scanned.pdf"
+    _write_ocr_ingest_pdf(scanned)
+    failed_output = tmp_path / "failed"
+    with pytest.raises(ValueError, match="no text segments recovered"):
+        ingest_document(
+            scanned,
+            output_dir=failed_output,
+            allow_docling=False,
+            ocr_backend=None if failure == "absent" else CallableOCRBackend(recognize),
+            ocr_enabled=failure != "disabled",
+        )
+    assert not failed_output.exists()
+
+
+def test_ocr_ingest_uses_immutable_source_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from doc_lineage import ingest as ingest_module
+    from doc_lineage.extract.ocr import CallableOCRBackend
+
+    source = tmp_path / "scanned.pdf"
+    _write_ocr_ingest_pdf(source)
+    expected_sha, expected_size = _sha256(source), source.stat().st_size
+    read = ingest_module.read_bounded_bytes
+
+    def snapshot_then_mutate(path, limit):
+        data = read(path, limit)
+        path.write_bytes(b"changed after snapshot")
+        return data
+
+    monkeypatch.setattr(ingest_module, "read_bounded_bytes", snapshot_then_mutate)
+    result = ingest_document(
+        source,
+        output_dir=tmp_path / "out",
+        allow_docling=False,
+        ocr_backend=CallableOCRBackend(lambda image, rotation=0: "snapshot OCR clause"),
+    )
+    assert result.source_sha256 == expected_sha
+    assert result.manifest["source"]["bytes"] == expected_size
+    assert result.evidence[0]["excerpt"] == "snapshot OCR clause"
+    assert _sha256(source) != expected_sha
+
+
+def test_cli_ocr_coverage_and_unrecoverable_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from doc_lineage import ingest as ingest_module
+    from doc_lineage.extract.ocr import CallableOCRBackend
+
+    source = tmp_path / "scanned.pdf"
+    _write_ocr_ingest_pdf(source)
+    monkeypatch.setattr(
+        ingest_module,
+        "default_ocr_backend",
+        lambda: CallableOCRBackend(
+            lambda image, rotation=0: "local OCR clause",
+        ),
+    )
+    command = ["ingest", str(source), "--no-docling", "--output", str(tmp_path / "out")]
+    assert cli_main(command) == 0
+    assert "coverage=complete" in capsys.readouterr().out
+    failed_output = tmp_path / "failed"
+    assert (
+        cli_main(
+            ["ingest", str(source), "--no-docling", "--no-ocr", "--output", str(failed_output)]
+        )
+        == 1
+    )
+    assert "no text segments recovered" in capsys.readouterr().err
+    assert not failed_output.exists()
+    mixed = tmp_path / "mixed.pdf"
+    _write_ocr_ingest_pdf(mixed, native=True)
+    assert (
+        cli_main(
+            [
+                "ingest",
+                str(mixed),
+                "--no-docling",
+                "--no-ocr",
+                "--output",
+                str(tmp_path / "partial"),
+            ]
+        )
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert "coverage=partial" in out and "no text layer on page(s) 2" in out

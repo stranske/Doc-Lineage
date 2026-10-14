@@ -1,0 +1,14 @@
+[
+  {
+    "mutation": "recovery-bypass",
+    "red_exit": 1,
+    "green_exit": 0,
+    "restored_sha256": "0a46ffd1ae0f07b228a8f8341491ef3582591d55770beb51bd5dd16ac88940f3"
+  },
+  {
+    "mutation": "provenance-bypass",
+    "red_exit": 1,
+    "green_exit": 0,
+    "restored_sha256": "0a46ffd1ae0f07b228a8f8341491ef3582591d55770beb51bd5dd16ac88940f3"
+  }
+]

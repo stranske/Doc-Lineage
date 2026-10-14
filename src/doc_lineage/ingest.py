@@ -17,8 +17,8 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -26,6 +26,8 @@ from typing import Any
 from doc_lineage.adapters import DOCLING_BACKEND, SegmenterResult, segment_document
 from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
 from doc_lineage.emit import EVIDENCE_DIRNAME, emit_evidence_object
+from doc_lineage.extract.ocr import OCRBackend, default_ocr_backend
+from doc_lineage.extract.pdf import recover_pdf_pages
 from doc_lineage.identity import sha256_bytes
 
 MANIFEST_SCHEMA_VERSION = "artifact-manifest/v1"
@@ -48,6 +50,7 @@ class Segment:
     text: str
     char_count: int
     word_count: int
+    method: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -69,6 +72,8 @@ class IngestResult:
     pages_without_text_layer: tuple[int, ...]
     evidence: tuple[dict[str, Any], ...] = ()
     evidence_dir: Path | None = None
+    unreadable_pages: tuple[int, ...] = ()
+    coverage_status: str = "complete"
 
     @property
     def page_count(self) -> int:
@@ -77,7 +82,9 @@ class IngestResult:
         return len(pages)
 
 
-def segment_pages(result: SegmenterResult, *, source_sha256: str) -> tuple[Segment, ...]:
+def segment_pages(
+    result: SegmenterResult, *, source_sha256: str, page_methods: Mapping[int, str] | None = None
+) -> tuple[Segment, ...]:
     """Split per-page text into paragraph segments with stable ids.
 
     Docling items arrive separated by blank lines; normalize whitespace only
@@ -102,6 +109,7 @@ def segment_pages(result: SegmenterResult, *, source_sha256: str) -> tuple[Segme
                     text=text,
                     char_count=len(text),
                     word_count=len(text.split()),
+                    method=(page_methods or {}).get(page.page, evidence_method_for(result.backend)),
                 )
             )
     return tuple(segments)
@@ -120,9 +128,11 @@ def build_evidence_objects(
     segments: Sequence[Segment], *, source_id: str, backend: str
 ) -> tuple[dict[str, Any], ...]:
     """Emit one validated ``evidence-object/v1`` per segment."""
-    method = evidence_method_for(backend)
     return tuple(
-        emit_evidence_object(segment, source_id=source_id, method=method) for segment in segments
+        emit_evidence_object(
+            segment, source_id=source_id, method=segment.method or evidence_method_for(backend)
+        )
+        for segment in segments
     )
 
 
@@ -164,6 +174,8 @@ def ingest_document(
     git_sha: str | None = None,
     created_at: str | None = None,
     allow_docling: bool = True,
+    ocr_enabled: bool = True,
+    ocr_backend: OCRBackend | None = None,
 ) -> IngestResult:
     """Parse, segment, and manifest one document into ``output_dir``.
 
@@ -182,7 +194,42 @@ def ingest_document(
     if not effective_run_id:
         raise ValueError("run_id must be a non-empty string")
     segmented = segment_document(source, allow_docling=allow_docling, data=raw)
-    segments = segment_pages(segmented, source_sha256=source_sha256)
+    pages_without_text_layer = segmented.pages_without_text_layer
+    page_methods: dict[int, str] = {}
+    if pages_without_text_layer and ocr_enabled and raw.startswith(b"%PDF"):
+        backend = ocr_backend if ocr_backend is not None else default_ocr_backend()
+        if backend is not None:
+            recovered = {
+                span.page: span
+                for span in recover_pdf_pages(raw, pages_without_text_layer, ocr_backend=backend)
+            }
+            segmented = replace(
+                segmented,
+                pages=tuple(
+                    (
+                        replace(page, text=recovered[page.page].text)
+                        if page.page in recovered
+                        else page
+                    )
+                    for page in segmented.pages
+                ),
+            )
+            page_methods = {
+                page: "ocr" if span.source == "ocr" else "text" for page, span in recovered.items()
+            }
+    segments = segment_pages(segmented, source_sha256=source_sha256, page_methods=page_methods)
+    unreadable_pages = tuple(page.page for page in segmented.pages if not page.text.strip())
+    coverage_status = "partial" if unreadable_pages else "complete"
+    recognized_pages = {segment.page for segment in segments if segment.method == "ocr"}
+    coverage = {
+        "status": coverage_status,
+        "pages_total": len(segmented.pages),
+        "pages_with_text_layer": len(segmented.pages)
+        - len(unreadable_pages)
+        - len(recognized_pages),
+        "pages_recognized": len(recognized_pages),
+        "pages_unreadable": len(unreadable_pages),
+    }
     if not segments:
         raise ValueError(
             f"no text segments recovered from {source} via backend {segmented.backend}; "
@@ -196,7 +243,9 @@ def ingest_document(
         "schema_version": SEGMENTS_SCHEMA_VERSION,
         "source_sha256": source_sha256,
         "backend": segmented.backend,
-        "pages_without_text_layer": list(segmented.pages_without_text_layer),
+        "pages_without_text_layer": list(pages_without_text_layer),
+        "unreadable_pages": list(unreadable_pages),
+        "coverage": coverage,
         "segments": [segment.to_dict() for segment in segments],
     }
     segments_bytes = _dump(segments_payload)
@@ -271,7 +320,9 @@ def ingest_document(
         output_dir=destination,
         manifest_path=manifest_path,
         segments_path=segments_path,
-        pages_without_text_layer=segmented.pages_without_text_layer,
+        pages_without_text_layer=pages_without_text_layer,
+        unreadable_pages=unreadable_pages,
+        coverage_status=coverage_status,
         evidence=evidence_objects,
         evidence_dir=evidence_dir,
     )

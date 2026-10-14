@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.415" timestamp="2026-10-13T13:06:14.235746-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_ingest_recovers_image_only_page" time="0.131"><failure message="TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+
+    def test_ingest_recovers_image_only_page(tmp_path: Path) -&gt; None:
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+        digest = _sha256(source)
+        seen = []
+    
+        def recognize(image, *, rotation=0):
+            seen.append(image.size)
+            assert image.convert("L").getextrema()[0] &lt; 255
+            return "Recovered scanned clause\n\nSecond paragraph"
+    
+&gt;       result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False,
+            ocr_backend=CallableOCRBackend(recognize),
+        )
+E       TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:315: TypeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_mixed_ingest_keeps_page_methods_and_partial_coverage" time="0.003"><failure message="TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+
+    def test_mixed_ingest_keeps_page_methods_and_partial_coverage(tmp_path: Path) -&gt; None:
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True, scanned_pages=2)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            return "Recovered page two" if len(calls) == 1 else None
+    
+&gt;       result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False,
+            ocr_backend=CallableOCRBackend(recognize),
+        )
+E       TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:357: TypeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_unavailable_ingest_ocr_never_fabricates_text[absent]" time="0.003"><failure message="AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11abbd250&gt;
+failure = 'absent'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+&gt;       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_unavailable_ingest_ocr_never_fabricates_text[empty]" time="0.003"><failure message="AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11abbe750&gt;
+failure = 'empty'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+&gt;       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_unavailable_ingest_ocr_never_fabricates_text[exception]" time="0.003"><failure message="AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11abbf440&gt;
+failure = 'exception'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+&gt;       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_unavailable_ingest_ocr_never_fabricates_text[disabled]" time="0.003"><failure message="AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11ac0c140&gt;
+failure = 'disabled'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+&gt;       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_unavailable_ingest_ocr_never_fabricates_text[renderer]" time="0.003"><failure message="AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11ac0c050&gt;
+failure = 'renderer'
+
+    @pytest.mark.parametrize("failure", ["absent", "empty", "exception", "disabled", "renderer"])
+    def test_unavailable_ingest_ocr_never_fabricates_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+    ) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract import pdf as pdf_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "mixed.pdf"
+        _write_ocr_ingest_pdf(source, native=True)
+        calls = []
+    
+        def recognize(image, *, rotation=0):
+            calls.append(image.size)
+            if failure == "exception":
+                raise RuntimeError("recognition unavailable")
+            return "   "
+    
+&gt;       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: None)
+E       AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:393: AttributeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_ocr_ingest_uses_immutable_source_snapshot" time="0.003"><failure message="TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11abbfda0&gt;
+
+    def test_ocr_ingest_uses_immutable_source_snapshot(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+        expected_sha, expected_size = _sha256(source), source.stat().st_size
+        read = ingest_module.read_bounded_bytes
+    
+        def snapshot_then_mutate(path, limit):
+            data = read(path, limit)
+            path.write_bytes(b"changed after snapshot")
+            return data
+    
+        monkeypatch.setattr(ingest_module, "read_bounded_bytes", snapshot_then_mutate)
+&gt;       result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False,
+            ocr_backend=CallableOCRBackend(lambda image, rotation=0: "snapshot OCR clause"),
+        )
+E       TypeError: ingest_document() got an unexpected keyword argument 'ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:425: TypeError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_cli_ocr_coverage_and_unrecoverable_failure" time="0.003"><failure message="AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'">tmp_path = PosixPath('TEMP_PATH')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x11abbd850&gt;
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x11abbf2c0&gt;
+
+    def test_cli_ocr_coverage_and_unrecoverable_failure(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    ) -&gt; None:
+        from doc_lineage import ingest as ingest_module
+        from doc_lineage.extract.ocr import CallableOCRBackend
+    
+        source = tmp_path / "scanned.pdf"
+        _write_ocr_ingest_pdf(source)
+&gt;       monkeypatch.setattr(ingest_module, "default_ocr_backend", lambda: CallableOCRBackend(
+            lambda image, rotation=0: "local OCR clause",
+        ))
+E       AttributeError: &lt;module 'doc_lineage.ingest' from 'WORKTREE/src/doc_lineage/ingest.py'&gt; has no attribute 'default_ocr_backend'
+
+tests/ingest/test_ingest_synthetic_pdf.py:443: AttributeError</failure></testcase></testsuite></testsuites>
