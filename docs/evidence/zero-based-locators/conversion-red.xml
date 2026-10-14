@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="5" time="0.282" timestamp="2026-10-13T09:06:58.259406-05:00" hostname="local-runner"><testcase classname="tests.emit.test_evidence_object" name="test_locator_carries_the_page_pointer[1]" time="0.048"><failure message="assert 1 == (1 - 1)">source_page = 1
+
+    @pytest.mark.parametrize("source_page", [1, 2, 17])
+    def test_locator_carries_the_page_pointer(source_page: int) -&gt; None:
+        span = replace(_span(), page=source_page)
+        evidence = emit_evidence_object(
+            span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        )
+    
+&gt;       assert evidence["locator"]["page"] == source_page - 1
+E       assert 1 == (1 - 1)
+
+tests/emit/test_evidence_object.py:155: AssertionError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_carries_the_page_pointer[2]" time="0.001"><failure message="assert 2 == (2 - 1)">source_page = 2
+
+    @pytest.mark.parametrize("source_page", [1, 2, 17])
+    def test_locator_carries_the_page_pointer(source_page: int) -&gt; None:
+        span = replace(_span(), page=source_page)
+        evidence = emit_evidence_object(
+            span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        )
+    
+&gt;       assert evidence["locator"]["page"] == source_page - 1
+E       assert 2 == (2 - 1)
+
+tests/emit/test_evidence_object.py:155: AssertionError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_carries_the_page_pointer[17]" time="0.001"><failure message="assert 17 == (17 - 1)">source_page = 17
+
+    @pytest.mark.parametrize("source_page", [1, 2, 17])
+    def test_locator_carries_the_page_pointer(source_page: int) -&gt; None:
+        span = replace(_span(), page=source_page)
+        evidence = emit_evidence_object(
+            span, source_id="sha256:deadbeef", method="text", locator={"section": "6.1"}
+        )
+    
+&gt;       assert evidence["locator"]["page"] == source_page - 1
+E       assert 17 == (17 - 1)
+
+tests/emit/test_evidence_object.py:155: AssertionError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_page_and_order_are_not_overridden_by_caller" time="0.001"><failure message="assert 1 == 0">def test_locator_page_and_order_are_not_overridden_by_caller() -&gt; None:
+        locator = {"page": 99, "order": 99, "section": "6.1"}
+        evidence = emit_evidence_object(
+            _span(),
+            source_id="sha256:deadbeef",
+            method="text",
+            locator=locator,
+        )
+    
+&gt;       assert evidence["locator"]["page"] == 0
+E       assert 1 == 0
+
+tests/emit/test_evidence_object.py:170: AssertionError</failure></testcase><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_evidence_locators_identify_the_physical_pdf_page" time="0.079"><failure message="assert 2 &lt; 2&#10; +  where 2 = len(&lt;pypdf._page._VirtualList object at 0x114f47ec0&gt;)&#10; +    where &lt;pypdf._page._VirtualList object at 0x114f47ec0&gt; = &lt;pypdf._reader.PdfReader object at 0x1141ae960&gt;.pages">tmp_path = PosixPath('[TEMP]')
+
+    def test_evidence_locators_identify_the_physical_pdf_page(tmp_path: Path) -&gt; None:
+        from pypdf import PdfReader
+    
+        reader = PdfReader(FIXTURE)
+        result = ingest_document(FIXTURE, output_dir=tmp_path, allow_docling=False)
+        assert len(reader.pages) == result.page_count == 2
+        segments = {segment.segment_id: segment for segment in result.segments}
+        for path in (tmp_path / "evidence").glob("*.json"):
+            evidence = json.loads(path.read_text(encoding="utf-8"))
+            page = evidence["locator"]["page"]
+&gt;           assert 0 &lt;= page &lt; len(reader.pages)
+E           assert 2 &lt; 2
+E            +  where 2 = len(&lt;pypdf._page._VirtualList object at 0x114f47ec0&gt;)
+E            +    where &lt;pypdf._page._VirtualList object at 0x114f47ec0&gt; = &lt;pypdf._reader.PdfReader object at 0x1141ae960&gt;.pages
+
+tests/ingest/test_ingest_synthetic_pdf.py:94: AssertionError</failure></testcase></testsuite></testsuites>

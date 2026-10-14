@@ -1,0 +1,18 @@
+[
+  {
+    "mutation": "conversion",
+    "mutant_sha256": "46fb6ea672bc8c26c0b81889384ea1dfd944ecc5f79cd54ba6194780ef79f33b",
+    "restored_sha256": "74b09902efa2d18c811ef4719bd3e3c1075214f6ab4ed8af2e7c9e824e76e386",
+    "original_sha256": "74b09902efa2d18c811ef4719bd3e3c1075214f6ab4ed8af2e7c9e824e76e386",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "mutation": "validation",
+    "mutant_sha256": "6d6e26e98fcf31d4ec4df6c0cfa7d2bc4e6b4f62b2b7a850dfcc9ca57f0a0f10",
+    "restored_sha256": "74b09902efa2d18c811ef4719bd3e3c1075214f6ab4ed8af2e7c9e824e76e386",
+    "original_sha256": "74b09902efa2d18c811ef4719bd3e3c1075214f6ab4ed8af2e7c9e824e76e386",
+    "red_exit": 1,
+    "green_exit": 0
+  }
+]

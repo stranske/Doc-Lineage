@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="7" time="0.215" timestamp="2026-10-13T09:07:01.565416-05:00" hostname="local-runner"><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[0]" time="0.044"><failure message="jsonschema.exceptions.ValidationError: -1 is less than the minimum of 0&#10;&#10;Failed validating 'minimum' in schema['properties']['locator']['properties']['page']:&#10;    {'minimum': 0, 'type': 'integer'}&#10;&#10;On instance['locator']['page']:&#10;    -1">page = 0
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+        with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+&gt;           emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
+
+tests/emit/test_evidence_object.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/emit/evidence.py:149: in emit_evidence_object
+    validate_contract_record(EVIDENCE_SCHEMA_NAME, payload)
+src/doc_lineage/schema/validation.py:76: in validate_contract_record
+    Draft202012Validator(schema).validate(payload)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Draft202012Validator(schema={'$id': 'https://gith...1.schema.json', '$schema': 'https://json...020-12/schema', 'additi..._text_coverage'}}, 'required': ['evidence_kind']}, 'then': {'required': ['document_ref']}}], ...}, format_checker=None)
+args = ({'schema_version': 'evidence-object/v1', 'evidence_id': '0a924bb24b5ae95c00e5e4b60cb7b9dd', 'fact_ref': 'segment:abc123def456abcd-p0001-s0001', 'source_id': 'sha256:deadbeef', ...},)
+kwargs = {}
+
+    def validate(self, *args, **kwargs):
+        for error in self.iter_errors(*args, **kwargs):
+&gt;           raise error
+E           jsonschema.exceptions.ValidationError: -1 is less than the minimum of 0
+E           
+E           Failed validating 'minimum' in schema['properties']['locator']['properties']['page']:
+E               {'minimum': 0, 'type': 'integer'}
+E           
+E           On instance['locator']['page']:
+E               -1
+
+[PYTHON]/lib/python3.12/site-packages/jsonschema/validators.py:451: ValidationError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[-1]" time="0.001"><failure message="jsonschema.exceptions.ValidationError: -2 is less than the minimum of 0&#10;&#10;Failed validating 'minimum' in schema['properties']['locator']['properties']['page']:&#10;    {'minimum': 0, 'type': 'integer'}&#10;&#10;On instance['locator']['page']:&#10;    -2">page = -1
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+        with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+&gt;           emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
+
+tests/emit/test_evidence_object.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/emit/evidence.py:149: in emit_evidence_object
+    validate_contract_record(EVIDENCE_SCHEMA_NAME, payload)
+src/doc_lineage/schema/validation.py:76: in validate_contract_record
+    Draft202012Validator(schema).validate(payload)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Draft202012Validator(schema={'$id': 'https://gith...1.schema.json', '$schema': 'https://json...020-12/schema', 'additi..._text_coverage'}}, 'required': ['evidence_kind']}, 'then': {'required': ['document_ref']}}], ...}, format_checker=None)
+args = ({'schema_version': 'evidence-object/v1', 'evidence_id': '0a924bb24b5ae95c00e5e4b60cb7b9dd', 'fact_ref': 'segment:abc123def456abcd-p0001-s0001', 'source_id': 'sha256:deadbeef', ...},)
+kwargs = {}
+
+    def validate(self, *args, **kwargs):
+        for error in self.iter_errors(*args, **kwargs):
+&gt;           raise error
+E           jsonschema.exceptions.ValidationError: -2 is less than the minimum of 0
+E           
+E           Failed validating 'minimum' in schema['properties']['locator']['properties']['page']:
+E               {'minimum': 0, 'type': 'integer'}
+E           
+E           On instance['locator']['page']:
+E               -2
+
+[PYTHON]/lib/python3.12/site-packages/jsonschema/validators.py:451: ValidationError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[True]" time="0.001"><failure message="Failed: DID NOT RAISE ValueError">page = True
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+&gt;       with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+E       Failed: DID NOT RAISE ValueError
+
+tests/emit/test_evidence_object.py:182: Failed</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[False]" time="0.000"><failure message="jsonschema.exceptions.ValidationError: -1 is less than the minimum of 0&#10;&#10;Failed validating 'minimum' in schema['properties']['locator']['properties']['page']:&#10;    {'minimum': 0, 'type': 'integer'}&#10;&#10;On instance['locator']['page']:&#10;    -1">page = False
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+        with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+&gt;           emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
+
+tests/emit/test_evidence_object.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/emit/evidence.py:149: in emit_evidence_object
+    validate_contract_record(EVIDENCE_SCHEMA_NAME, payload)
+src/doc_lineage/schema/validation.py:76: in validate_contract_record
+    Draft202012Validator(schema).validate(payload)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Draft202012Validator(schema={'$id': 'https://gith...1.schema.json', '$schema': 'https://json...020-12/schema', 'additi..._text_coverage'}}, 'required': ['evidence_kind']}, 'then': {'required': ['document_ref']}}], ...}, format_checker=None)
+args = ({'schema_version': 'evidence-object/v1', 'evidence_id': '0a924bb24b5ae95c00e5e4b60cb7b9dd', 'fact_ref': 'segment:abc123def456abcd-p0001-s0001', 'source_id': 'sha256:deadbeef', ...},)
+kwargs = {}
+
+    def validate(self, *args, **kwargs):
+        for error in self.iter_errors(*args, **kwargs):
+&gt;           raise error
+E           jsonschema.exceptions.ValidationError: -1 is less than the minimum of 0
+E           
+E           Failed validating 'minimum' in schema['properties']['locator']['properties']['page']:
+E               {'minimum': 0, 'type': 'integer'}
+E           
+E           On instance['locator']['page']:
+E               -1
+
+[PYTHON]/lib/python3.12/site-packages/jsonschema/validators.py:451: ValidationError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[1.5]" time="0.001"><failure message="jsonschema.exceptions.ValidationError: 0.5 is not of type 'integer'&#10;&#10;Failed validating 'type' in schema['properties']['locator']['properties']['page']:&#10;    {'minimum': 0, 'type': 'integer'}&#10;&#10;On instance['locator']['page']:&#10;    0.5">page = 1.5
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+        with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+&gt;           emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
+
+tests/emit/test_evidence_object.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/emit/evidence.py:149: in emit_evidence_object
+    validate_contract_record(EVIDENCE_SCHEMA_NAME, payload)
+src/doc_lineage/schema/validation.py:76: in validate_contract_record
+    Draft202012Validator(schema).validate(payload)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Draft202012Validator(schema={'$id': 'https://gith...1.schema.json', '$schema': 'https://json...020-12/schema', 'additi..._text_coverage'}}, 'required': ['evidence_kind']}, 'then': {'required': ['document_ref']}}], ...}, format_checker=None)
+args = ({'schema_version': 'evidence-object/v1', 'evidence_id': '0a924bb24b5ae95c00e5e4b60cb7b9dd', 'fact_ref': 'segment:abc123def456abcd-p0001-s0001', 'source_id': 'sha256:deadbeef', ...},)
+kwargs = {}
+
+    def validate(self, *args, **kwargs):
+        for error in self.iter_errors(*args, **kwargs):
+&gt;           raise error
+E           jsonschema.exceptions.ValidationError: 0.5 is not of type 'integer'
+E           
+E           Failed validating 'type' in schema['properties']['locator']['properties']['page']:
+E               {'minimum': 0, 'type': 'integer'}
+E           
+E           On instance['locator']['page']:
+E               0.5
+
+[PYTHON]/lib/python3.12/site-packages/jsonschema/validators.py:451: ValidationError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[1]" time="0.000"><failure message="TypeError: unsupported operand type(s) for -: 'str' and 'int'">page = '1'
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+        with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+&gt;           emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
+
+tests/emit/test_evidence_object.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+span = namespace(segment_id='abc123def456abcd-p0001-s0001', page='1', order=1, text='The Management Fee shall be 2.0% per annum.', char_count=43, word_count=8)
+source_id = 'sha256:deadbeef', method = 'text', fact_ref = None, excerpt = None
+locator = None, confidence = None, entity_ref = None
+
+    def emit_evidence_object(
+        span: Span,
+        *,
+        source_id: str,
+        method: str,
+        fact_ref: str | None = None,
+        excerpt: str | None = None,
+        locator: dict[str, Any] | None = None,
+        confidence: float | None = None,
+        entity_ref: str | None = None,
+    ) -&gt; dict[str, Any]:
+        """Build a validated ``evidence-object/v1`` payload for one span.
+    
+        ``excerpt`` defaults to the span's own text (bounded), because at the
+        manifest boundary the span IS the quoted source text. The key is always
+        present in the result, which is what the contract requires.
+    
+        ``span.page`` is a one-based physical page number. Convert it exactly once
+        to zero-based ``locator.page``, as required by
+        ``docs/contracts/document-identity-conventions.md``. Segment pages and IDs
+        retain their one-based convention; caller locators cannot override it.
+        """
+        if method not in EVIDENCE_METHODS:
+            raise ValueError(f"method must be one of {sorted(EVIDENCE_METHODS)}, got {method!r}")
+        if not source_id:
+            raise ValueError("source_id must be a non-empty string")
+    
+        resolved_fact_ref = fact_ref or f"segment:{span.segment_id}"
+        resolved_excerpt = bound_excerpt(span.text if excerpt is None else excerpt)
+        resolved_locator: dict[str, Any] = dict(locator) if locator else {}
+&gt;       resolved_locator["page"] = span.page - 1
+                                   ^^^^^^^^^^^^^
+E       TypeError: unsupported operand type(s) for -: 'str' and 'int'
+
+src/doc_lineage/emit/evidence.py:127: TypeError</failure></testcase><testcase classname="tests.emit.test_evidence_object" name="test_locator_rejects_invalid_source_page[None]" time="0.000"><failure message="TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'">page = None
+
+    @pytest.mark.parametrize("page", [0, -1, True, False, 1.5, "1", None])
+    def test_locator_rejects_invalid_source_page(page: object) -&gt; None:
+        # The emitter accepts structural spans; malformed callers need runtime validation.
+        from types import SimpleNamespace
+    
+        span = SimpleNamespace(**{**_span().to_dict(), "page": page})
+        with pytest.raises(ValueError, match="page must be an integer &gt;= 1"):
+&gt;           emit_evidence_object(span, source_id="sha256:deadbeef", method="text")
+
+tests/emit/test_evidence_object.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+span = namespace(segment_id='abc123def456abcd-p0001-s0001', page=None, order=1, text='The Management Fee shall be 2.0% per annum.', char_count=43, word_count=8)
+source_id = 'sha256:deadbeef', method = 'text', fact_ref = None, excerpt = None
+locator = None, confidence = None, entity_ref = None
+
+    def emit_evidence_object(
+        span: Span,
+        *,
+        source_id: str,
+        method: str,
+        fact_ref: str | None = None,
+        excerpt: str | None = None,
+        locator: dict[str, Any] | None = None,
+        confidence: float | None = None,
+        entity_ref: str | None = None,
+    ) -&gt; dict[str, Any]:
+        """Build a validated ``evidence-object/v1`` payload for one span.
+    
+        ``excerpt`` defaults to the span's own text (bounded), because at the
+        manifest boundary the span IS the quoted source text. The key is always
+        present in the result, which is what the contract requires.
+    
+        ``span.page`` is a one-based physical page number. Convert it exactly once
+        to zero-based ``locator.page``, as required by
+        ``docs/contracts/document-identity-conventions.md``. Segment pages and IDs
+        retain their one-based convention; caller locators cannot override it.
+        """
+        if method not in EVIDENCE_METHODS:
+            raise ValueError(f"method must be one of {sorted(EVIDENCE_METHODS)}, got {method!r}")
+        if not source_id:
+            raise ValueError("source_id must be a non-empty string")
+    
+        resolved_fact_ref = fact_ref or f"segment:{span.segment_id}"
+        resolved_excerpt = bound_excerpt(span.text if excerpt is None else excerpt)
+        resolved_locator: dict[str, Any] = dict(locator) if locator else {}
+&gt;       resolved_locator["page"] = span.page - 1
+                                   ^^^^^^^^^^^^^
+E       TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'
+
+src/doc_lineage/emit/evidence.py:127: TypeError</failure></testcase></testsuite></testsuites>

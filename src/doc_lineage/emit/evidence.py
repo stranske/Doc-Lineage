@@ -110,16 +110,23 @@ def emit_evidence_object(
     ``excerpt`` defaults to the span's own text (bounded), because at the
     manifest boundary the span IS the quoted source text. The key is always
     present in the result, which is what the contract requires.
+
+    ``span.page`` is a one-based physical page number. Convert it exactly once
+    to zero-based ``locator.page``, as required by
+    ``docs/contracts/document-identity-conventions.md``. Segment pages and IDs
+    retain their one-based convention; caller locators cannot override it.
     """
     if method not in EVIDENCE_METHODS:
         raise ValueError(f"method must be one of {sorted(EVIDENCE_METHODS)}, got {method!r}")
     if not source_id:
         raise ValueError("source_id must be a non-empty string")
+    if isinstance(span.page, bool) or not isinstance(span.page, int) or span.page < 1:
+        raise ValueError("span.page must be an integer >= 1")
 
     resolved_fact_ref = fact_ref or f"segment:{span.segment_id}"
     resolved_excerpt = bound_excerpt(span.text if excerpt is None else excerpt)
     resolved_locator: dict[str, Any] = dict(locator) if locator else {}
-    resolved_locator["page"] = span.page
+    resolved_locator["page"] = span.page - 1
     resolved_locator["order"] = span.order
 
     payload: dict[str, Any] = {
