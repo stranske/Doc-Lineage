@@ -14,7 +14,7 @@ attrs==26.1.0
     #   referencing
 beautifulsoup4==4.15.0
     # via edgartools
-black==26.10.0
+black==26.10.1
     # via doc-lineage (pyproject.toml)
 certifi==2026.7.22
     # via
@@ -168,7 +168,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.10
+ruff==0.17.0
     # via doc-lineage (pyproject.toml)
 setuptools==82.0.1
     # via doc-lineage (pyproject.toml)
