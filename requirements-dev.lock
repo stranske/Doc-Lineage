@@ -6,7 +6,7 @@ attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
-black==26.10.0
+black==26.10.1
     # via doc-lineage (pyproject.toml)
 charset-normalizer==3.5.1
     # via reportlab
@@ -86,7 +86,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.10
+ruff==0.17.0
     # via doc-lineage (pyproject.toml)
 setuptools==82.0.1
     # via doc-lineage (pyproject.toml)
