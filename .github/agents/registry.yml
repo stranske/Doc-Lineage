@@ -150,6 +150,7 @@ execution_profiles:
 
 agents:
   codex:
+    enabled: true
     runner_workflow: .github/workflows/reusable-codex-run.yml
     required_secrets:
       - CODEX_AUTH_JSON
@@ -173,6 +174,7 @@ agents:
       verifier_checkbox: true
 
   claude:
+    enabled: true
     runner_workflow: .github/workflows/reusable-claude-run.yml
     required_secrets:
       - CLAUDE_CODE_OAUTH_TOKEN  # preferred: long-lived token from `claude setup-token`
@@ -198,6 +200,7 @@ agents:
       verifier_checkbox: true
 
   cursor:
+    enabled: true
     runner_workflow: .github/workflows/reusable-cursor-run.yml
     required_secrets:
       - CURSOR_API_KEY
@@ -219,7 +222,35 @@ agents:
     capabilities:
       pr_keepalive: true
       pr_autofix: true          # wired into agents-autofix-loop.yml (autofix-cursor job)
-      belt: false              # belt routing deferred to a later phase
+      belt: true               # belt is registry-driven; the round runs in the keepalive run-cursor job (see docs/keepalive/Agents.md)
+      verifier_checkbox: false  # verification stays on the existing judge (config/llm_slots.json)
+
+  muse:
+    enabled: true
+    runner_workflow: .github/workflows/reusable-muse-run.yml
+    required_secrets:
+      - META_API_KEY
+    branch_prefix: muse/issue-
+    capacity:
+      window: 5h
+      limit: 1  # TODO: confirm owner-supplied plan allowance (Power plan: 5h + weekly)
+    ui_mentions_allowed: false
+    # Reuses stranske-automation-bot for branch pushes/attribution until a
+    # dedicated service account is provisioned. META_API_KEY MUST be the key the Muse CLI
+    # login creates in the console's `Muse Code` project (bills the subscription), never a
+    # Default-Project key (pay-as-you-go).
+    automation_logins:
+      - stranske-automation-bot
+    readiness_candidates:
+      - stranske-automation-bot
+    preflight:
+      assign_user: stranske-automation-bot
+      command_phrase: ''
+      enabled: false   # issue-intake/invite flow deferred; PR keepalive + autofix only this phase
+    capabilities:
+      pr_keepalive: true
+      pr_autofix: true          # wired into agents-autofix-loop.yml (autofix-muse job, Workflows#3919)
+      belt: false              # belt routing deferred (see the belt parity issue)
       verifier_checkbox: false  # verification stays on the existing judge (config/llm_slots.json)
 
   gemini:
