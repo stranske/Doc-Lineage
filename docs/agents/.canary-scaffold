@@ -1,1 +1,0 @@
-Scaffold for the Cursor keepalive canary (issue #99). The keepalive agent adds the real files; this PR is closed unmerged.
