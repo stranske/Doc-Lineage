@@ -1,0 +1,28 @@
+name: ZZ Token Probe
+on:
+  push:
+    branches: [cursor/issue-99]
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe tokens against the reservation read
+        env:
+          T_PAT: ${{ secrets.SERVICE_BOT_PAT }}
+          T_GH: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          q='{"query":"query{repository(owner:\"stranske\",name:\"Doc-Lineage\"){pullRequest(number:100){comments(first:5){nodes{fullDatabaseId}}}}}"}'
+          for name in T_PAT T_GH; do
+            tok="${!name}"
+            if [ -z "$tok" ]; then echo "$name: empty"; continue; fi
+            code=$(curl -s -o /tmp/out.json -w '%{http_code}' -H "Authorization: Bearer $tok" -H "Content-Type: application/json" -d "$q" https://api.github.com/graphql)
+            msg=$(python3 -c "import json;d=json.load(open('/tmp/out.json'));print((d.get('message') or d.get('errors') or 'ok'))" 2>/dev/null | cut -c1-200)
+            echo "$name graphql http=$code msg=$msg"
+            code=$(curl -s -o /tmp/out2.json -w '%{http_code}' -H "Authorization: Bearer $tok" https://api.github.com/repos/stranske/Doc-Lineage/issues/100/comments)
+            echo "$name rest-comments http=$code"
+            echo "$name user: $(curl -s -H "Authorization: Bearer $tok" https://api.github.com/user | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('login') or d.get('message'))")"
+          done
