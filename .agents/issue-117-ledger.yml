@@ -1,0 +1,57 @@
+version: 1
+issue: 117
+base: main
+branch: cursor/issue-117
+tasks:
+  - id: task-01
+    title: 'Create `docs/agents/CURSOR_BELT_CANARY.md` with heading `# Cursor belt
+      canary` and a separate line exactly `Cursor belt canary: 2026-10-17`.'
+    status: doing
+    started_at: '2026-10-16T22:59:17Z'
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-02
+    title: Add `tests/test_cursor_belt_canary.py` with `test_cursor_belt_canary_file_has_marker`,
+      resolving `docs/agents/CURSOR_BELT_CANARY.md` from the test file location and
+      asserting it exists and contains the exact marker line.
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-03
+    title: '`tests/test_cursor_belt_canary.py::test_cursor_belt_canary_file_has_marker`
+      passes.'
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-04
+    title: Deleting the marker line from `docs/agents/CURSOR_BELT_CANARY.md` causes
+      `test_cursor_belt_canary_file_has_marker` to fail; restoring the line causes
+      it to pass.
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-05
+    title: 'Create `docs/agents/CURSOR_BELT_CANARY.md` containing the heading `# Cursor
+      belt canary` and, on its own line, exactly `Cursor belt canary: 2026-10-17`.'
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-06
+    title: Add `tests/test_cursor_belt_canary.py` with one test, `test_cursor_belt_canary_file_has_marker`,
+      asserting that `docs/agents/CURSOR_BELT_CANARY.md` exists (resolve the path
+      from the test file's location, not the working directory) and contains that
+      exact line.
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
