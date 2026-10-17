@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -105,7 +106,7 @@ def _run_export_docx(args: argparse.Namespace) -> int:
             destination = args.output.resolve()
             for source in (args.original, args.modified):
                 if destination == source.resolve() or (
-                    args.output.exists() and args.output.samefile(source)
+                    args.output.exists() and os.path.samefile(args.output, source)
                 ):
                     raise ValueError(
                         "--output must not be the same file as --original or --modified"

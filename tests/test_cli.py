@@ -10,6 +10,7 @@ coverage survives the interface change rather than being quietly dropped with it
 import hashlib
 import http.client
 import json
+import os
 from pathlib import Path
 from unittest.mock import MagicMock, Mock
 
@@ -73,7 +74,9 @@ def test_export_requires_blackline(
 
 
 @pytest.mark.parametrize("input_name", ["original", "modified"])
-@pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+@pytest.mark.parametrize(
+    "alias", ["direct", "relative", "relative-input", "normalized", "symlink", "hardlink"]
+)
 def test_export_rejects_input_alias_without_changing_hashes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -86,19 +89,32 @@ def test_export_rejects_input_alias_without_changing_hashes(
     original.write_bytes(b"original package")
     modified.write_bytes(b"modified package")
     before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+    original_arg, modified_arg = original, modified
     source = original if input_name == "original" else modified
     output = source
     if alias == "relative":
         monkeypatch.chdir(tmp_path)
         output = Path(source.name)
+    elif alias == "relative-input":
+        monkeypatch.chdir(tmp_path)
+        original_arg, modified_arg = Path(original.name), Path(modified.name)
+    elif alias == "normalized":
+        nested = tmp_path / "nested"
+        nested.mkdir()
+        output = nested / ".." / source.name
     elif alias == "symlink":
         output = tmp_path / "alias.docx"
-        output.symlink_to(source)
+        try:
+            output.symlink_to(source)
+        except (OSError, NotImplementedError) as exc:
+            pytest.skip(f"filesystem does not support symbolic links: {exc}")
     elif alias == "hardlink":
         output = tmp_path / "alias.docx"
+        if not hasattr(os, "link"):
+            pytest.skip("os.link is unavailable")
         try:
-            output.hardlink_to(source)
-        except OSError as exc:
+            os.link(source, output)
+        except (OSError, NotImplementedError) as exc:
             pytest.skip(f"filesystem does not support hard links: {exc}")
     export = Mock(return_value=b"redline output must not replace an input")
     monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
@@ -107,9 +123,9 @@ def test_export_rejects_input_alias_without_changing_hashes(
         [
             "export-docx",
             "--original",
-            str(original),
+            str(original_arg),
             "--modified",
-            str(modified),
+            str(modified_arg),
             "--blackline",
             "--output",
             str(output),
@@ -120,9 +136,11 @@ def test_export_rejects_input_alias_without_changing_hashes(
         hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
     ] == before
     assert code == 1
-    assert (
-        "--output must not be the same file as --original or --modified" in capsys.readouterr().err
+    captured = capsys.readouterr()
+    assert captured.err == (
+        "doc-lineage export-docx: --output must not be the same file as --original or --modified\n"
     )
+    assert captured.out == ""
     export.assert_not_called()
 
 
