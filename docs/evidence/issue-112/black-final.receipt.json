@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/opt/anaconda3/bin/python3",
+    "-m",
+    "black",
+    "--check",
+    "--workers",
+    "1",
+    "src",
+    "tests",
+    "docs/evidence/issue-112/replay.py"
+  ],
+  "exit": 0,
+  "elapsed_seconds": 0.2647697925567627
+}

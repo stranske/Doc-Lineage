@@ -1,0 +1,13 @@
+--- a/src/doc_lineage/blackline.py
++++ b/src/doc_lineage/blackline.py
+@@ -341,9 +341,7 @@
+         "modified": modified,
+         "options": {"header_confidence_threshold": float(threshold), "engine": "section-id/v1"},
+     }
+-    decisions = [
+-        lineage_edge_for(pair) for pair in align_sections(left, right, threshold=threshold)
+-    ]
++    decisions = []  # ISSUE112 deliberate production disconnect
+     return identity, decisions
+ 
+ 

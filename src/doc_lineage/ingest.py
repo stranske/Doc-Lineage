@@ -36,6 +36,7 @@ SEGMENTS_SCHEMA_VERSION = "doc-lineage-segments/v1"
 TOOL_NAME = "doc-lineage-ingest"
 MANIFEST_FILENAME = "artifact-manifest.json"
 SEGMENTS_FILENAME = "segments.json"
+ORIGINAL_FILENAME = "source-{sha256}.bin"
 _PARAGRAPH_SPLIT = re.compile(r"\n\s*\n")
 _WHITESPACE = re.compile(r"\s+")
 
@@ -269,6 +270,15 @@ def ingest_document(
 
     artifacts = [
         {
+            "artifact_id": f"{source_sha256}-original",
+            "name": ORIGINAL_FILENAME.format(sha256=source_sha256),
+            "kind": "data",
+            "path": ORIGINAL_FILENAME.format(sha256=source_sha256),
+            "sha256": source_sha256,
+            "bytes": len(raw),
+            "media_type": "application/octet-stream",
+        },
+        {
             "artifact_id": f"{source_sha256[:16]}-segments",
             "name": SEGMENTS_FILENAME,
             "kind": "data",
@@ -276,7 +286,7 @@ def ingest_document(
             "sha256": sha256_bytes(segments_bytes),
             "bytes": len(segments_bytes),
             "media_type": "application/json",
-        }
+        },
     ]
     artifacts.extend(
         {
@@ -301,6 +311,14 @@ def ingest_document(
     )
     if evidence_dir.is_symlink():
         raise ValueError("evidence output directory must not be a symlink")
+    original_path = destination / ORIGINAL_FILENAME.format(sha256=source_sha256)
+    if original_path.is_symlink():
+        raise ValueError("original snapshot must not be a symlink")
+    if original_path.exists() and original_path.read_bytes() != raw:
+        raise ValueError("original snapshot is immutable; use a new ingest run directory")
+    if not original_path.exists():
+        with original_path.open("xb") as snapshot:
+            snapshot.write(raw)
     evidence_dir.mkdir(parents=True, exist_ok=True)
     segments_path.write_bytes(segments_bytes)
     for relative_path, payload_bytes in evidence_files:

@@ -1,0 +1,156 @@
+{
+  "issue": "stranske/Doc-Lineage#112",
+  "base_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+  "branch": "codex/issue-112-content-bound-section-pairing",
+  "scope": "extracted-pdf-sections",
+  "source_test_fixture_sha256": {
+    "src/doc_lineage/blackline.py": "9859bb937571470542848aa3d132ed9c9c31e95086fe75a950cc96a404729a62",
+    "src/doc_lineage/ingest.py": "d636b0e82021111c8fb1219b86312fd721b1e16069a871235211df6b3d716540",
+    "src/doc_lineage/cli.py": "8031b290f20828de87069570b606d6d245893ec6de9dc2038829ba40543dcd41",
+    "tests/blackline/test_section_id_pairing.py": "cd7db35bbaa1fd54e673a2512cb5d99eebb5ecc408f57a9d5fa6800517da1a59",
+    "tests/blackline/test_comparison_run_cli.py": "ac97637ff4812f24710872bc428e06a43ca862f767a1b15cb4b83eb0cca1fdb8",
+    "docs/section-pairing.md": "ecbdac21f09710ba9db6ad24181a5584daef5d86a37c6a8901df7a30f443f7af",
+    "docs/evidence/issue-112/replay.py": "fb79665dcc80403b69dd2c8ee1ae3cae296b9cc71f23bbe946ba902d5d0821aa",
+    "docs/evidence/issue-112/fixtures/before.pdf": "4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df",
+    "docs/evidence/issue-112/fixtures/after.pdf": "a78021f2f3b3aaa98f95d13885e87ce619b961d74518d581e426d0387e48103c"
+  },
+  "validation": {
+    "named-exact": {
+      "argv": [
+        "/opt/anaconda3/bin/python3",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py",
+        "-q"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.8013920783996582
+    },
+    "focused-cli": {
+      "argv": [
+        "/opt/anaconda3/bin/python3",
+        "-m",
+        "pytest",
+        "tests/blackline/test_comparison_run_cli.py",
+        "tests/test_cli.py",
+        "-q",
+        "--junitxml=$RAW/focused-cli.xml"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 55.57219195365906
+    },
+    "full-isolated": {
+      "argv": [
+        "$VENV/bin/python",
+        "-m",
+        "pytest",
+        "--cov=src",
+        "--cov-report=term-missing",
+        "--cov-report=xml:$RAW/coverage-isolated.xml",
+        "--junitxml=$RAW/full-isolated.xml"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 93.38942623138428
+    },
+    "ruff-final": {
+      "argv": [
+        "/opt/anaconda3/bin/python3",
+        "-m",
+        "ruff",
+        "check",
+        "src",
+        "tests",
+        "docs/evidence/issue-112/replay.py"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.0778040885925293
+    },
+    "black-final": {
+      "argv": [
+        "/opt/anaconda3/bin/python3",
+        "-m",
+        "black",
+        "--check",
+        "--workers",
+        "1",
+        "src",
+        "tests",
+        "docs/evidence/issue-112/replay.py"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.2647697925567627
+    },
+    "replay-final": {
+      "argv": [
+        "/opt/anaconda3/bin/python3",
+        "docs/evidence/issue-112/replay.py",
+        "$RAW/replay-final"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.790647029876709
+    }
+  },
+  "initial_full": {
+    "exit": 1,
+    "result": "501 passed, 1 unchanged editable-install test failed; coverage 89.24%, floor 80"
+  },
+  "mypy_full": {
+    "argv": [
+      "/opt/anaconda3/bin/python3",
+      "-m",
+      "mypy",
+      "src"
+    ],
+    "exit": 1,
+    "result": "2 unused-ignore errors at unchanged adapters/docling_segmenter.py:111-112; 38 source files checked"
+  },
+  "mypy_changed": {
+    "argv": [
+      "/opt/anaconda3/bin/python3",
+      "-m",
+      "mypy",
+      "--cache-dir=/tmp/issue112-mypy",
+      "--follow-imports=silent",
+      "src/doc_lineage/blackline.py",
+      "src/doc_lineage/cli.py",
+      "src/doc_lineage/ingest.py"
+    ],
+    "exit": 0,
+    "limit": "Imported baseline errors suppressed only in focused command; full mypy remains FAIL"
+  },
+  "isolated_environment": {
+    "creation": [
+      "/opt/anaconda3/bin/python3",
+      "-m",
+      "venv",
+      "--system-site-packages",
+      "$VENV"
+    ],
+    "env": {
+      "PIP_NO_BUILD_ISOLATION": "0",
+      "PIP_NO_DEPS": "1",
+      "PATH": "$VENV/bin:$PATH"
+    },
+    "purpose": "Constrain existing editable-install test to writable local environment; reuse installed dependencies; no tests excluded"
+  },
+  "installed_versions": {
+    "pytest": "9.1.1",
+    "pytest-cov": "7.1.0",
+    "ruff": "0.16.7",
+    "black": "26.5.1",
+    "mypy": "2.3.1",
+    "reportlab": "5.0.1",
+    "pypdf": "6.0.0"
+  },
+  "capability_advisor": {
+    "exit": 1,
+    "disposition": "unavailable; registry lock denied; fail open; no capabilities returned or claimed used"
+  },
+  "limitations": [
+    "Full mypy retains two pre-existing errors in an unchanged file.",
+    "Installed Ruff/Black/mypy are below project dev pins; pinned-version results unknown.",
+    "Checksums are local corruption checks, not signed attestations.",
+    "Legacy ingests without retained originals require re-ingest into new directories.",
+    "No native Office, provider verdict, hosted CI, source closure or merge acceptance claimed."
+  ]
+}

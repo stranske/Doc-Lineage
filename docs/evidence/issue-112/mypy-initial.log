@@ -1,0 +1,4 @@
+src/doc_lineage/adapters/docling_segmenter.py:111: error: Unused "type: ignore" comment  [unused-ignore]
+src/doc_lineage/adapters/docling_segmenter.py:112: error: Unused "type: ignore" comment  [unused-ignore]
+pyproject.toml: note: unused section(s): module = ['edgartools', 'tests.*']
+Found 2 errors in 1 file (checked 38 source files)

@@ -305,3 +305,30 @@ def test_docling_items_survive_ingest_and_section_pairing(
     assert pairs[1].left is not None and pairs[1].right is not None
     assert pairs[0].left.text == pairs[0].right.text
     assert pairs[1].left.text != pairs[1].right.text
+
+
+def test_persisted_section_pairing_binds_ordered_inputs_and_replays(tmp_path: Path) -> None:
+    """Issue #112 production gate: validated independent ingests feed the real engine."""
+    from test_comparison_run_cli import make_runs
+
+    from doc_lineage.blackline import create_section_comparison, load_section_comparison
+
+    left, right = make_runs(tmp_path)
+    store = tmp_path / "comparisons"
+    cid = create_section_comparison(left, right, store=store)
+    record = load_section_comparison(cid, store=store)
+    assert [d["section_id"] for d in record["decisions"]] == [
+        "1",
+        "2",
+        "2",
+        "3",
+        "4",
+    ], "PERSISTED_SECTION_PAIRING_MUST_CALL_EXISTING_ENGINE"
+    assert record["decisions"][0]["pairing_method"] == "section_id"
+    assert all(d["pairing_method"] == "manual_review" for d in record["decisions"][1:])
+    assert (
+        record["identity"]["original"]["source_sha256"]
+        != record["identity"]["modified"]["source_sha256"]
+    )
+    with pytest.raises(ValueError, match="source order mismatch"):
+        load_section_comparison(cid, store=store, original_run=right, modified_run=left)

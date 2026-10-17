@@ -1,0 +1,32 @@
+{
+  "mutation": "Disconnect persisted comparison from align_sections; unchanged test must reject missing decisions",
+  "source": "src/doc_lineage/blackline.py",
+  "test": "tests/blackline/test_section_id_pairing.py",
+  "original_sha256": "9859bb937571470542848aa3d132ed9c9c31e95086fe75a950cc96a404729a62",
+  "mutated_sha256": "600e925d82873b8b3e92421d313657f70179fae490ac1c28c1027e5312c6a610",
+  "test_before_sha256": "cd7db35bbaa1fd54e673a2512cb5d99eebb5ecc408f57a9d5fa6800517da1a59",
+  "red": {
+    "argv": [
+      "/opt/anaconda3/bin/python3",
+      "-m",
+      "pytest",
+      "tests/blackline/test_section_id_pairing.py::test_persisted_section_pairing_binds_ordered_inputs_and_replays",
+      "-q",
+      "--junitxml=$RAW/mutation-red.xml"
+    ],
+    "exit": 1
+  },
+  "restored_sha256": "9859bb937571470542848aa3d132ed9c9c31e95086fe75a950cc96a404729a62",
+  "test_after_sha256": "cd7db35bbaa1fd54e673a2512cb5d99eebb5ecc408f57a9d5fa6800517da1a59",
+  "restored_green": {
+    "argv": [
+      "/opt/anaconda3/bin/python3",
+      "-m",
+      "pytest",
+      "tests/blackline/test_section_id_pairing.py::test_persisted_section_pairing_binds_ordered_inputs_and_replays",
+      "-q",
+      "--junitxml=$RAW/mutation-restored-green.xml"
+    ],
+    "exit": 0
+  }
+}

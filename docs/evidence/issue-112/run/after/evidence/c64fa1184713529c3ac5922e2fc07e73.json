@@ -1,0 +1,12 @@
+{
+  "evidence_id": "c64fa1184713529c3ac5922e2fc07e73",
+  "excerpt": "1. FEES The fee is three percent.",
+  "fact_ref": "segment:a78021f2f3b3aaa9-p0001-s0001",
+  "locator": {
+    "order": 1,
+    "page": 0
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "a78021f2f3b3aaa98f95d13885e87ce619b961d74518d581e426d0387e48103c"
+}

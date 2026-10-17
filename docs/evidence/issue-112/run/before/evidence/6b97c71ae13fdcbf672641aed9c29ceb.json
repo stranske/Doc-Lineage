@@ -1,0 +1,12 @@
+{
+  "evidence_id": "6b97c71ae13fdcbf672641aed9c29ceb",
+  "excerpt": "3. NOTICE The fee is two percent.",
+  "fact_ref": "segment:4dadf63039b159a6-p0004-s0004",
+  "locator": {
+    "order": 4,
+    "page": 3
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df"
+}

@@ -22,13 +22,26 @@ Here `--blackline` is a boolean flag for a file-pair comparison. The planned
 is not implemented: it needs a persisted comparison-ID lookup contract connecting
 [ingest #8](https://github.com/stranske/Doc-Lineage/issues/8) and
 [blackline #10](https://github.com/stranske/Doc-Lineage/issues/10). Ingest excludes
-blackline/diff, and the section-pairing issue does not yet define that lookup.
+blackline/diff. The extracted-PDF section-pairing lookup described below is a
+separate mode and does not complete native DOCX-by-ID replay acceptance.
 A path is not treated as a substitute comparison ID. File-pair export therefore
 does not complete the ID-based scope of #15.
 
 Source distributions include the export tests under `tests/export/` and their
 `tests/fixtures/fact_key_map/tracked_variables.json` fixture so the native
 tracked-changes acceptance tests can be run from the source archive.
+
+## Persisted PDF section pairing
+
+Use `doc-lineage pair-sections before-run after-run --store comparisons` to
+validate two persisted PDF ingests and publish a content-bound section-pairing
+artifact. `doc-lineage lookup-section-pairing <opaque-id> --store comparisons`
+revalidates original bytes, manifests, segments, order and options before replay.
+New ingests retain manifested original snapshots; legacy runs need re-ingest
+into new directories. See [commands, API and replay contract](docs/section-pairing.md).
+This is section alignment with manual review for ambiguous/unmatched sections;
+it does not classify text differences, confirm supersession or complete native
+DOCX export by ID. Issue #15 remains pending that separate acceptance.
 
 ## Intent
 

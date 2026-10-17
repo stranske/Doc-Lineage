@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from doc_lineage.blackline import create_section_comparison, load_section_comparison
 from doc_lineage.export import export_docx_redline
 from doc_lineage.export.fact_key_map import export_fact_key_map
 from doc_lineage.harvest import harvest_edgar_ex10
@@ -17,6 +19,22 @@ from doc_lineage.ingest import ingest_document
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="doc-lineage", description="Document lineage tooling.")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    pair = subparsers.add_parser(
+        "pair-sections", help="Pair sections from two persisted PDF ingests."
+    )
+    pair.add_argument("original_run", type=Path)
+    pair.add_argument("modified_run", type=Path)
+    pair.add_argument("--store", type=Path, required=True)
+    pair.add_argument("--threshold", type=float, default=0.8)
+    lookup = subparsers.add_parser(
+        "lookup-section-pairing", help="Validate and replay a section-pairing comparison ID."
+    )
+    lookup.add_argument("comparison_id")
+    lookup.add_argument("--store", type=Path, required=True)
+    lookup.add_argument("--original-run", type=Path)
+    lookup.add_argument("--modified-run", type=Path)
+    lookup.add_argument("--threshold", type=float)
 
     ingest = subparsers.add_parser(
         "ingest",
@@ -146,6 +164,26 @@ def _run_harvest_edgar(args: argparse.Namespace) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command in {"pair-sections", "lookup-section-pairing"}:
+        try:
+            if args.command == "pair-sections":
+                comparison_id = create_section_comparison(
+                    args.original_run, args.modified_run, store=args.store, threshold=args.threshold
+                )
+                print(comparison_id)
+            else:
+                record = load_section_comparison(
+                    args.comparison_id,
+                    store=args.store,
+                    original_run=args.original_run,
+                    modified_run=args.modified_run,
+                    threshold=args.threshold,
+                )
+                print(json.dumps(record, sort_keys=True, allow_nan=False))
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage {args.command}: {exc}", file=sys.stderr)
+            return 1
+        return 0
     if args.command == "export-fact-key-map":
         try:
             manifest = export_fact_key_map(args.path, args.output)
