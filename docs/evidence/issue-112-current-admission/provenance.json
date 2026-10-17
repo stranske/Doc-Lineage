@@ -1,0 +1,22 @@
+{
+  "native_observer_sha256": "20702824814c0cee7f889244d9f938ed7b6a2d1e0bf863722a5b3818d2529634",
+  "native_installation_path": "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-venv/lib/python3.12/site-packages/sitecustomize.py",
+  "native_installation": "Written into own Anaconda-based system-site-packages venv before either current capture; automatically imported by parent and child Python processes. Shared site-packages unchanged.",
+  "native_log_env": "DOC_CLOSER_NATIVE_LOG",
+  "snapshot_publication_after_capture": true,
+  "packager_sha256": "8130a99a9fac20d81dde3221e34b935a27a1e57883798d601dd2519b4bccad4b",
+  "publication": "Immutable green source bytes and the same eight retained mutation functions reconstruct captured red hashes. Capture writes logs/XML/JSON; packager adds source snapshots.",
+  "install_argv": [
+    "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-venv/bin/python",
+    "-m",
+    "pip",
+    "install",
+    "--no-build-isolation",
+    "-e",
+    "/Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420"
+  ],
+  "install_env": {
+    "PIP_NO_INDEX": "1",
+    "PIP_NO_DEPS": "1"
+  }
+}

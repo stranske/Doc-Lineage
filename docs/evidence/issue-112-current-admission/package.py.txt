@@ -1,0 +1,9 @@
+import pathlib,shutil,json,hashlib,ast
+R=pathlib.Path(__file__).resolve().parent;W=pathlib.Path('/Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420');D=W/'docs/evidence/issue-112-current-admission';D.mkdir(exist_ok=True);O=R/'doc129-integrated-fresh'
+for p in O.iterdir():
+ if p.is_file() and not p.name.startswith('.'):shutil.copyfile(p,D/p.name)
+shutil.copyfile(R/'capture129-integrated.py',D/'capture.py.txt')
+tree=ast.parse((W/'docs/evidence/issue-112-main-integration-2/causal.py').read_text());decls=[n for n in tree.body if isinstance(n,(ast.Assign,ast.AugAssign)) and ((isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='variants' for t in n.targets)) or(isinstance(n,ast.AugAssign) and isinstance(n.target,ast.Name) and n.target.id=='variants'))];ns={};exec(compile(ast.Module(body=decls,type_ignores=[]),'<variants>','exec'),ns)
+for name,path,mutate,*rest in ns['variants']:
+ b=(W/path).read_bytes();(D/(name+'.green.py.txt')).write_bytes(b);(D/(name+'.red.py.txt')).write_bytes(mutate(b.decode()).encode())
+manifest={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in D.iterdir() if p.is_file()};(D/'inventory.json').write_text(json.dumps(manifest,indent=2)+'\n')

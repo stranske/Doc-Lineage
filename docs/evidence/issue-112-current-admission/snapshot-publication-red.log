@@ -1,0 +1,78 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/ingest/test_private_publication.py F                               [100%]
+
+=================================== FAILURES ===================================
+________________ test_snapshot_failure_cleanup_and_retry[write] ________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4936/test_snapshot_failure_cleanup_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1123c3dd0>
+failure = 'write'
+
+    @pytest.mark.parametrize("failure", ["write", "file-sync", "link", "directory-sync"])
+    def test_snapshot_failure_cleanup_and_retry(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+    ) -> None:
+        run = tmp_path / "run"
+        fdopen, fsync, link = os.fdopen, os.fsync, os.link
+    
+        class InterruptedWriter:
+            def __init__(self, handle: Any) -> None:
+                self.handle = handle
+    
+            def __enter__(self) -> InterruptedWriter:
+                self.handle.__enter__()
+                return self
+    
+            def __exit__(self, *args: Any) -> Any:
+                return self.handle.__exit__(*args)
+    
+            def fileno(self) -> int:
+                return self.handle.fileno()
+    
+            def write(self, payload: bytes) -> None:
+                self.handle.write(payload[: len(payload) // 2])
+                self.handle.flush()
+                raise KeyboardInterrupt("interrupted snapshot write")
+    
+        def interrupted(fd: int, mode: str) -> InterruptedWriter:
+            return InterruptedWriter(fdopen(fd, mode))
+    
+        def failed_sync(fd: int) -> None:
+            directory = stat.S_ISDIR(os.fstat(fd).st_mode)
+            if directory == (failure == "directory-sync"):
+                raise OSError("injected sync failure")
+            fsync(fd)
+    
+        def failed_link(*args: Any, **kwargs: Any) -> None:
+            raise OSError("injected publication failure")
+    
+        with monkeypatch.context() as patch:
+            if failure == "write":
+                patch.setattr(persistence.os, "fdopen", interrupted)
+            elif failure == "link":
+                patch.setattr(persistence.os, "link", failed_link)
+            else:
+                patch.setattr(persistence.os, "fsync", failed_sync)
+            with pytest.raises((KeyboardInterrupt, OSError)):
+                ingest_document(FIXTURE, output_dir=run, allow_docling=False)
+        assert not list(run.glob(".snapshot-*")), "SNAPSHOT_FAILURE_CLEANS_TEMPORARY"
+        finals = list(run.glob("source-*.bin"))
+        if failure == "directory-sync":
+            assert len(finals) == 1 and finals[0].read_bytes() == FIXTURE.read_bytes()
+        else:
+>           assert not finals, "INTERRUPTED_SNAPSHOT_NEVER_PUBLISHES_FINAL"
+E           AssertionError: INTERRUPTED_SNAPSHOT_NEVER_PUBLISHES_FINAL
+E           assert not [PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4936/test_snapshot_failure_cleanup_0/run/source-b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f.bin')]
+
+tests/ingest/test_private_publication.py:101: AssertionError
+- generated xml file: /Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/snapshot-publication-red.xml -
+=========================== short test summary info ============================
+FAILED tests/ingest/test_private_publication.py::test_snapshot_failure_cleanup_and_retry[write]
+============================== 1 failed in 0.36s ===============================

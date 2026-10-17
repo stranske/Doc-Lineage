@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.210" timestamp="2026-10-17T09:47:43.953336-05:00" hostname="server.trs.private"><testcase classname="tests.blackline.test_combined_comparison_modes" name="test_combined_cli_keeps_both_comparison_schemas" time="0.051"><failure message="AssertionError: unhandled command: create-comparison">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4940/test_combined_cli_keeps_both_c0')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x106e08590&gt;
+
+    def test_combined_cli_keeps_both_comparison_schemas(tmp_path, capsys):
+        original, modified = tmp_path / "a.docx", tmp_path / "b.docx"
+        original.write_bytes(_docx("The fee is five dollars."))
+        modified.write_bytes(_docx("The fee is ten dollars."))
+        store = tmp_path / "comparisons"
+        assert (
+&gt;           main(
+                [
+                    "create-comparison",
+                    "--original",
+                    str(original),
+                    "--modified",
+                    str(modified),
+                    "--comparison-store",
+                    str(store),
+                ]
+            )
+            == 0
+        ), "DOCX_CREATION_DISPATCH_SURVIVES_INTEGRATION"
+
+tests/blackline/test_combined_comparison_modes.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+argv = ['create-comparison', '--original', '/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest...d6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4940/test_combined_cli_keeps_both_c0/b.docx', '--comparison-store', ...]
+
+    def main(argv: Sequence[str] | None = None) -&gt; int:
+        args = build_parser().parse_args(argv)
+        if args.command in {"pair-sections", "lookup-section-pairing"}:
+            try:
+                if args.command == "pair-sections":
+                    comparison_id = create_section_comparison(
+                        args.original_run, args.modified_run, store=args.store, threshold=args.threshold
+                    )
+                    print(comparison_id)
+                else:
+                    record = load_section_comparison(
+                        args.comparison_id,
+                        store=args.store,
+                        original_run=args.original_run,
+                        modified_run=args.modified_run,
+                        threshold=args.threshold,
+                    )
+                    print(json.dumps(record, sort_keys=True, allow_nan=False))
+            except (OSError, ValueError) as exc:
+                print(f"doc-lineage {args.command}: {exc}", file=sys.stderr)
+                return 1
+            return 0
+        if args.command == "disconnected-create-comparison":
+            try:
+                comparison_id = write_comparison_record(
+                    args.original, args.modified, store=args.comparison_store
+                )
+            except (OSError, ValueError) as exc:
+                print(f"doc-lineage create-comparison: {exc}", file=sys.stderr)
+                return 1
+            print(comparison_id)
+            return 0
+        if args.command == "extract-variables":
+            try:
+                manifest = publish_variables(
+                    args.path, args.source, args.output, entity_ref=args.entity_ref
+                )
+            except (OSError, ValueError) as exc:
+                print(f"doc-lineage extract-variables: {exc}", file=sys.stderr)
+                return 1
+            print(f"manifest: {manifest}")
+            print(f"unresolved: {manifest.parent / 'unresolved.json'}")
+            return 0
+        if args.command == "export-fact-key-map":
+            try:
+                manifest = export_fact_key_map(args.path, args.output)
+            except (OSError, ValueError) as exc:
+                print(f"doc-lineage export-fact-key-map: {exc}", file=sys.stderr)
+                return 1
+            print(f"manifest: {manifest}")
+            return 0
+        if args.command == "export-docx":
+            return _run_export_docx(args)
+        if args.command == "harvest-edgar":
+            return _run_harvest_edgar(args)
+        if args.command != "ingest":  # pragma: no cover - argparse rejects anything else
+&gt;           raise AssertionError(f"unhandled command: {args.command}")
+E           AssertionError: unhandled command: create-comparison
+
+src/doc_lineage/cli.py:275: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,5 @@
+{
+  "integration_revision": "2f99a73ca240929fd3bdc713d10e38035b73c7f1",
+  "incoming_main": "f2b118addb7e5aa5e31ce004b805afe265fb295f",
+  "conflict": "one append-vs-append test file; both original function ASTs preserved exactly"
+}

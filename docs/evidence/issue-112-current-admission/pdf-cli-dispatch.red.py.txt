@@ -1,0 +1,304 @@
+"""Command line entry point for Doc-Lineage."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+from collections.abc import Sequence
+from pathlib import Path
+
+from doc_lineage.blackline import (
+    comparison_store_path,
+    create_section_comparison,
+    load_comparison_record,
+    load_section_comparison,
+    write_comparison_record,
+)
+from doc_lineage.export import export_docx_redline
+from doc_lineage.export.fact_key_map import export_fact_key_map
+from doc_lineage.extract.variables import publish_variables
+from doc_lineage.harvest import harvest_edgar_ex10
+from doc_lineage.ingest import ingest_document
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="doc-lineage", description="Document lineage tooling.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    pair = subparsers.add_parser(
+        "pair-sections", help="Pair sections from two persisted PDF ingests."
+    )
+    pair.add_argument("original_run", type=Path)
+    pair.add_argument("modified_run", type=Path)
+    pair.add_argument("--store", type=Path, required=True)
+    pair.add_argument("--threshold", type=float, default=0.8)
+    lookup = subparsers.add_parser(
+        "lookup-section-pairing", help="Validate and replay a section-pairing comparison ID."
+    )
+    lookup.add_argument("comparison_id")
+    lookup.add_argument("--store", type=Path, required=True)
+    lookup.add_argument("--original-run", type=Path)
+    lookup.add_argument("--modified-run", type=Path)
+    lookup.add_argument("--threshold", type=float)
+
+    ingest = subparsers.add_parser(
+        "ingest",
+        help="Parse and segment one document, writing an artifact-manifest/v1 run directory.",
+    )
+    ingest.add_argument("path", type=Path, help="Document to ingest.")
+    ingest.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Directory to write segments.json and artifact-manifest.json into.",
+    )
+    ingest.add_argument("--run-id", default=None, help="Override the generated run id.")
+    ingest.add_argument("--git-sha", default=None, help="Record the git sha for this run.")
+    ingest.add_argument(
+        "--no-docling",
+        action="store_true",
+        help="Force the offline text backend even when Docling is importable.",
+    )
+
+    ingest.add_argument(
+        "--no-ocr",
+        action="store_true",
+        help="Disable local OCR recovery for pages without readable text.",
+    )
+
+    # Resolved against main on 2026-09-17. The branch had rewritten this module as a `click`
+    # group, which would have removed `ingest` (merged since this branch opened) and added a
+    # dependency the repo does not otherwise use. The command it contributes is added here in
+    # the module's existing idiom instead, so both capabilities survive the merge.
+    export = subparsers.add_parser(
+        "export-docx",
+        help="Write a DOCX containing native Word tracked changes between two documents.",
+    )
+    export.add_argument("--original", type=Path, help="Baseline DOCX for file-pair form.")
+    export.add_argument("--modified", type=Path, help="Revised DOCX for file-pair form.")
+    export.add_argument("--comparison-store", type=Path, help="Local comparison record directory.")
+    export.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Where to write the redline. Defaults to stdout.",
+    )
+    export.add_argument(
+        "--author",
+        default="Doc-Lineage",
+        help="Author attributed to the tracked changes.",
+    )
+    export.add_argument(
+        "--blackline",
+        nargs="?",
+        const=True,
+        default=False,
+        metavar="ID",
+        help="Comparison ID, or bare acknowledgement for the file-pair form.",
+    )
+
+    comparison = subparsers.add_parser(
+        "create-comparison", help="Persist ordered DOCX paths and byte hashes; print an opaque ID."
+    )
+    comparison.add_argument("--original", type=Path, required=True)
+    comparison.add_argument("--modified", type=Path, required=True)
+    comparison.add_argument("--comparison-store", type=Path)
+
+    fact_map = subparsers.add_parser(
+        "export-fact-key-map",
+        help="Export tracked-variable identity joins and an artifact manifest.",
+    )
+    fact_map.add_argument("path", type=Path, help="JSON array of tracked-variable/v1 records.")
+    fact_map.add_argument("--output", type=Path, required=True, help="New run directory to create.")
+
+    variables = subparsers.add_parser(
+        "extract-variables",
+        help="Extract the documented legal fee subset from a persisted ingest run.",
+    )
+    variables.add_argument("path", type=Path, help="Existing ingest run directory.")
+    variables.add_argument(
+        "--source", type=Path, required=True, help="Original document; digest must match ingest."
+    )
+    variables.add_argument(
+        "--entity-ref", required=True, help="Canonical entity ID from your identity authority."
+    )
+    variables.add_argument(
+        "--output", type=Path, required=True, help="New output directory to create."
+    )
+
+    harvest = subparsers.add_parser(
+        "harvest-edgar",
+        help="Harvest SEC EX-10 exhibits for one CIK into a mirror-compatible manifest.",
+    )
+    harvest.add_argument("--cik", required=True, help="SEC CIK (zero-padded or bare digits).")
+    harvest.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Directory to write artifact-manifest.json into.",
+    )
+    harvest.add_argument(
+        "--fixture",
+        type=Path,
+        default=None,
+        help="Recorded filing JSON for offline harvest (no live SEC calls).",
+    )
+    return parser
+
+
+def _run_export_docx(args: argparse.Namespace) -> int:
+    if not args.blackline:
+        print("doc-lineage export-docx: --blackline is required", file=sys.stderr)
+        return 1
+    try:
+        protected: list[Path] = []
+        record = None
+        if isinstance(args.blackline, str):
+            if args.original is not None or args.modified is not None:
+                raise ValueError("Comparison ID cannot be combined with --original or --modified")
+            record = load_comparison_record(args.blackline, store=args.comparison_store)
+            args.original, args.modified = record.original_path, record.modified_path
+            protected.append(
+                comparison_store_path(args.comparison_store) / f"{args.blackline}.json"
+            )
+        elif args.original is None or args.modified is None:
+            raise ValueError("File-pair --blackline requires --original and --modified")
+        if args.output is not None:
+            destination = args.output.resolve()
+            for source in (args.original, args.modified, *protected):
+                if destination == source.resolve() or (
+                    args.output.exists() and os.path.samefile(args.output, source)
+                ):
+                    raise ValueError(
+                        "--output must not be the same file as --original or --modified"
+                    )
+        original = args.original.read_bytes()
+        modified = args.modified.read_bytes()
+        # Verify the same byte buffers passed to the renderer, avoiding a second file read.
+        if record is not None:
+            for role, content, expected in (
+                ("original", original, record.original_sha256),
+                ("modified", modified, record.modified_sha256),
+            ):
+                if hashlib.sha256(content).hexdigest() != expected:
+                    raise ValueError(
+                        f"SHA-256 mismatch for {role} in comparison {record.comparison_id}"
+                    )
+        redline = export_docx_redline(original, modified, author=args.author)
+    except (OSError, ValueError) as exc:
+        print(f"doc-lineage export-docx: {exc}", file=sys.stderr)
+        return 1
+    if args.output is None:
+        sys.stdout.buffer.write(redline)
+    else:
+        args.output.write_bytes(redline)
+        print(f"blackline: {args.output}")
+    return 0
+
+
+def _run_harvest_edgar(args: argparse.Namespace) -> int:
+    try:
+        result = harvest_edgar_ex10(
+            args.cik,
+            args.output,
+            fixture_path=args.fixture,
+        )
+    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+        print(f"doc-lineage harvest-edgar: {exc}", file=sys.stderr)
+        return 1
+    print(
+        f"harvested {len(result.exhibits)} EX-10 exhibit(s) for CIK {result.cik} "
+        f"-> {result.manifest_path}"
+    )
+    return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    if args.command in {"disconnected-pair-sections", "disconnected-lookup-section-pairing"}:
+        try:
+            if args.command == "pair-sections":
+                comparison_id = create_section_comparison(
+                    args.original_run, args.modified_run, store=args.store, threshold=args.threshold
+                )
+                print(comparison_id)
+            else:
+                record = load_section_comparison(
+                    args.comparison_id,
+                    store=args.store,
+                    original_run=args.original_run,
+                    modified_run=args.modified_run,
+                    threshold=args.threshold,
+                )
+                print(json.dumps(record, sort_keys=True, allow_nan=False))
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage {args.command}: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "create-comparison":
+        try:
+            comparison_id = write_comparison_record(
+                args.original, args.modified, store=args.comparison_store
+            )
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage create-comparison: {exc}", file=sys.stderr)
+            return 1
+        print(comparison_id)
+        return 0
+    if args.command == "extract-variables":
+        try:
+            manifest = publish_variables(
+                args.path, args.source, args.output, entity_ref=args.entity_ref
+            )
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage extract-variables: {exc}", file=sys.stderr)
+            return 1
+        print(f"manifest: {manifest}")
+        print(f"unresolved: {manifest.parent / 'unresolved.json'}")
+        return 0
+    if args.command == "export-fact-key-map":
+        try:
+            manifest = export_fact_key_map(args.path, args.output)
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage export-fact-key-map: {exc}", file=sys.stderr)
+            return 1
+        print(f"manifest: {manifest}")
+        return 0
+    if args.command == "export-docx":
+        return _run_export_docx(args)
+    if args.command == "harvest-edgar":
+        return _run_harvest_edgar(args)
+    if args.command != "ingest":  # pragma: no cover - argparse rejects anything else
+        raise AssertionError(f"unhandled command: {args.command}")
+
+    try:
+        result = ingest_document(
+            args.path,
+            output_dir=args.output,
+            run_id=args.run_id,
+            git_sha=args.git_sha,
+            allow_docling=not args.no_docling,
+            ocr_enabled=not args.no_ocr,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"doc-lineage ingest: {exc}", file=sys.stderr)
+        return 1
+
+    print(
+        f"ingested {result.source_path.name} "
+        f"[backend={result.backend} run_id={result.run_id} coverage={result.coverage_status}] -> "
+        f"{len(result.segments)} segment(s) across {result.page_count} page(s)"
+    )
+    print(f"manifest: {result.manifest_path}")
+    print(f"segments: {result.segments_path}")
+    if result.unreadable_pages:
+        pages = ", ".join(str(page) for page in result.unreadable_pages)
+        print(f"warning: no text layer on page(s) {pages}; recognition fallback required")
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover - exercised via the console script
+    raise SystemExit(main())

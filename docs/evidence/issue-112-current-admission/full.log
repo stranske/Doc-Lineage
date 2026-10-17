@@ -1,0 +1,119 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420
+configfile: pyproject.toml
+testpaths: tests
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 671 items
+
+tests/blackline/test_combined_comparison_modes.py .                      [  0%]
+tests/blackline/test_comparison_run_cli.py .......................       [  3%]
+tests/blackline/test_mutation_pairs.py .                                 [  3%]
+tests/blackline/test_section_id_pairing.py .........................     [  7%]
+tests/compare/test_segment_classification.py ........                    [  8%]
+tests/compare/test_silence_invariant.py ....                             [  9%]
+tests/emit/test_evidence_object.py .......................               [ 12%]
+tests/evidence/test_issue113_harness.py ................................ [ 17%]
+............                                                             [ 19%]
+tests/export/test_docx_redline.py .....                                  [ 19%]
+tests/export/test_docx_redline_golden.py .............                   [ 21%]
+tests/export/test_fact_key_map.py ......................                 [ 25%]
+tests/export/test_fact_key_map_cli.py ......                             [ 26%]
+tests/fixtures/test_public_corpus_manifest.py ......                     [ 26%]
+tests/harvest/test_edgar_ex10_offline.py ..........                      [ 28%]
+tests/ingest/test_docling_segmenter.py ................................. [ 33%]
+...                                                                      [ 33%]
+tests/ingest/test_ingest_synthetic_pdf.py .............................. [ 38%]
+....................                                                     [ 41%]
+tests/ingest/test_lazy_validation_import.py ..                           [ 41%]
+tests/ingest/test_persistence_capabilities.py ...                        [ 42%]
+tests/ingest/test_private_publication.py ..............                  [ 44%]
+tests/ingest/test_variables_provenance.py .............................. [ 48%]
+..                                                                       [ 48%]
+tests/lineage/test_supersession_chain.py ....                            [ 49%]
+tests/lineage/test_supersession_evidence.py ............................ [ 53%]
+...............................................                          [ 60%]
+tests/mutations/test_materialization_contract.py .                       [ 60%]
+tests/mutations/test_mutation_pair_known_diff.py .....                   [ 61%]
+tests/render/test_triple_link_resolver.py .............................. [ 66%]
+.......                                                                  [ 67%]
+tests/synthetic_corpus/test_corpus_generator.py ..                       [ 67%]
+tests/synthetic_corpus/test_ground_truth_replay.py .                     [ 67%]
+tests/test_cli.py ...............................................        [ 74%]
+tests/test_dependency_version_alignment.py .                             [ 74%]
+tests/test_extract_coverage.py ..................                        [ 77%]
+tests/test_extract_lines.py ..........                                   [ 78%]
+tests/test_extract_office.py ........                                    [ 80%]
+tests/test_gate_commit_status_fork_tolerance.py ....................     [ 83%]
+tests/test_identity.py ..............                                    [ 85%]
+tests/test_identity_manifest.py ........................................ [ 91%]
+.............                                                            [ 92%]
+tests/test_issue110_review.py ....                                       [ 93%]
+tests/test_main.py ...                                                   [ 94%]
+tests/test_package_identity.py ....                                      [ 94%]
+tests/test_repo_hygiene.py .                                             [ 94%]
+tests/test_schema_wire_names.py ..................                       [ 97%]
+tests/vocab/test_legal_clauses.py .................                      [100%]
+
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/full.xml -
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.12.2-final-0 _______________
+
+Name                                            Stmts   Miss Branch BrPart  Cover
+---------------------------------------------------------------------------------
+src/doc_lineage/__init__.py                         5      0      0      0   100%
+src/doc_lineage/adapters/__init__.py                2      0      0      0   100%
+src/doc_lineage/adapters/docling_segmenter.py     330     27    156     27    89%
+src/doc_lineage/blackline.py                      308     47     88     28    81%
+src/doc_lineage/cli.py                            156     14     36      4    91%
+src/doc_lineage/compare/__init__.py                 3      0      0      0   100%
+src/doc_lineage/compare/classify.py               104      3     28      3    95%
+src/doc_lineage/compare/silence.py                  8      0      4      0   100%
+src/doc_lineage/emit/__init__.py                    2      0      0      0   100%
+src/doc_lineage/emit/evidence.py                   57      3     22      7    87%
+src/doc_lineage/export/__init__.py                  2      0      0      0   100%
+src/doc_lineage/export/docx_redline.py              7      0      2      0   100%
+src/doc_lineage/export/fact_key_map.py             51      0     22      0   100%
+src/doc_lineage/extract/__init__.py                40      9     12      1    73%
+src/doc_lineage/extract/cache.py                   86      7     28      3    91%
+src/doc_lineage/extract/models.py                  21      0      0      0   100%
+src/doc_lineage/extract/ocr.py                     41     15      6      1    62%
+src/doc_lineage/extract/office.py                  50      3     22      5    89%
+src/doc_lineage/extract/pdf.py                    104     11     24      2    90%
+src/doc_lineage/extract/variables.py              155      8     64      6    94%
+src/doc_lineage/harvest/__init__.py                 2      0      0      0   100%
+src/doc_lineage/harvest/edgar_ex10.py             214     40     68      8    77%
+src/doc_lineage/identity.py                        57      0     10      0   100%
+src/doc_lineage/ingest.py                         184      2     50      3    98%
+src/doc_lineage/lineage/__init__.py                 2      0      0      0   100%
+src/doc_lineage/lineage/families.py                50      1      6      0    98%
+src/doc_lineage/manifest.py                       181      6     76      5    96%
+src/doc_lineage/mutations/__init__.py               3      0      0      0   100%
+src/doc_lineage/mutations/catalog.py               10      0      0      0   100%
+src/doc_lineage/mutations/detect.py                25      1      8      2    91%
+src/doc_lineage/persistence.py                     37      0      6      0   100%
+src/doc_lineage/render/__init__.py                  2      0      0      0   100%
+src/doc_lineage/render/links.py                    69      2     30      2    96%
+src/doc_lineage/schema/__init__.py                  4      0      0      0   100%
+src/doc_lineage/schema/_finite.py                  24      4     12      4    78%
+src/doc_lineage/schema/change_ledger.py           143     16      4      0    89%
+src/doc_lineage/schema/enums.py                    15      0      0      0   100%
+src/doc_lineage/schema/validation.py               50      4     10      0    93%
+src/doc_lineage/supersession.py                    41      0     26      0   100%
+src/doc_lineage/vocab.py                           22      0      6      0   100%
+---------------------------------------------------------------------------------
+TOTAL                                            2667    223    826    111    90%
+Coverage XML written to file /Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/coverage.xml
+Required test coverage of 80.0% reached. Total coverage: 89.75%
+================= 671 passed, 2 warnings in 136.20s (0:02:16) ==================
