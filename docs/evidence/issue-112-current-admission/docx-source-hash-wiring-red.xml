@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="3.240" timestamp="2026-10-17T09:47:54.779537-05:00" hostname="server.trs.private"><testcase classname="tests.test_cli" name="test_comparison_sha256_check_disconnection[file-original]" time="3.035"><failure message="AssertionError: SHA256_CHECK_DISCONNECTION: changed bytes were exported&#10;assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/ow...ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4947/test_comparison_sha256_check_d0/unchanged-output.docx\n', stderr=b'').returncode">comparison_inputs = (PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4947/test_comparison_sha...00gp/T/pytest-of-teacher/pytest-4947/test_comparison_sha256_check_d0/records'), 'cmp_101a7e1f0e6147b280bfe48b45ae88fd')
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4947/test_comparison_sha256_check_d0')
+role = 'original', to_file = True
+
+    @pytest.mark.parametrize("role", ["original", "modified"])
+    @pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
+    def test_comparison_sha256_check_disconnection(comparison_inputs, tmp_path, role, to_file):
+        """Named mutation gate: valid changed DOCX bytes MUST fail before publication."""
+        original, modified, manifest, store, comparison_id = comparison_inputs
+        source = original if role == "original" else modified
+        source.write_bytes(_docx("Changed but still a valid DOCX package."))
+        record_path = store / f"{comparison_id}.json"
+        preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
+        output = tmp_path / "unchanged-output.docx"
+        output.write_bytes(b"existing output must survive")
+        result = _comparison_cli(
+            "export-docx",
+            "--blackline",
+            comparison_id,
+            "--comparison-store",
+            str(store),
+            *(["--output", str(output)] if to_file else []),
+            cwd=tmp_path,
+        )
+&gt;       assert result.returncode != 0, "SHA256_CHECK_DISCONNECTION: changed bytes were exported"
+E       AssertionError: SHA256_CHECK_DISCONNECTION: changed bytes were exported
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/ow...ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4947/test_comparison_sha256_check_d0/unchanged-output.docx\n', stderr=b'').returncode
+
+tests/test_cli.py:141: AssertionError</failure></testcase></testsuite></testsuites>

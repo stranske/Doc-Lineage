@@ -1,0 +1,12 @@
+{
+  "evidence_id": "38de7029a2e6025676d2597ae58b70df",
+  "excerpt": "2. TERM The fee is two percent.",
+  "fact_ref": "segment:4dadf63039b159a6-p0003-s0003",
+  "locator": {
+    "order": 3,
+    "page": 2
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df"
+}

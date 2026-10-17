@@ -1,0 +1,21 @@
+import importlib.util,pathlib,tempfile,xml.etree.ElementTree as ET,json
+D=pathlib.Path('/Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420/docs/evidence/issue-112-current-admission');s=importlib.util.spec_from_file_location('admission',D/'verify.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m);results=[]
+with tempfile.TemporaryDirectory() as tmp:
+ m.HERE=pathlib.Path(tmp)
+ def test(name,root,total,failures,node=None,marker=None):
+  ET.ElementTree(root).write(m.HERE/'case.xml');rejected=False
+  try:m.junit('case.xml',total,failures,node,marker)
+  except (ValueError,KeyError) as e:rejected=True;reason=str(e)
+  assert rejected,name
+  results.append({'control':name,'rejected':True,'reason':reason})
+ def tree(cases=1,failures=0):
+  root=ET.Element('testsuites');suite=ET.SubElement(root,'testsuite',tests=str(cases),failures=str(failures),errors='0',skipped='0')
+  for _ in range(cases):ET.SubElement(suite,'testcase',classname='tests.wrong',name='test_other')
+  return root,suite
+ r,s=tree(2);test('duplicate testcase identities',r,2,0)
+ r,s=tree(1,1);ET.SubElement(s,'failure',type='RuntimeError').text='expected marker';test('detached failure',r,1,1)
+ r,s=tree(1,1);ET.SubElement(s[0],'failure',type='RuntimeError').text='expected marker';test('non-assertion RED',r,1,1,marker='expected marker')
+ r,s=tree();test('wrong control testcase',r,1,0,'tests/right.py::test_right')
+ r,s=tree(1,1);ET.SubElement(s[0],'failure',type='AssertionError').text='wrong cause';test('wrong assertion cause',r,1,1,marker='expected marker')
+ r,s=tree();s.set('tests','2');test('declared/actual count mismatch',r,1,0)
+print(json.dumps(results,indent=2))

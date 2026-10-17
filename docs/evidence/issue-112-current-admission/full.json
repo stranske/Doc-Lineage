@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "--junitxml=/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/full.xml",
+    "--cov=src",
+    "--cov-report=xml:/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/coverage.xml",
+    "--cov-report=term"
+  ],
+  "cwd": "/Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420",
+  "returncode": 0,
+  "tests": 671,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

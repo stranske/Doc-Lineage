@@ -1,0 +1,14 @@
+{
+  "requested": {
+    "lane": "opener",
+    "surface": "opener-lane",
+    "repository": "stranske/Doc-Lineage",
+    "pr": 129
+  },
+  "result": "fail-open",
+  "error": "sandbox denied capabilities.json.lock a+ access",
+  "offers_returned": [],
+  "offers_accepted": [],
+  "offers_declined": [],
+  "registry_mutated": false
+}

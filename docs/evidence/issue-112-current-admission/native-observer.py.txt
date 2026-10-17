@@ -1,0 +1,18 @@
+import subprocess,os,pathlib,hashlib,json
+_Base=subprocess.Popen
+class Observed(_Base):
+ def __init__(self,args,*a,**kw):
+  self._native=False
+  if isinstance(args,(list,tuple)) and pathlib.Path(str(args[0])).name=='redline':
+   path=pathlib.Path(str(args[0]));h=hashlib.sha256(path.read_bytes()).hexdigest()
+   if h!='12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36':raise RuntimeError('unrecognized native helper')
+   self._native=True;self._path=str(path)
+   with open(os.environ['DOC_CLOSER_NATIVE_LOG'],'a') as f:f.write(json.dumps({'phase':'before','path':str(path),'sha256':h,'argv':[str(x) for x in args]})+'\n')
+  super().__init__(args,*a,**kw)
+ def communicate(self,*a,**kw):
+  if self._native and kw.get('timeout') is None:kw['timeout']=30
+  r=super().communicate(*a,**kw)
+  if self._native:
+   with open(os.environ['DOC_CLOSER_NATIVE_LOG'],'a') as f:f.write(json.dumps({'phase':'after','path':self._path,'returncode':self.returncode})+'\n')
+  return r
+subprocess.Popen=Observed

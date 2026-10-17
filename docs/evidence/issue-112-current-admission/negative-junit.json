@@ -1,0 +1,32 @@
+[
+  {
+    "control": "duplicate testcase identities",
+    "rejected": true,
+    "reason": "duplicate or wrong testcase identity count: case.xml"
+  },
+  {
+    "control": "detached failure",
+    "rejected": true,
+    "reason": "detached failure or unexpected suite child: case.xml"
+  },
+  {
+    "control": "non-assertion RED",
+    "rejected": true,
+    "reason": "non-assertion RED: case.xml"
+  },
+  {
+    "control": "wrong control testcase",
+    "rejected": true,
+    "reason": "wrong control testcase: case.xml"
+  },
+  {
+    "control": "wrong assertion cause",
+    "rejected": true,
+    "reason": "wrong assertion: case.xml"
+  },
+  {
+    "control": "declared/actual count mismatch",
+    "rejected": true,
+    "reason": "declared tests: case.xml"
+  }
+]

@@ -764,8 +764,9 @@ def test_tracked_variable_original_mutation_controls(
     "change",
     [
         lambda text: text.replace("2.0%", "2.0% or 3.0%"),
-        lambda text: text
-        + " However, the management fee may vary at the General Partner's discretion.",
+        lambda text: (
+            text + " However, the management fee may vary at the General Partner's discretion."
+        ),
         lambda text: text.replace("equal to", "up to"),
         lambda text: text.replace("2.0%", "101%"),
         lambda text: "Notwithstanding the following terms, " + text,
@@ -798,10 +799,9 @@ def test_tracked_variable_flat_fee_and_entity_identity(tmp_path: Path) -> None:
 
     source = _fee_control_pdf(
         tmp_path,
-        transform=lambda text: text.split(" during the Commitment Period")[0].replace(
-            "2.0%", "0.85%"
-        )
-        + ".",
+        transform=lambda text: (
+            text.split(" during the Commitment Period")[0].replace("2.0%", "0.85%") + "."
+        ),
     )
     ingested = ingest_document(
         source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False

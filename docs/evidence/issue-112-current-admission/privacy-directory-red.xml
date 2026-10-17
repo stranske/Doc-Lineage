@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.303" timestamp="2026-10-17T09:47:27.814963-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_private_publication" name="test_ingest_artifacts_owner_only_under_permissive_umask[False]" time="0.099"><failure message="AssertionError: INGEST_RUN_IS_PRIVATE&#10;assert 511 == 448&#10; +  where 511 = &lt;built-in function S_IMODE&gt;(16895)&#10; +    where &lt;built-in function S_IMODE&gt; = stat.S_IMODE&#10; +    and   16895 = os.stat_result(st_mode=16895, st_ino=442014904, st_dev=16777232, st_nlink=6, st_uid=502, st_gid=20, st_size=192, st_atime=1792248448, st_mtime=1792248448, st_ctime=1792248448).st_mode&#10; +      where os.stat_result(st_mode=16895, st_ino=442014904, st_dev=16777232, st_nlink=6, st_uid=502, st_gid=20, st_size=192, st_atime=1792248448, st_mtime=1792248448, st_ctime=1792248448) = stat()&#10; +        where stat = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4932/test_ingest_artifacts_owner_on0/run').stat">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4932/test_ingest_artifacts_owner_on0')
+reuse = False
+
+    @pytest.mark.parametrize("reuse", [False, True, "changed"])
+    def test_ingest_artifacts_owner_only_under_permissive_umask(
+        tmp_path: Path, reuse: bool | str
+    ) -&gt; None:
+        run = tmp_path / "run"
+        if reuse:
+            previous_source = FIXTURE
+            if reuse == "changed":
+                previous_source = tmp_path / "previous.pdf"
+                previous_source.write_bytes(
+                    FIXTURE.read_bytes().replace(b"MANAGEMENT FEE", b"DIFFERENT FEE!")
+                )
+            ingest_document(previous_source, output_dir=run, allow_docling=False)
+            for path in [run, *run.rglob("*")]:
+                path.chmod(0o777 if path.is_dir() else 0o666)
+        previous = os.umask(0)
+        try:
+            result = ingest_document(FIXTURE, output_dir=run, allow_docling=False)
+&gt;           assert stat.S_IMODE(run.stat().st_mode) == 0o700, "INGEST_RUN_IS_PRIVATE"
+E           AssertionError: INGEST_RUN_IS_PRIVATE
+E           assert 511 == 448
+E            +  where 511 = &lt;built-in function S_IMODE&gt;(16895)
+E            +    where &lt;built-in function S_IMODE&gt; = stat.S_IMODE
+E            +    and   16895 = os.stat_result(st_mode=16895, st_ino=442014904, st_dev=16777232, st_nlink=6, st_uid=502, st_gid=20, st_size=192, st_atime=1792248448, st_mtime=1792248448, st_ctime=1792248448).st_mode
+E            +      where os.stat_result(st_mode=16895, st_ino=442014904, st_dev=16777232, st_nlink=6, st_uid=502, st_gid=20, st_size=192, st_atime=1792248448, st_mtime=1792248448, st_ctime=1792248448) = stat()
+E            +        where stat = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4932/test_ingest_artifacts_owner_on0/run').stat
+
+tests/ingest/test_private_publication.py:38: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,68 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df-original",
+      "bytes": 2809,
+      "kind": "data",
+      "media_type": "application/octet-stream",
+      "name": "source-4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df.bin",
+      "path": "source-4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df.bin",
+      "sha256": "4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df"
+    },
+    {
+      "artifact_id": "4dadf63039b159a6-segments",
+      "bytes": 1282,
+      "kind": "data",
+      "media_type": "application/json",
+      "name": "segments.json",
+      "path": "segments.json",
+      "sha256": "3a35f4785d34b5e870b3d340d1b32ea08f6143e74d759d126199f84e1fd3a018"
+    },
+    {
+      "artifact_id": "e2a49bd33c3f1375d360f50c871fa836-evidence",
+      "bytes": 353,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "e2a49bd33c3f1375d360f50c871fa836.json",
+      "path": "evidence/e2a49bd33c3f1375d360f50c871fa836.json",
+      "sha256": "9c881ae1eeee714d83dfa4783bad15ea9c913729280eeea25916f211c9444395"
+    },
+    {
+      "artifact_id": "b68c6f11a6eb626d45d9e5ecc5b35f19-evidence",
+      "bytes": 353,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "b68c6f11a6eb626d45d9e5ecc5b35f19.json",
+      "path": "evidence/b68c6f11a6eb626d45d9e5ecc5b35f19.json",
+      "sha256": "6e07813a6122817e63b018a3da156900f0351654da72fdd6904f3b5cabdc6b6d"
+    },
+    {
+      "artifact_id": "38de7029a2e6025676d2597ae58b70df-evidence",
+      "bytes": 353,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "38de7029a2e6025676d2597ae58b70df.json",
+      "path": "evidence/38de7029a2e6025676d2597ae58b70df.json",
+      "sha256": "e8dd6cada9c1dff5497d8f4a8ea2bc852055753372113381b631a3cea41a062a"
+    },
+    {
+      "artifact_id": "6b97c71ae13fdcbf672641aed9c29ceb-evidence",
+      "bytes": 355,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "6b97c71ae13fdcbf672641aed9c29ceb.json",
+      "path": "evidence/6b97c71ae13fdcbf672641aed9c29ceb.json",
+      "sha256": "19cc7c525752c9fc6571f39d3e5e15701780f635d75c878fe271e63c404849cd"
+    }
+  ],
+  "created_at": "2026-10-17T13:21:21.040894+00:00",
+  "git_sha": null,
+  "run_id": "ingest-4dadf63039b1",
+  "schema_version": "artifact-manifest/v1",
+  "source": {
+    "bytes": 2809,
+    "filename": "before.pdf",
+    "sha256": "4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df"
+  },
+  "tool": "doc-lineage-ingest"
+}

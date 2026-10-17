@@ -1,0 +1,17 @@
+Obtaining file:///Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: doc-lineage
+  Building editable for doc-lineage (pyproject.toml): started
+  Building editable for doc-lineage (pyproject.toml): finished with status 'done'
+  Created wheel for doc-lineage: filename=doc_lineage-0.1.0-0.editable-py3-none-any.whl size=12338 sha256=87ba5396a9fa181e7ff5a793f1e201a1bbe77918dbbf4076701481644015a6f1
+  Stored in directory: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pip-ephem-wheel-cache-7l2bm_cx/wheels/73/cf/1a/dd901bb5804d038ac64204a27c53ad33b6deee3a1c541dc3f4
+Successfully built doc-lineage
+Installing collected packages: doc-lineage
+  Attempting uninstall: doc-lineage
+    Found existing installation: doc-lineage 0.1.0
+    Uninstalling doc-lineage-0.1.0:
+      Successfully uninstalled doc-lineage-0.1.0
+Successfully installed doc-lineage-0.1.0

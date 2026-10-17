@@ -1,0 +1,15 @@
+{
+  "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2543/test_comparison_new_process_na1/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+  "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "argv": [
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2543/test_comparison_new_process_na1/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmp2cbkdoq5",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmpknca3n47",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmpsgee4n1u",
+    "--author=Counsel"
+  ],
+  "pid": 86670,
+  "before_ns": 1792244494001426000,
+  "original_sha256": "6e47dc0d4ae0931cea0df6ce3e05c65cd7c9caefd6829da368bf9db7989b076e",
+  "modified_sha256": "9e2ee13b36587b564ecc5599e9e25f81007d0b0b9ac8df3997cb766b0d5681af"
+}

@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/opt/anaconda3/bin/python3",
+    "-m",
+    "pytest",
+    "tests/blackline/test_comparison_run_cli.py",
+    "tests/test_cli.py",
+    "-q",
+    "--junitxml=$RAW/focused-cli.xml"
+  ],
+  "exit": 0,
+  "elapsed_seconds": 55.57219195365906
+}

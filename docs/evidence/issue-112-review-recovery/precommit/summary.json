@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-10-17T13:22:32.448307+00:00",
+  "head": "03538527f4329cdee6fa65dd965fc3ce8efdc79a",
+  "source_comments_all_pages": true,
+  "pr_comments_all_pages": true,
+  "all_heads_decoded": true,
+  "reservations": 3,
+  "completions": 2,
+  "unmatched": [
+    "3998a27fcb344312a47944cf45296912"
+  ],
+  "workflow_attempt_ids": [
+    "stranske/Doc-Lineage:39031755731:1",
+    "stranske/Doc-Lineage:39032272403:1",
+    "stranske/Doc-Lineage:39033243651:1"
+  ],
+  "gate": "PASS",
+  "parent_claim": "directly read expected guardian; retained",
+  "parent_pause": "owner-provided; untouched; not independently observed",
+  "original_writer": "directly read dispatcher done rc0/release0"
+}

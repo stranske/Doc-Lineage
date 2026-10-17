@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "fact-key-map-9e16b0a357debe21415cb3a1e341ca4b8acb2a00c9b904dd42f9e5cd54bae3d6",
+      "bytes": 182,
+      "kind": "data",
+      "media_type": "application/json",
+      "name": "artifact:fact_key_map.json",
+      "path": "fact_key_map.json",
+      "sha256": "9e16b0a357debe21415cb3a1e341ca4b8acb2a00c9b904dd42f9e5cd54bae3d6"
+    }
+  ],
+  "run_id": "fact-key-map-9e16b0a357debe21",
+  "schema_version": "artifact-manifest/v1",
+  "source": {
+    "bytes": 2298,
+    "filename": "tracked-variables.json",
+    "sha256": "ebab131aa49bb0cdc47c48675b9ca9e640d6c9ba7997c6915e3ca3c8a91eb88b"
+  },
+  "tool": "doc-lineage-fact-key-map"
+}

@@ -1,0 +1,30 @@
+import pathlib,subprocess,json,hashlib,os,ast,shutil,xml.etree.ElementTree as ET
+R=pathlib.Path(__file__).resolve().parent;W=pathlib.Path('/Users/teacher/.codex/automations/imi-merge-verify-closer/worktrees/doc129-integrated-20261017T1420');O=R/'doc129-integrated-fresh';O.mkdir(exist_ok=True);P=str(R/'doc129-venv/bin/python')
+def sha(b):return hashlib.sha256(b).hexdigest()
+files=subprocess.check_output(['git','ls-files','src','tests','schemas','vocab','docs/contracts/schemas','pyproject.toml'],cwd=W,text=True).splitlines();bindings={n:sha((W/n).read_bytes()) for n in files};(O/'source-bindings.json').write_text(json.dumps({'revision':'2f99a73ca240929fd3bdc713d10e38035b73c7f1','tracked':bindings},indent=2))
+env={**os.environ,'PYTHONPATH':str(W/'src'),'PIP_NO_DEPS':'1','PIP_NO_INDEX':'1','PIP_NO_BUILD_ISOLATION':'0','DOC_CLOSER_NATIVE_LOG':str(O/'native.jsonl'),'XDG_CACHE_HOME':str(O/'cache'),'COVERAGE_FILE':str(O/'.coverage'),'PATH':str(R/'doc129-venv/bin')+':'+os.environ['PATH']}
+def run(name,nodes,cwd=W,coverage=False):
+ cmd=[P,'-m','pytest',*nodes,'-q','--junitxml='+str(O/(name+'.xml'))]
+ if coverage:cmd+=['--cov=src','--cov-report=xml:'+str(O/'coverage.xml'),'--cov-report=term']
+ e={**env,'PYTHONPATH':str(cwd/'src')};p=subprocess.run(cmd,cwd=cwd,env=e,capture_output=True,text=True,timeout=300);(O/(name+'.log')).write_text(p.stdout+p.stderr);t=ET.parse(O/(name+'.xml'));cases=t.findall('.//testcase');d={'argv':cmd,'cwd':str(cwd),'returncode':p.returncode,'tests':len(cases),'failures':len(t.findall('.//failure')),'errors':len(t.findall('.//error')),'skipped':len(t.findall('.//skipped'))};(O/(name+'.json')).write_text(json.dumps(d,indent=2));print(name,d,flush=True);return d
+full=run('full',[],coverage=True)
+assert full['returncode']==0 and full['tests']>=625 and full['failures']==full['errors']==full['skipped']==0
+# Extract only the declared, previously used mutation expressions; never execute capture-script top-level setup.
+s=ast.parse((W/'docs/evidence/issue-112-main-integration-2/causal.py').read_text());decls=[n for n in s.body if isinstance(n,(ast.Assign,ast.AugAssign)) and ((isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='variants' for t in n.targets)) or (isinstance(n,ast.AugAssign) and isinstance(n.target,ast.Name) and n.target.id=='variants'))];ns={};exec(compile(ast.Module(body=decls,type_ignores=[]),'<retained-variants>','exec'),ns);variants=ns['variants'];assert len(variants)==8
+C=R/'doc129-integrated-causal';C.mkdir()
+for n in ['src','tests','schemas','vocab','docs/contracts']:shutil.copytree(W/n,C/n,ignore=shutil.ignore_patterns('__pycache__','*.pyc','*.egg-info'))
+for n in ['pyproject.toml','README.md']:shutil.copyfile(W/n,C/n)
+proofs=[]
+for name,path,mutate,node,marker in variants:
+ f=C/path;before=f.read_bytes();broken=mutate(before.decode()).encode();assert before!=broken
+ tests={n:sha((C/n).read_bytes()) for n in files if n.startswith('tests/')}
+ if '::' not in node:node='tests/ingest/test_private_publication.py::'+node
+ try:f.write_bytes(broken);red=run(name+'-red',[node],C)
+ finally:f.write_bytes(before)
+ green=run(name+'-restored',[node],C)
+ assert red['returncode']==1 and red['tests']==red['failures']==1 and red['errors']==red['skipped']==0 and marker in (O/(name+'-red.log')).read_text(),name
+ assert green['returncode']==0 and green['tests']==1 and green['failures']==green['errors']==green['skipped']==0
+ assert f.read_bytes()==before and tests=={n:sha((C/n).read_bytes()) for n in tests}
+ proofs.append({'variant':name,'path':path,'node':node,'marker':marker,'green_sha256':sha(before),'red_sha256':sha(broken),'restored_sha256':sha(f.read_bytes()),'unchanged_test_hashes':tests});(O/'causal-proof.json').write_text(json.dumps(proofs,indent=2))
+assert bindings=={n:sha((W/n).read_bytes()) for n in files}
+print('CURRENT_CAPTURE_PASS',len(proofs),flush=True)

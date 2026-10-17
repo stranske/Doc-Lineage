@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "$VENV/bin/python",
+    "-m",
+    "pytest",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=xml:$RAW/coverage-isolated.xml",
+    "--junitxml=$RAW/full-isolated.xml"
+  ],
+  "exit": 0,
+  "elapsed_seconds": 93.38942623138428
+}

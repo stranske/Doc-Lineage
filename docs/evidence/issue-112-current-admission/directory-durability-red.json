@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/ingest/test_private_publication.py::test_comparison_durable_publication_order",
+    "-q",
+    "--junitxml=/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/directory-durability-red.xml"
+  ],
+  "cwd": "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal",
+  "returncode": 1,
+  "tests": 1,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0
+}

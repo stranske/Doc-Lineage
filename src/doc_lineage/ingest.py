@@ -32,6 +32,7 @@ from doc_lineage.emit import EVIDENCE_DIRNAME, emit_evidence_object
 from doc_lineage.extract.ocr import OCRBackend, default_ocr_backend
 from doc_lineage.extract.pdf import recover_pdf_pages
 from doc_lineage.identity import sha256_bytes
+from doc_lineage.persistence import publish_exclusive, sync_directory, write_private
 
 MANIFEST_SCHEMA_VERSION = "artifact-manifest/v1"
 MANIFEST_SCHEMA_NAME = "artifact-manifest-v1"
@@ -39,6 +40,7 @@ SEGMENTS_SCHEMA_VERSION = "doc-lineage-segments/v1"
 TOOL_NAME = "doc-lineage-ingest"
 MANIFEST_FILENAME = "artifact-manifest.json"
 SEGMENTS_FILENAME = "segments.json"
+ORIGINAL_FILENAME = "source-{sha256}.bin"
 _PARAGRAPH_SPLIT = re.compile(r"\n\s*\n")
 _WHITESPACE = re.compile(r"\s+")
 
@@ -247,7 +249,8 @@ def ingest_document(
         )
 
     destination = output_dir.expanduser().resolve()
-    destination.mkdir(parents=True, exist_ok=True)
+    destination.mkdir(mode=0o700, parents=True, exist_ok=True)
+    destination.chmod(0o700)
 
     segments_payload = {
         "schema_version": SEGMENTS_SCHEMA_VERSION,
@@ -272,6 +275,15 @@ def ingest_document(
 
     artifacts = [
         {
+            "artifact_id": f"{source_sha256}-original",
+            "name": ORIGINAL_FILENAME.format(sha256=source_sha256),
+            "kind": "data",
+            "path": ORIGINAL_FILENAME.format(sha256=source_sha256),
+            "sha256": source_sha256,
+            "bytes": len(raw),
+            "media_type": "application/octet-stream",
+        },
+        {
             "artifact_id": f"{source_sha256[:16]}-segments",
             "name": SEGMENTS_FILENAME,
             "kind": "data",
@@ -279,7 +291,7 @@ def ingest_document(
             "sha256": sha256_bytes(segments_bytes),
             "bytes": len(segments_bytes),
             "media_type": "application/json",
-        }
+        },
     ]
     artifacts.extend(
         {
@@ -304,13 +316,31 @@ def ingest_document(
     )
     if evidence_dir.is_symlink():
         raise ValueError("evidence output directory must not be a symlink")
-    evidence_dir.mkdir(parents=True, exist_ok=True)
-    segments_path.write_bytes(segments_bytes)
+    original_path = destination / ORIGINAL_FILENAME.format(sha256=source_sha256)
+    if original_path.is_symlink():
+        raise ValueError("original snapshot must not be a symlink")
+    if original_path.exists() and original_path.read_bytes() != raw:
+        raise ValueError("original snapshot is immutable; use a new ingest run directory")
+    if not original_path.exists():
+        publish_exclusive(original_path, raw, prefix=".snapshot-")
+    original_path.chmod(0o600)
+    # Reused runs retain previous originals; tighten their permissions too.
+    for previous_original in destination.glob("source-*.bin"):
+        if (
+            re.fullmatch(r"source-[0-9a-f]{64}\.bin", previous_original.name)
+            and not previous_original.is_symlink()
+        ):
+            previous_original.chmod(0o600)
+    # Also establish durability when retrying after a directory-sync failure.
+    sync_directory(destination)
+    evidence_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    evidence_dir.chmod(0o700)
+    write_private(segments_path, segments_bytes)
     for relative_path, payload_bytes in evidence_files:
         evidence_path = destination / relative_path
         if evidence_path.is_symlink():
             evidence_path.unlink()
-        evidence_path.write_bytes(payload_bytes)
+        write_private(evidence_path, payload_bytes)
     # A reused run directory must not retain evidence from a previous source.
     # Only prune after the current evidence has been validated and written.
     current_evidence_names = {Path(relative_path).name for relative_path, _ in evidence_files}
@@ -318,7 +348,7 @@ def ingest_document(
         if previous_evidence.name not in current_evidence_names:
             previous_evidence.unlink()
     manifest_path = destination / MANIFEST_FILENAME
-    manifest_path.write_bytes(_dump(manifest))
+    write_private(manifest_path, _dump(manifest))
 
     return IngestResult(
         source_path=source,

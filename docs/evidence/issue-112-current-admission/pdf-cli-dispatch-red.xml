@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.904" timestamp="2026-10-17T09:47:46.830589-05:00" hostname="server.trs.private"><testcase classname="tests.blackline.test_comparison_run_cli" name="test_independent_ingest_compare_lookup_replay" time="0.673"><failure message="AssertionError: Traceback (most recent call last):&#10;    File &quot;&lt;frozen runpy&gt;&quot;, line 198, in _run_module_as_main&#10;    File &quot;&lt;frozen runpy&gt;&quot;, line 88, in _run_code&#10;    File &quot;/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal/src/doc_lineage/cli.py&quot;, line 304, in &lt;module&gt;&#10;      raise SystemExit(main())&#10;                       ^^^^^^&#10;    File &quot;/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal/src/doc_lineage/cli.py&quot;, line 275, in main&#10;      raise AssertionError(f&quot;unhandled command: {args.command}&quot;)&#10;  AssertionError: unhandled command: pair-sections&#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/ow...n\n    raise AssertionError(f&quot;unhandled command: {args.command}&quot;)\nAssertionError: unhandled command: pair-sections\n').returncode">runs = (PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4942/test_independent_in.../var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4942/test_independent_ingest_compar0/after'))
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4942/test_independent_ingest_compar0')
+
+    def test_independent_ingest_compare_lookup_replay(runs: tuple[Path, Path], tmp_path: Path) -&gt; None:
+        left, right = runs
+        store = tmp_path / "store"
+        result = cli("pair-sections", left, right, "--store", store, cwd=tmp_path)
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: Traceback (most recent call last):
+E           File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+E           File "&lt;frozen runpy&gt;", line 88, in _run_code
+E           File "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal/src/doc_lineage/cli.py", line 304, in &lt;module&gt;
+E             raise SystemExit(main())
+E                              ^^^^^^
+E           File "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal/src/doc_lineage/cli.py", line 275, in main
+E             raise AssertionError(f"unhandled command: {args.command}")
+E         AssertionError: unhandled command: pair-sections
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/ow...n\n    raise AssertionError(f"unhandled command: {args.command}")\nAssertionError: unhandled command: pair-sections\n').returncode
+
+tests/blackline/test_comparison_run_cli.py:78: AssertionError</failure></testcase></testsuite></testsuites>

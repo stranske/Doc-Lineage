@@ -1,0 +1,2355 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener
+configfile: pyproject.toml
+testpaths: tests
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 581 items
+
+tests/blackline/test_comparison_run_cli.py .......................       [  3%]
+tests/blackline/test_mutation_pairs.py .                                 [  4%]
+tests/blackline/test_section_id_pairing.py .......................       [  8%]
+tests/compare/test_segment_classification.py ........                    [  9%]
+tests/compare/test_silence_invariant.py ....                             [ 10%]
+tests/emit/test_evidence_object.py .......................               [ 14%]
+tests/export/test_docx_redline.py .....                                  [ 14%]
+tests/export/test_docx_redline_golden.py .........                       [ 16%]
+tests/export/test_fact_key_map.py .....................F                 [ 20%]
+tests/export/test_fact_key_map_cli.py ......                             [ 21%]
+tests/fixtures/test_public_corpus_manifest.py ......                     [ 22%]
+tests/harvest/test_edgar_ex10_offline.py ..........                      [ 24%]
+tests/ingest/test_docling_segmenter.py ................................. [ 29%]
+...                                                                      [ 30%]
+tests/ingest/test_ingest_synthetic_pdf.py .........................FFFFF [ 35%]
+FFFFFFFFFFFFFFFFFFFF                                                     [ 38%]
+tests/ingest/test_lazy_validation_import.py ..                           [ 39%]
+tests/ingest/test_private_publication.py .............                   [ 41%]
+tests/ingest/test_variables_provenance.py ...........................F   [ 46%]
+tests/lineage/test_supersession_chain.py ....                            [ 46%]
+tests/lineage/test_supersession_evidence.py ............................ [ 51%]
+...............................................                          [ 59%]
+tests/mutations/test_materialization_contract.py .                       [ 60%]
+tests/mutations/test_mutation_pair_known_diff.py .....                   [ 60%]
+tests/render/test_triple_link_resolver.py .............................. [ 66%]
+.......                                                                  [ 67%]
+tests/synthetic_corpus/test_corpus_generator.py ..                       [ 67%]
+tests/synthetic_corpus/test_ground_truth_replay.py .                     [ 67%]
+tests/test_cli.py ....................                                   [ 71%]
+tests/test_dependency_version_alignment.py .                             [ 71%]
+tests/test_extract_coverage.py ..................                        [ 74%]
+tests/test_extract_lines.py ..........                                   [ 76%]
+tests/test_extract_office.py ........                                    [ 77%]
+tests/test_gate_commit_status_fork_tolerance.py ....................     [ 81%]
+tests/test_identity.py ..............                                    [ 83%]
+tests/test_identity_manifest.py ........................................ [ 90%]
+.............                                                            [ 92%]
+tests/test_main.py ...                                                   [ 93%]
+tests/test_package_identity.py ....                                      [ 93%]
+tests/test_repo_hygiene.py .                                             [ 93%]
+tests/test_schema_wire_names.py ..................                       [ 97%]
+tests/vocab/test_legal_clauses.py .................                      [100%]
+
+=================================== FAILURES ===================================
+_______________ test_export_consumes_actual_pdf_extractor_output _______________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_export_consumes_actual_pd0')
+
+    def test_export_consumes_actual_pdf_extractor_output(tmp_path):
+        from doc_lineage.export.fact_key_map import export_fact_key_map
+        from doc_lineage.extract.variables import publish_variables
+        from doc_lineage.ingest import ingest_document
+    
+        source = FIXTURE.parents[1] / "synthetic_lpa.pdf"
+        ingest = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       publish_variables(ingest.output_dir, source, tmp_path / "extract", entity_ref="fund:alpha_iv")
+
+tests/export/test_fact_key_map.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_export_consumes_actual_pd0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/tests/fixtures/synthetic_lpa.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_________ test_tracked_variable_synthetic_pdf_and_published_provenance _________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_syntheti0')
+
+    def test_tracked_variable_synthetic_pdf_and_published_provenance(tmp_path: Path) -> None:
+        from doc_lineage.extract.variables import publish_variables, validate
+        from doc_lineage.ingest import extract_variables
+    
+        ingested = ingest_document(
+            FIXTURE, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=FIXTURE, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:585: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_syntheti0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/tests/fixtures/synthetic_lpa.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+____________ test_tracked_variable_changed_fee_follows_source_text _____________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_changed_0')
+
+    def test_tracked_variable_changed_fee_follows_source_text(tmp_path: Path) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(tmp_path)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:636: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_changed_0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_changed_0/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+________ test_tracked_variable_documented_rate_limits[0-100-expected0] _________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document0')
+initial = '0', subsequent = '100', expected = [0.0, 100.0]
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document0/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+___ test_tracked_variable_documented_rate_limits[100.0000-0.0001-expected1] ____
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document1')
+initial = '100.0000', subsequent = '0.0001', expected = [100.0, 0.0001]
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document1/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document1/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+____ test_tracked_variable_documented_rate_limits[1.2345-99.9999-expected2] ____
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document2')
+initial = '1.2345', subsequent = '99.9999', expected = [1.2345, 99.9999]
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document2/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document2/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_______ test_tracked_variable_documented_rate_limits[100.0001-1.25-None] _______
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document3')
+initial = '100.0001', subsequent = '1.25', expected = None
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document3/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document3/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_______ test_tracked_variable_documented_rate_limits[2.0-100.0001-None] ________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document4')
+initial = '2.0', subsequent = '100.0001', expected = None
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document4/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document4/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_______ test_tracked_variable_documented_rate_limits[1.23456-1.25-None] ________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document5')
+initial = '1.23456', subsequent = '1.25', expected = None
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document5/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document5/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+________ test_tracked_variable_documented_rate_limits[2.0-1.23456-None] ________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document6')
+initial = '2.0', subsequent = '1.23456', expected = None
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document6/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document6/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+__________ test_tracked_variable_documented_rate_limits[-1-1.25-None] __________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document7')
+initial = '-1', subsequent = '1.25', expected = None
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document7/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document7/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+__________ test_tracked_variable_documented_rate_limits[2.0--1-None] ___________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document8')
+initial = '2.0', subsequent = '-1', expected = None
+
+    @pytest.mark.parametrize(
+        "initial, subsequent, expected",
+        [
+            ("0", "100", [0.0, 100.0]),
+            ("100.0000", "0.0001", [100.0, 0.0001]),
+            ("1.2345", "99.9999", [1.2345, 99.9999]),
+            ("100.0001", "1.25", None),
+            ("2.0", "100.0001", None),
+            ("1.23456", "1.25", None),
+            ("2.0", "1.23456", None),
+            ("-1", "1.25", None),
+            ("2.0", "-1", None),
+        ],
+    )
+    def test_tracked_variable_documented_rate_limits(
+        tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+                "1.25%", f"{subsequent}%"
+            ),
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:676: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document8/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_document8/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_____ test_tracked_variable_truncated_evidence_cannot_support_an_assertion _____
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_truncate0')
+
+    def test_tracked_variable_truncated_evidence_cannot_support_an_assertion(tmp_path: Path) -> None:
+        from doc_lineage.emit.evidence import EXCERPT_MAX_CHARS
+        from doc_lineage.extract.variables import publish_variables
+    
+        # Keep the fee itself supported, but make its page segment exceed the quote limit.
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text + " 2. OTHER TERMS " + "Additional terms apply. " * 120,
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        assert len(ingested.segments[0].text) > EXCERPT_MAX_CHARS
+        assert len(ingested.evidence[0]["excerpt"]) == EXCERPT_MAX_CHARS
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:705: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_truncate0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_truncate0/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_________________ test_tracked_variable_second_page_navigation _________________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_second_p0')
+
+    def test_tracked_variable_second_page_navigation(tmp_path: Path) -> None:
+        from reportlab.pdfgen import canvas
+    
+        from doc_lineage.extract.variables import publish_variables, validate
+    
+        source = tmp_path / "second-page.pdf"
+        pdf = canvas.Canvas(str(source), invariant=1)
+        pdf.drawString(40, 750, "LIMITED PARTNERSHIP AGREEMENT Alpha Fund L.P.")
+        pdf.showPage()
+        # A heading is optional; extraction accepts uppercase text recovered across lines.
+        pdf.drawString(40, 750, "THE PARTNERSHIP SHALL PAY THE GENERAL PARTNER")
+        pdf.drawString(40, 735, "AN ANNUAL MANAGEMENT FEE EQUAL TO 3.125%")
+        pdf.drawString(40, 720, "OF AGGREGATE CAPITAL COMMITMENTS.")
+        pdf.save()
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:732: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_second_p0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_second_p0/second-page.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_________ test_tracked_variable_original_mutation_controls[False-1.75] _________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_original0')
+changed = False, expected = 1.75
+
+    @pytest.mark.parametrize("changed, expected", [(False, 1.75), (True, 2.0)])
+    def test_tracked_variable_original_mutation_controls(
+        tmp_path: Path, changed: bool, expected: float
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(tmp_path, changed=changed)
+        result = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       extraction = extract_variables(result.output_dir, source=source, entity_ref="fund:alpha_iv")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:759: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_original0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_original0/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+__________ test_tracked_variable_original_mutation_controls[True-2.0] __________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_original1')
+changed = True, expected = 2.0
+
+    @pytest.mark.parametrize("changed, expected", [(False, 1.75), (True, 2.0)])
+    def test_tracked_variable_original_mutation_controls(
+        tmp_path: Path, changed: bool, expected: float
+    ) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(tmp_path, changed=changed)
+        result = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       extraction = extract_variables(result.output_dir, source=source, entity_ref="fund:alpha_iv")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:759: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_original1/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_original1/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>0] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou0')
+change = <function <lambda> at 0x113968f40>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou0/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>1] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou1')
+change = <function <lambda> at 0x113968fe0>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou1/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou1/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>2] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou2')
+change = <function <lambda> at 0x113969080>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou2/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou2/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>3] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou3')
+change = <function <lambda> at 0x113969120>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou3/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou3/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>4] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou4')
+change = <function <lambda> at 0x1139691c0>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou4/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou4/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>5] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou5')
+change = <function <lambda> at 0x113969260>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou5/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou5/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>6] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou6')
+change = <function <lambda> at 0x113969300>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou6/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou6/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+_ test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>7] _
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou7')
+change = <function <lambda> at 0x1139693a0>
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+            lambda text: text
+            + " However, the management fee may vary at the General Partner's discretion.",
+            lambda text: text.replace("equal to", "up to"),
+            lambda text: text.replace("2.0%", "101%"),
+            lambda text: "Notwithstanding the following terms, " + text,
+            lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+            lambda text: "Management fees are subject to negotiation.",
+            lambda text: "No fee is specified.",
+        ],
+    )
+    def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+        tmp_path: Path, change
+    ) -> None:
+        from doc_lineage.extract.variables import publish_variables
+    
+        source = _fee_control_pdf(tmp_path, transform=change)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        output = tmp_path / "extraction"
+>       publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_ingest_synthetic_pdf.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou7/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_ambiguou7/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+______________ test_tracked_variable_flat_fee_and_entity_identity ______________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_flat_fee0')
+
+    def test_tracked_variable_flat_fee_and_entity_identity(tmp_path: Path) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(
+            tmp_path,
+            transform=lambda text: text.split(" during the Commitment Period")[0].replace(
+                "2.0%", "0.85%"
+            )
+            + ".",
+        )
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+>       one = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:809: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/ingest.py:391: in extract_variables
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_flat_fee0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_flat_fee0/control.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+__________________ test_tracked_variable_native_cli_full_path __________________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_native_c0')
+
+    def test_tracked_variable_native_cli_full_path(tmp_path: Path) -> None:
+        import os
+    
+        env = {**os.environ, "PYTHONPATH": str(FIXTURE.parents[2] / "src")}
+        commands = [
+            ["ingest", str(FIXTURE), "--no-docling", "--no-ocr", "--output", str(tmp_path / "ingest")],
+            [
+                "extract-variables",
+                str(tmp_path / "ingest"),
+                "--source",
+                str(FIXTURE),
+                "--entity-ref",
+                "fund:alpha_iv",
+                "--output",
+                str(tmp_path / "extracted"),
+            ],
+            [
+                "export-fact-key-map",
+                str(tmp_path / "extracted" / "tracked-variables.json"),
+                "--output",
+                str(tmp_path / "fact-map"),
+            ],
+        ]
+        for command in commands:
+            result = subprocess.run(
+                [sys.executable, "-m", "doc_lineage.cli", *command],
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+>           assert result.returncode == 0, result.stdout + result.stderr
+E           AssertionError: doc-lineage extract-variables: ingest artifact identity or kind mismatch
+E             
+E           assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['/private/tmp/doc-lineage-129-venv/bin/python', '-m', 'doc_lineage.cli', 'extract-variables', '...racted'], returncode=1, stdout='', stderr='doc-lineage extract-variables: ingest artifact identity or kind mismatch\n').returncode
+
+tests/ingest/test_ingest_synthetic_pdf.py:852: AssertionError
+_____________ test_tracked_variable_partial_coverage_is_unresolved _____________
+
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_partial_0')
+
+    def test_tracked_variable_partial_coverage_is_unresolved(tmp_path):
+        ingested = ingest_document(
+            SOURCE, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        _rewrite(
+            ingested.output_dir,
+            "segments.json",
+            lambda p: p.update(
+                coverage={
+                    "status": "partial",
+                    "pages_total": 3,
+                    "pages_with_text_layer": 2,
+                    "pages_recognized": 0,
+                    "pages_unreadable": 1,
+                },
+                unreadable_pages=[3],
+            ),
+        )
+        output = tmp_path / "extract"
+>       publish_variables(ingested.output_dir, SOURCE, output, entity_ref="fund:alpha_iv")
+
+tests/ingest/test_variables_provenance.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doc_lineage/extract/variables.py:222: in publish_variables
+    verified = load_ingest(ingest_dir, source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ingest_dir = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_tracked_variable_partial_0/ingest')
+source = PosixPath('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/tests/fixtures/synthetic_lpa.pdf')
+
+    def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
+        """Read and validate every listed artifact and every segment/evidence link."""
+        root = ingest_dir.expanduser().resolve()
+        manifest_raw = _read_local(root, MANIFEST_FILENAME)
+        manifest = _object(manifest_raw)
+        validate("artifact-manifest-v1", manifest)
+        if manifest.get("tool") != "doc-lineage-ingest":
+            raise ValueError("input must be a doc-lineage-ingest run")
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        digest = sha256_bytes(raw)
+        source_info = manifest.get("source", {})
+        if not isinstance(source_info, dict):
+            raise ValueError("invalid source provenance")
+        name = source_info.get("filename", "")
+        if (
+            source_info.get("sha256") != digest
+            or source_info.get("bytes") != len(raw)
+            or not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name in {".", ".."}
+        ):
+            raise ValueError("original source digest, byte count or filename mismatch")
+        artifacts: dict[str, bytes] = {}
+        artifact_ids: set[str] = set()
+        for entry in manifest["artifacts"]:
+            path = entry["path"]
+            if path in artifacts or entry["artifact_id"] in artifact_ids:
+                raise ValueError("duplicate ingest artifact path or identity")
+            data = _read_local(root, path)
+            if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
+                raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
+            artifacts[path] = data
+            artifact_ids.add(entry["artifact_id"])
+            expected_id = (
+                f"{digest[:16]}-segments"
+                if path == SEGMENTS_FILENAME
+                else f"{Path(path).stem}-evidence"
+            )
+            expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+            if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
+>               raise ValueError("ingest artifact identity or kind mismatch")
+E               ValueError: ingest artifact identity or kind mismatch
+
+src/doc_lineage/extract/variables.py:132: ValueError
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/teacher/.codex/orchestrator/measurement/doc-lineage-129-review-recovery/full.xml -
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.12.2-final-0 _______________
+
+Name                                            Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------
+src/doc_lineage/__init__.py                         5      0      0      0   100%
+src/doc_lineage/adapters/__init__.py                2      0      0      0   100%
+src/doc_lineage/adapters/docling_segmenter.py     330     27    156     27    89%   129->132, 148->150, 180-182, 189-191, 202->204, 205->207, 211, 220, 225-227, 252-253, 272, 275, 278, 290, 293, 296->294, 348-349, 354->356, 364-365, 367->369, 396, 408->410, 411, 420->422, 430, 436-437, 445, 460
+src/doc_lineage/blackline.py                      254     37     78     26    81%   72, 228, 230-231, 245, 248-249, 263-264, 266, 269, 272, 278, 281, 286, 289, 291, 293, 300, 303, 309-310, 323, 338, 400, 404, 407-408, 412, 419, 422, 425, 427, 432, 446, 448, 450
+src/doc_lineage/cli.py                            126     12     22      2    91%   189-198, 202, 204-213
+src/doc_lineage/compare/__init__.py                 3      0      0      0   100%
+src/doc_lineage/compare/classify.py               104      3     28      3    95%   57, 87, 140
+src/doc_lineage/compare/silence.py                  8      0      4      0   100%
+src/doc_lineage/emit/__init__.py                    2      0      0      0   100%
+src/doc_lineage/emit/evidence.py                   57      3     22      7    87%   47->exit, 50->exit, 53->exit, 56->exit, 62, 147, 149
+src/doc_lineage/export/__init__.py                  2      0      0      0   100%
+src/doc_lineage/export/docx_redline.py              7      0      2      0   100%
+src/doc_lineage/export/fact_key_map.py             51      0     22      0   100%
+src/doc_lineage/extract/__init__.py                40      9     12      1    73%   32-35, 40-42, 89-90
+src/doc_lineage/extract/cache.py                   86      7     28      3    91%   89-90, 92, 96, 135-137
+src/doc_lineage/extract/models.py                  21      0      0      0   100%
+src/doc_lineage/extract/ocr.py                     41     15      6      1    62%   15->exit, 30-45, 72-73, 78
+src/doc_lineage/extract/office.py                  50      3     22      5    89%   53, 55->51, 57->49, 72, 78
+src/doc_lineage/extract/pdf.py                    104     11     24      2    90%   104-106, 113, 116, 195-196, 208-209, 212-213
+src/doc_lineage/extract/variables.py              155     85     64     17    35%   29, 41-45, 51->52, 51->53, 54, 59, 61, 66-73, 77, 82, 85->88, 89-92, 98, 103->104, 105, 106->115, 119, 122, 123->125, 126, 127->131, 129, 134-199, 213-215, 219->exit, 225-268
+src/doc_lineage/harvest/__init__.py                 2      0      0      0   100%
+src/doc_lineage/harvest/edgar_ex10.py             214     40     68      8    77%   56, 74, 86-90, 97, 104, 119, 137-142, 146-174, 189, 215, 217, 308-313
+src/doc_lineage/identity.py                        57      0     10      0   100%
+src/doc_lineage/ingest.py                         181     35     46      2    78%   321, 335, 395-497
+src/doc_lineage/lineage/__init__.py                 2      0      0      0   100%
+src/doc_lineage/lineage/families.py                50      1      6      0    98%   33
+src/doc_lineage/manifest.py                       181      6     76      5    96%   78, 82, 90, 103, 233, 294
+src/doc_lineage/mutations/__init__.py               3      0      0      0   100%
+src/doc_lineage/mutations/catalog.py               10      0      0      0   100%
+src/doc_lineage/mutations/detect.py                25      1      8      2    91%   42, 45->40
+src/doc_lineage/persistence.py                     26      0      0      0   100%
+src/doc_lineage/render/__init__.py                  2      0      0      0   100%
+src/doc_lineage/render/links.py                    69      2     30      2    96%   18, 46
+src/doc_lineage/schema/__init__.py                  4      0      0      0   100%
+src/doc_lineage/schema/_finite.py                  24      4     12      4    78%   12, 30, 33, 35
+src/doc_lineage/schema/change_ledger.py           143     16      4      0    89%   96-98, 121, 183, 210, 231-237, 240, 244, 256-257, 260, 264, 305
+src/doc_lineage/schema/enums.py                    15      0      0      0   100%
+src/doc_lineage/schema/validation.py               50      4     10      0    93%   32-34, 47
+src/doc_lineage/supersession.py                    41      0     26      0   100%
+src/doc_lineage/vocab.py                           22      0      6      0   100%
+-------------------------------------------------------------------------------------------
+TOTAL                                            2569    321    792    117    85%
+Coverage XML written to file /Users/teacher/.codex/orchestrator/measurement/doc-lineage-129-review-recovery/coverage.xml
+Required test coverage of 80.0% reached. Total coverage: 84.65%
+=========================== short test summary info ============================
+FAILED tests/export/test_fact_key_map.py::test_export_consumes_actual_pdf_extractor_output
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_synthetic_pdf_and_published_provenance
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_changed_fee_follows_source_text
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[0-100-expected0]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[100.0000-0.0001-expected1]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[1.2345-99.9999-expected2]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[100.0001-1.25-None]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[2.0-100.0001-None]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[1.23456-1.25-None]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[2.0-1.23456-None]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[-1-1.25-None]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_documented_rate_limits[2.0--1-None]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_truncated_evidence_cannot_support_an_assertion
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_second_page_navigation
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_original_mutation_controls[False-1.75]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_original_mutation_controls[True-2.0]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>0]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>1]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>2]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>3]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>4]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>5]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>6]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion[<lambda>7]
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_flat_fee_and_entity_identity
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_native_cli_full_path
+FAILED tests/ingest/test_variables_provenance.py::test_tracked_variable_partial_coverage_is_unresolved
+================= 27 failed, 554 passed, 2 warnings in 51.93s ==================

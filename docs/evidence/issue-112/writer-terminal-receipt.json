@@ -1,0 +1,696 @@
+{
+  "checked_at": "2026-10-17T12:12:31.544393+00:00",
+  "source": 112,
+  "prs": [
+    {
+      "number": 128,
+      "body": "<!-- meta:issue:111 -->\n<!-- workflow-source:local_request -->\nSource: #111. Refs #111; source acceptance remains with the parent.\n\n`extract-variables` now derives `legal.fees.management_rate` from actual persisted ingest segments and evidence. It requires the original document and an explicit canonical entity ID, supports the documented flat/two-tier annual fee sentences, and publishes schema-valid records, unchanged evidence, source bytes, unresolved diagnostics and manifest hashes into a new directory. The original synthetic LPA yields 1.75% during the Commitment Period and 1.25% thereafter; the original changed-fee mutation rendered as a PDF yields 2.0%. Ambiguous, unsupported or incomplete text emits no asserted value.\n\nInput validation rejects corrupt hashes, source digests, segment/evidence identities, quotes, pages, coverage, references, duplicate JSON/artifacts and unsafe paths before publication. Shared schema references resolve offline. A real consumer test feeds the published records through the existing fact-key-map exporter; source archives now include the PDF needed by that test.\n\nNo vocabulary/schema, cloud/model extraction, consultant extraction, downstream renderer or workflow-source change. This starts independently from remote main `45971929b534d953e1c56ffb42b4bdfc3fd4b994`; it neither includes nor depends on the comparison-ID feature. The documented grammar is deliberately narrow and does not establish arbitrary legal interpretation, document-wide legal consistency, entity resolution or authenticity against a fully rewritten ingest package.\n\nValidation:\n- Final isolated full suite: **521 passed, zero failures/errors/skips, 91.11% coverage**, unchanged 80% floor. Existing editable-install and source-archive tests pass without exclusions.\n- Focused tracked-variable gates: **42 passed**. Actual installed CLI baseline/changed-fee/ambiguous paths and portable replay pass, including original digest, quote/page/reference checks, every output hash and fact-map joins.\n- Actual production hard-coding (`rate = 1.75`) produces named **AssertionError: MANAGEMENT_RATE_SOURCE_DISCONNECTION** on the changed-fee test. Byte-identical production restoration passes; tests and fixtures remain unchanged. Genuine JUnit, logs, argv and code/fixture hash bindings are committed.\n- Ruff/Black and changed-module mypy (`--follow-imports=silent`) pass. **Full mypy remains FAIL** on two unused-ignore errors in unchanged `docling_segmenter.py:111-112`.\n- Earlier shared run: 517 passed / 2 failed. Shared editable installation was permission-denied; Anaconda-based `/tmp` venv resolves that environment boundary. The source-archive failure exposed the PDF omission, fixed in `MANIFEST.in`. Original failure logs/JUnit are retained.\n- Installed Ruff 0.16.7, Black 26.5.1, mypy 2.3.1 and reportlab 5.0.1 differ from repository dev pins; exact pinned-version results remain UNKNOWN. Advisor consultation/considered declines are recorded; shared ledger lock denied, captured registry consultation used without claiming a shared heartbeat.\n\nEvidence: [`docs/evidence/issue-111/README.md`](docs/evidence/issue-111/README.md), `source-hashes.json`, `SHA256SUMS`, original pipeline artifacts and executable portable replay. Raw originals: `/tmp/doc-lineage-111-raw`; final pre-push native/remote/dedup receipts remain there. Fresh gate found no linked PR/native records/recorded attempts across all 79 prior PR heads, no target remote branch, unchanged remote main and clean bound source. No incumbent was displaced or source agent label applied.\n\nThis ready PR is a delivery for independent parent adjudication. Hosted CI/provider acceptance are not claimed. No CI wait, merge, source closure, Office launch or computer-wide approval.\n\n<!-- pr-preamble:start -->\n<!-- meta:issue:111 -->\n> **Source:** Issue #111\n\nCloses #111\n\n<!-- pr-preamble:end -->\n\n<!-- auto-status-summary:start -->\n## Automated Status Summary\n#### Scope\nREADME.md:34-38 commits to extracting legal clauses into stable tracked-variable records, and `docs/contracts/tracked-variable-v1.md:15` defines the record, with extractors owned by domain repos. In this repo `ingest_document` (`src/doc_lineage/ingest.py:242`) stops at a segments artifact plus evidence files, `export-fact-key-map` (`src/doc_lineage/cli.py:72`, `src/doc_lineage/export/fact_key_map.py:16`) only consumes already-authored records, and its fixture `tests/fixtures/fact_key_map/tracked_variables.json` has identities without source evidence. `vocab/legal-clauses.json:20` defines keys such as `legal.fees.management_rate`, but nothing produces a value for them from text. Verified by inspecting the ingest publisher, CLI dispatch and fact-map producer: no extractor or entry point exists. This is a missing capability; schema and vocabulary tests prove components, not a source-to-claim path.\n\nCurrent source readback: `src/doc_lineage/ingest.py:242` at `b9daca70b27f452d62d8c6ccdb3bcd3b5dc7a783` (file SHA-256 `891d8cb788a9f215233f88b3dcb53e812377d19d8b63c510ac5a0d6c7296bcbb`). Earlier detailed line ranges and reproductions retain their reviewed-commit provenance; intervening anchor changes were checked for relevance.\n\n#### Tasks\n- [x] Document supported clause forms, identity rules and unresolved behavior in `docs/contracts/tracked-variable-v1.md` (new \"Extraction coverage\" section).\n- [x] In `src/doc_lineage/ingest.py` (after `ingest_document`, line 294), add a function that reads `segments.json` and evidence objects from an ingest run and returns tracked-variable records keyed by `legal.fees.management_rate` via `src/doc_lineage/vocab.py` (`load_legal_clauses`).\n- [x] In `src/doc_lineage/cli.py` (parser near line 72-77, dispatch at `main` lines 137-162), add an `extract-variables` subcommand that writes validated records and a manifest to a new output directory.\n- [x] Validate each record against `docs/contracts/schemas/tracked-variable-v1.schema.json` and each evidence reference against `evidence-object-v1.schema.json` before publishing.\n- [x] Add tests to `tests/ingest/test_ingest_synthetic_pdf.py` ingesting `tests/fixtures/synthetic_lpa.pdf`, plus changed-fee and ambiguous-clause cases using `tests/fixtures/mutations/management_fee_bump/`.\n- [x] Add a test in `tests/export/test_fact_key_map.py` feeding extractor output to `export_fact_key_map` (`src/doc_lineage/export/fact_key_map.py:50`).\n- [x] Update README.md:34-38 and `docs/fact-key-map.md:25` to describe the extractor and how to inspect unresolved clauses.\n\n#### Acceptance criteria\n- [x] `pytest tests/ingest/test_ingest_synthetic_pdf.py -k tracked_variable` passes: the synthetic LPA yields `legal.fees.management_rate` with a value taken from source text, not from a fixture.\n- [x] Published records validate against `tracked-variable-v1.schema.json` and evidence quotes, page locator, original digest and manifest hashes match the emitted files.\n- [x] Deliberate-break gate: temporarily hard-code the extracted value in the new extractor in `src/doc_lineage/ingest.py`; the changed-fee test must FAIL. Revert afterward.\n- [x] An ambiguous or unsupported clause produces an unresolved entry and no asserted value, and `pytest tests/export/test_fact_key_map.py` passes using extractor output.\n\n<!-- auto-status-summary:end -->",
+      "head": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+      "branch": "codex/issue-111-evidence-backed-legal-extraction"
+    },
+    {
+      "number": 127,
+      "body": "<!-- meta:issue:110 -->\n<!-- workflow-source:local_request -->\nSource: #110. Refs #110; source acceptance remains with the parent.\n\nCreating a comparison now prints an opaque ID backed by a versioned local JSON record of ordered DOCX paths and SHA-256 hashes. `export-docx --blackline ID` reopens that record in a fresh process, verifies the exact input buffers, and calls the existing native tracked-changes renderer. The boolean file-pair invocation still works.\n\nMalformed/path/unknown IDs, missing sources, changed bytes, replacement input paths, and source/record output aliases fail before output publication. README documents record fields, local storage, source retention, and distinct DOCX/package versus extracted-PDF fidelity. No workflow infrastructure, hosted service, database, PDF conversion, or semantic pairing change.\n\nValidation:\n- 54 focused tests passed; public CLI creation, fresh-process ID-only export, real native DOCX acceptance/rejection reconstruction, and file-pair compatibility.\n- Deliberately disconnecting SHA-256 verification caused all 4 named `SHA256_CHECK_DISCONNECTION` assertions to fail. Byte-identical restoration passed all 25 comparison tests.\n- Isolated full suite: 503 passed, 89.02% coverage against the unchanged 80% floor. The first shared-interpreter run had 502 passed/1 install-permission failure; its raw log/JUnit is retained. The same unmodified install test passed in a temporary venv.\n- Ruff and Black passed. Changed-module mypy passed with silent imported modules. Full mypy remains FAIL: two unused-ignore errors in unchanged `docling_segmenter.py:111-112`.\n- Installed Ruff/Black/mypy are 0.16.7/26.5.1/2.3.1, older than the repository pins; pinned-version results remain unknown.\n- Portable replay passed. No hosted CI wait, merge, source closure, Office launch or computer-wide approval.\n\nEvidence: [`docs/evidence/issue-110/README.md`](docs/evidence/issue-110/README.md), including real JUnit/logs, deliberate-break hashes, code hashes, synthetic DOCX inputs/output, SHA256SUMS and explicit portable replay. Advisor consult and considered declines are recorded; the live ledger lock was sandbox-denied, so a captured registry copy was consulted without claiming a shared-ledger heartbeat.\n\nOwnership refresh found no source native reservations/completions, no recorded workflow attempts, no linked PR across any head, and no target remote branch. No source agent labels were applied. This ready PR is handed back for independent adjudication; local verification does not establish hosted acceptance.\n\n<!-- pr-preamble:start -->\n<!-- meta:issue:110 -->\n> **Source:** Issue #110\n\nCloses #110\n\n<!-- pr-preamble:end -->\n\n<!-- auto-status-summary:start -->\n## Automated Status Summary\n#### Scope\nREADME.md:19-26 says the planned `--blackline <id>` interface from issue #15 is not implemented because no persisted comparison-ID lookup contract connects ingest (#8) and blackline (#10). Verified current state: `src/doc_lineage/cli.py:49` defines `--blackline` as `store_true` and requires `--original`/`--modified`, so an ID-only invocation exits 2. `ingest_document` (`src/doc_lineage/ingest.py:242`) publishes segments and evidence, and `src/doc_lineage/blackline.py:30` produces in-memory section pairs and NDJSON edges; nothing persists a comparison that `export_docx_redline` (`src/doc_lineage/export/docx_redline.py:6`) can resolve. A user must resupply both paths every time and cannot reproduce an export against the exact bytes originally compared. This is a missing capability, not a regression.\n\nCurrent source readback: `src/doc_lineage/cli.py:49` at `b9daca70b27f452d62d8c6ccdb3bcd3b5dc7a783` (file SHA-256 `7a109fd42eef1873b7976ab3894540c136c022270237c71467626ce47473b096`). Earlier detailed line ranges and reproductions retain their reviewed-commit provenance; intervening anchor changes were checked for relevance.\n\n<!-- Updated WORKFLOW_OUTPUTS.md context:start -->\n## Context for Agent\n\n### Related Issues/PRs\n- [#15](https://github.com/stranske/Doc-Lineage/issues/15)\n- [#8](https://github.com/stranske/Doc-Lineage/issues/8)\n- [#10](https://github.com/stranske/Doc-Lineage/issues/10)\n<!-- Updated WORKFLOW_OUTPUTS.md context:end -->\n\n#### Tasks\n- [x] Add a \"Comparison records\" section to README.md (replacing the not-implemented paragraph at lines 19-26) defining the record fields, ID generation, store location and verification rules.\n- [x] In `src/doc_lineage/blackline.py` (after `emit_lineage_edges_ndjson`, line 188), add functions to write a record (ordered `original_sha256`, `modified_sha256`, input paths, schema version) and load by ID, raising `ValueError` for unknown IDs.\n- [x] In `src/doc_lineage/cli.py:49`, add a subcommand or option that creates a comparison from two DOCX paths and prints the ID; accept `--blackline <id>` on `export-docx` without breaking the boolean file-pair form.\n- [x] In `_run_export_docx` (`src/doc_lineage/cli.py:99`), resolve the ID, re-read both inputs, verify SHA-256 against the record, and pass bytes to `export_docx_redline`.\n- [x] Add tests to `tests/test_cli.py` covering create, new-process reopen, ID-only export, unknown ID, missing input and changed bytes.\n- [x] Extend `tests/export/test_docx_redline_golden.py:84` style assertions to check the ID-driven export reconstructs original and modified text when changes are rejected and accepted.\n\n#### Acceptance criteria\n- [x] `pytest tests/test_cli.py -k comparison` passes: a comparison created from two synthetic DOCX files is reopened in a fresh invocation and exported by ID alone.\n- [x] Deliberate-break gate: temporarily skip the SHA-256 check in `_run_export_docx`; the changed-bytes comparison test in `tests/test_cli.py` must FAIL. Revert afterward.\n- [x] Passing a filesystem path as the `--blackline` value exits nonzero with a message that it is not a comparison ID.\n- [x] `pytest tests/test_cli.py` still passes, proving the file-pair form is unchanged, and README.md no longer says the ID workflow is not implemented.\n\n<!-- auto-status-summary:end -->",
+      "head": "89542e1103330e076ce1afad24091e3428fd56ee",
+      "branch": "codex/issue-110-persisted-comparison"
+    }
+  ],
+  "reservations_all_heads": [
+    {
+      "target": 127,
+      "head_sha": "45329457cbcc0e7a42e693e6614ae0769420c4d8",
+      "reservation_id": "207ae8aa4bc94f47b96cab70b149af7c",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39028813549:1",
+      "matched_completion_comment_ids": [
+        6233402760
+      ],
+      "actual_implementation_terminal": true,
+      "exact_target_blocked": false
+    },
+    {
+      "target": 127,
+      "head_sha": "714ef2c4f9d46de97f871c9a0ff239b8bc5af2fa",
+      "reservation_id": "a152bf42742a48109218276a50100f95",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029314307:1",
+      "matched_completion_comment_ids": [
+        6233471222
+      ],
+      "actual_implementation_terminal": true,
+      "exact_target_blocked": false
+    },
+    {
+      "target": 127,
+      "head_sha": "6201af9e62a64730f441bfaaa41601be8b970373",
+      "reservation_id": "e37dbd523d6f4d388bd4f75c63bd6d03",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029814200:1",
+      "matched_completion_comment_ids": [
+        6233507026
+      ],
+      "actual_implementation_terminal": true,
+      "exact_target_blocked": false
+    },
+    {
+      "target": 128,
+      "head_sha": "9d8f403bd92bf4d108ab1868b0396afe47aef29b",
+      "reservation_id": "ff7e72d2da0249a3985478a6753ada6f",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029946327:1",
+      "matched_completion_comment_ids": [
+        6233570442
+      ],
+      "actual_implementation_terminal": true,
+      "exact_target_blocked": false
+    },
+    {
+      "target": 128,
+      "head_sha": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+      "reservation_id": "3b177fdc593245eaa07eb928ae16992c",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39030529716:1",
+      "matched_completion_comment_ids": [
+        6233606369
+      ],
+      "actual_implementation_terminal": true,
+      "exact_target_blocked": false
+    }
+  ],
+  "attempts_inspected_directly": [
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39028813549:1",
+      "event": "workflow_run",
+      "head_branch": "main",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 117385032341,
+          "name": "Merge automerge-labelled agent PRs",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385032402,
+          "name": "Prepare autofix context",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385032439,
+          "name": "Evaluate keepalive loop",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385032943,
+          "name": "Wake generated delivery reconciler",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385083066,
+          "name": "Record autofix metrics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385083577,
+          "name": "Flag for human follow-up",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385083652,
+          "name": "Run Codex autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385083849,
+          "name": "Run Muse autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385084046,
+          "name": "Run Claude autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385097645,
+          "name": "Verify secrets available",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385097672,
+          "name": "Test job creation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385115840,
+          "name": "Mark agent running",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385165153,
+          "name": "Keepalive next task (Codex) / Codex (keepalive)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117385165518,
+          "name": "Keepalive next task (Claude)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385165573,
+          "name": "Keepalive next task (Muse)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385165989,
+          "name": "Keepalive next task (Gemini)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385165998,
+          "name": "Keepalive next task (Cursor)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117385949953,
+          "name": "Update keepalive summary",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386068286,
+          "name": "Record keepalive dispatch completion",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029314307:1",
+      "event": "workflow_run",
+      "head_branch": "main",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 117386399151,
+          "name": "Prepare autofix context",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386399175,
+          "name": "Merge automerge-labelled agent PRs",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386399233,
+          "name": "Evaluate keepalive loop",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386399719,
+          "name": "Wake generated delivery reconciler",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386450495,
+          "name": "Record autofix metrics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386450972,
+          "name": "Run Codex autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386451060,
+          "name": "Run Claude autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386451295,
+          "name": "Run Muse autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386451315,
+          "name": "Flag for human follow-up",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386471270,
+          "name": "Verify secrets available",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386471291,
+          "name": "Test job creation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386489460,
+          "name": "Mark agent running",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386544165,
+          "name": "Keepalive next task (Codex) / Codex (keepalive)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117386544420,
+          "name": "Keepalive next task (Cursor)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386544482,
+          "name": "Keepalive next task (Muse)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386544939,
+          "name": "Keepalive next task (Claude)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117386545123,
+          "name": "Keepalive next task (Gemini)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387433270,
+          "name": "Update keepalive summary",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387506746,
+          "name": "Record keepalive dispatch completion",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029814200:1",
+      "event": "workflow_run",
+      "head_branch": "main",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 117387848020,
+          "name": "Prepare autofix context",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387848139,
+          "name": "Evaluate keepalive loop",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387848205,
+          "name": "Merge automerge-labelled agent PRs",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387848807,
+          "name": "Wake generated delivery reconciler",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387906686,
+          "name": "Record autofix metrics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387907038,
+          "name": "Run Muse autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387907090,
+          "name": "Run Codex autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387907151,
+          "name": "Test job creation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387907155,
+          "name": "Verify secrets available",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387907352,
+          "name": "Run Claude autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387907668,
+          "name": "Flag for human follow-up",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387919588,
+          "name": "Mark agent running",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387966145,
+          "name": "Keepalive next task (Claude) / Claude (keepalive)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117387966575,
+          "name": "Keepalive next task (Muse)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387966601,
+          "name": "Keepalive next task (Codex)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387966662,
+          "name": "Keepalive next task (Cursor)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117387966812,
+          "name": "Keepalive next task (Gemini)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388192379,
+          "name": "Update keepalive summary",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388252373,
+          "name": "Record keepalive dispatch completion",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029946327:1",
+      "event": "workflow_run",
+      "head_branch": "main",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 117388293913,
+          "name": "Evaluate keepalive loop",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388294012,
+          "name": "Merge automerge-labelled agent PRs",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388294043,
+          "name": "Prepare autofix context",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388294610,
+          "name": "Wake generated delivery reconciler",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388349400,
+          "name": "Record autofix metrics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388350428,
+          "name": "Run Claude autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388350468,
+          "name": "Run Muse autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388350477,
+          "name": "Flag for human follow-up",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388350503,
+          "name": "Run Codex autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388378885,
+          "name": "Test job creation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388378900,
+          "name": "Verify secrets available",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388391573,
+          "name": "Mark agent running",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388445479,
+          "name": "Keepalive next task (Codex) / Codex (keepalive)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117388445813,
+          "name": "Keepalive next task (Claude)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388445925,
+          "name": "Keepalive next task (Muse)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388446121,
+          "name": "Keepalive next task (Gemini)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117388446167,
+          "name": "Keepalive next task (Cursor)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117389489915,
+          "name": "Update keepalive summary",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389548027,
+          "name": "Record keepalive dispatch completion",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39030529716:1",
+      "event": "workflow_run",
+      "head_branch": "main",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 117389891717,
+          "name": "Prepare autofix context",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389891916,
+          "name": "Merge automerge-labelled agent PRs",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389891941,
+          "name": "Evaluate keepalive loop",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389892552,
+          "name": "Wake generated delivery reconciler",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117389932258,
+          "name": "Record autofix metrics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389932740,
+          "name": "Run Muse autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117389932885,
+          "name": "Flag for human follow-up",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117389933023,
+          "name": "Run Claude autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117389933185,
+          "name": "Run Codex autofix",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117389960282,
+          "name": "Test job creation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389960321,
+          "name": "Verify secrets available",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117389978985,
+          "name": "Mark agent running",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117390033280,
+          "name": "Keepalive next task (Claude) / Claude (keepalive)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117390033771,
+          "name": "Keepalive next task (Cursor)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117390033939,
+          "name": "Keepalive next task (Gemini)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117390033969,
+          "name": "Keepalive next task (Codex)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117390033981,
+          "name": "Keepalive next task (Muse)",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 117390233560,
+          "name": "Update keepalive summary",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 117390286970,
+          "name": "Record keepalive dispatch completion",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "active_runs_all_branches": [],
+  "target_has_reservation": false,
+  "target_blocked": false,
+  "no_workflow_dispatched_or_cancelled": true
+}

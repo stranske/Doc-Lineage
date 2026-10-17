@@ -1,0 +1,60 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-causal
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/ingest/test_private_publication.py F                               [100%]
+
+=================================== FAILURES ===================================
+__________________ test_comparison_durable_publication_order ___________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4938/test_comparison_durable_public0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x109c1a4e0>
+
+    def test_comparison_durable_publication_order(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        left, right = make_runs(tmp_path)
+        store = tmp_path / "store"
+        events: list[str] = []
+        fsync, link, unlink = os.fsync, os.link, Path.unlink
+    
+        def observe_sync(fd: int) -> None:
+            events.append("directory-sync" if stat.S_ISDIR(os.fstat(fd).st_mode) else "file-sync")
+            fsync(fd)
+    
+        def observe_link(source: Any, target: Any) -> None:
+            assert Path(source).read_bytes()
+            assert not Path(target).exists()
+            events.append("publish")
+            link(source, target)
+    
+        def observe_unlink(path: Path, *args: Any, **kwargs: Any) -> None:
+            if path.parent == store:
+                events.append("cleanup")
+            unlink(path, *args, **kwargs)
+    
+        monkeypatch.setattr(persistence.os, "fsync", observe_sync)
+        monkeypatch.setattr(persistence.os, "link", observe_link)
+        monkeypatch.setattr(Path, "unlink", observe_unlink)
+        cid = blackline.create_section_comparison(left, right, store=store)
+>       assert events == [
+            "file-sync",
+            "publish",
+            "cleanup",
+            "directory-sync",
+        ], "DURABLE_COMPARISON_ORDER"
+E       AssertionError: DURABLE_COMPARISON_ORDER
+E       assert ['file-sync',...h', 'cleanup'] == ['file-sync',...rectory-sync']
+E         
+E         Right contains one more item: 'directory-sync'
+E         Use -v to get more diff
+
+tests/ingest/test_private_publication.py:166: AssertionError
+- generated xml file: /Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-integrated-fresh/directory-durability-red.xml -
+=========================== short test summary info ============================
+FAILED tests/ingest/test_private_publication.py::test_comparison_durable_publication_order
+============================== 1 failed in 0.36s ===============================

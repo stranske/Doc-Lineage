@@ -20,6 +20,7 @@ from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounde
 from doc_lineage.identity import sha256_bytes
 from doc_lineage.ingest import (
     MANIFEST_FILENAME,
+    ORIGINAL_FILENAME,
     SEGMENTS_FILENAME,
     SEGMENTS_SCHEMA_VERSION,
     Segment,
@@ -111,6 +112,7 @@ def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
         or name in {".", ".."}
     ):
         raise ValueError("original source digest, byte count or filename mismatch")
+    original_path = ORIGINAL_FILENAME.format(sha256=digest)
     artifacts: dict[str, bytes] = {}
     artifact_ids: set[str] = set()
     for entry in manifest["artifacts"]:
@@ -122,12 +124,14 @@ def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
             raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
         artifacts[path] = data
         artifact_ids.add(entry["artifact_id"])
-        expected_id = (
-            f"{digest[:16]}-segments"
-            if path == SEGMENTS_FILENAME
-            else f"{Path(path).stem}-evidence"
-        )
-        expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
+        if path == original_path:
+            expected_id, expected_kind = f"{digest}-original", "data"
+            if data != raw:
+                raise ValueError("retained original snapshot differs from source")
+        elif path == SEGMENTS_FILENAME:
+            expected_id, expected_kind = f"{digest[:16]}-segments", "data"
+        else:
+            expected_id, expected_kind = f"{Path(path).stem}-evidence", "evidence"
         if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
             raise ValueError("ingest artifact identity or kind mismatch")
     if SEGMENTS_FILENAME not in artifacts:
@@ -163,6 +167,9 @@ def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
             raise ValueError("segment identity, text counts or location mismatch")
     expected = build_evidence_objects(segments, source_id=digest, backend=payload["backend"])
     expected_paths = {SEGMENTS_FILENAME}
+    # Earlier main ingests predate retained snapshots; validate one when present.
+    if original_path in artifacts:
+        expected_paths.add(original_path)
     for evidence in expected:
         path = f"evidence/{evidence['evidence_id']}.json"
         expected_paths.add(path)
@@ -176,7 +183,7 @@ def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
         raise ValueError("unexpected or unreferenced ingest evidence artifact")
     if {
         p.relative_to(root).as_posix() for p in (root / "evidence").glob("*.json")
-    } != expected_paths - {SEGMENTS_FILENAME}:
+    } != expected_paths - {SEGMENTS_FILENAME, original_path}:
         raise ValueError("unlisted evidence object in ingest run")
     artifacts["input-manifest.json"] = manifest_raw
     coverage = payload.get("coverage")

@@ -1,0 +1,17 @@
+{
+  "executable": "/Users/teacher/Library/CloudStorage/Dropbox/My Mac (TRS MacBook)/Documents/Codex/2026-10-17/owner-scheduling-correction-direct-owner-instruction-5/work/round-20261017T1420/doc129-venv/bin/python",
+  "base_prefix": "/opt/anaconda3",
+  "version": "3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:54:21) [Clang 16.0.6 ]",
+  "packages": {
+    "pytest": "9.1.1",
+    "pytest-cov": "7.1.0",
+    "pypdf": "6.0.0",
+    "reportlab": "5.0.1",
+    "python-redlines": "0.3.0",
+    "python-redlines-docxodus": "1.0.0",
+    "black": "26.5.1",
+    "ruff": "0.16.7",
+    "mypy": "2.3.1"
+  },
+  "isolated_sitecustomize_sha256": "20702824814c0cee7f889244d9f938ed7b6a2d1e0bf863722a5b3818d2529634"
+}

@@ -136,30 +136,56 @@ def test_low_header_confidence_fails_closed_to_manual_review() -> None:
     assert pair.pairing_method == "manual_review"
 
 
-def test_non_finite_confidence_fails_closed_to_manual_review() -> None:
-    nan_confidence = Section(
+@pytest.mark.parametrize("confidence", [math.nan, math.inf, -math.inf])
+@pytest.mark.parametrize("invalid_side", ["left", "right"])
+@pytest.mark.parametrize("threshold", [0.0, DEFAULT_HEADER_CONFIDENCE_THRESHOLD])
+def test_non_finite_confidence_fails_closed_to_manual_review(
+    confidence: float, invalid_side: str, threshold: float
+) -> None:
+    invalid_section = Section(
         section_id="1",
         title="MANAGEMENT FEE",
-        header_confidence=math.nan,
+        header_confidence=confidence,
         segment_ids=("seg-1",),
         text="1. MANAGEMENT FEE body",
     )
-    doc_a = DocumentSections(source_sha256="left", sections=(nan_confidence,))
+    valid_section = Section(
+        section_id="1",
+        title="MANAGEMENT FEE",
+        header_confidence=1.0,
+        segment_ids=("seg-2",),
+        text="1. MANAGEMENT FEE body",
+    )
+    doc_a = DocumentSections(
+        source_sha256="left",
+        sections=(invalid_section if invalid_side == "left" else valid_section,),
+    )
     doc_b = DocumentSections(
         source_sha256="right",
-        sections=(
-            Section(
-                section_id="1",
-                title="MANAGEMENT FEE",
-                header_confidence=1.0,
-                segment_ids=("seg-2",),
-                text="1. MANAGEMENT FEE body",
-            ),
-        ),
+        sections=(invalid_section if invalid_side == "right" else valid_section,),
     )
-    (pair,) = align_sections(doc_a, doc_b)
+    (pair,) = align_sections(doc_a, doc_b, threshold=threshold)
     assert pair.pairing_method == "manual_review"
-    assert math.isfinite(pair.confidence)
+    assert pair.confidence == 0.0
+    (edge,) = map(json.loads, emit_lineage_edges_ndjson([pair]).splitlines())
+    assert edge["pairing_method"] == "manual_review"
+    assert edge["confidence"] == 0.0
+
+
+def test_finite_confidence_at_threshold_still_pairs_automatically() -> None:
+    section = Section(
+        section_id="1",
+        title="MANAGEMENT FEE",
+        header_confidence=0.0,
+        segment_ids=("seg-1",),
+        text="1. MANAGEMENT FEE body",
+    )
+    doc = DocumentSections(source_sha256="source", sections=(section,))
+
+    (pair,) = align_sections(doc, doc, threshold=0.0)
+
+    assert pair.pairing_method == "section_id"
+    assert pair.confidence == 0.0
 
 
 def test_one_sided_section_id_emits_manual_review() -> None:
@@ -305,6 +331,33 @@ def test_docling_items_survive_ingest_and_section_pairing(
     assert pairs[1].left is not None and pairs[1].right is not None
     assert pairs[0].left.text == pairs[0].right.text
     assert pairs[1].left.text != pairs[1].right.text
+
+
+def test_persisted_section_pairing_binds_ordered_inputs_and_replays(tmp_path: Path) -> None:
+    """Issue #112 production gate: validated independent ingests feed the real engine."""
+    from tests.blackline.test_comparison_run_cli import make_runs
+
+    from doc_lineage.blackline import create_section_comparison, load_section_comparison
+
+    left, right = make_runs(tmp_path)
+    store = tmp_path / "comparisons"
+    cid = create_section_comparison(left, right, store=store)
+    record = load_section_comparison(cid, store=store)
+    assert [d["section_id"] for d in record["decisions"]] == [
+        "1",
+        "2",
+        "2",
+        "3",
+        "4",
+    ], "PERSISTED_SECTION_PAIRING_MUST_CALL_EXISTING_ENGINE"
+    assert record["decisions"][0]["pairing_method"] == "section_id"
+    assert all(d["pairing_method"] == "manual_review" for d in record["decisions"][1:])
+    assert (
+        record["identity"]["original"]["source_sha256"]
+        != record["identity"]["modified"]["source_sha256"]
+    )
+    with pytest.raises(ValueError, match="source order mismatch"):
+        load_section_comparison(cid, store=store, original_run=right, modified_run=left)
 
 
 @pytest.mark.parametrize("reorder_after", [False, True], ids=["same-order", "reordered-sections"])

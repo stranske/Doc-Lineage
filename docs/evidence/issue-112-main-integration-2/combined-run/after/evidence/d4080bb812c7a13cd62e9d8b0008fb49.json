@@ -1,0 +1,12 @@
+{
+  "evidence_id": "d4080bb812c7a13cd62e9d8b0008fb49",
+  "excerpt": "3. KEY PERSON EVENT A Key Person Event occurs if fewer than two Key Persons devote substantially all business time to the Partnership. 4. TRANSFER RESTRICTIONS No Limited Partner may transfer its Interest without the prior written consent of the General Partner, which may be withheld in its sole discretion.",
+  "fact_ref": "segment:2687fdb7d4911997-p0002-s0002",
+  "locator": {
+    "order": 2,
+    "page": 1
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "2687fdb7d4911997a2100c650318042419d4a78f825876b8104303d1c050fd1b"
+}

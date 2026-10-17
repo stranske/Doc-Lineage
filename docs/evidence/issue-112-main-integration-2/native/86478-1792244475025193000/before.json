@@ -1,0 +1,15 @@
+{
+  "path": "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+  "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "argv": [
+    "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmprh1h73zr",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmpu4lltns4",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmpfxl3_gx4",
+    "--author=Counsel"
+  ],
+  "pid": 86478,
+  "before_ns": 1792244475025275000,
+  "original_sha256": "3ff152daefbd4194825dcdd6e5a9b4026a85cb57af021be34e945a57a7345802",
+  "modified_sha256": "f68f2aad673c4b4e31ff4e28b87af5914966654ca3fe097d88129d41c59d76f3"
+}

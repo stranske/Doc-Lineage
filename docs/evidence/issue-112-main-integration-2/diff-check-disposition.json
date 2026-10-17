@@ -1,0 +1,30 @@
+[
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "5b6c5042da6182c14cdf65d5997db2bb180157ca",
+      "HEAD",
+      "--",
+      "src",
+      "tests",
+      "README.md",
+      "docs/section-pairing.md"
+    ],
+    "exit": 0,
+    "log": "diff-check-0.log",
+    "disposition": "PASS source changes"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit": 2,
+    "log": "diff-check-1.log",
+    "disposition": "raw PDF cross-reference spaces and genuine pytest failure logs/XML retain original whitespace; evidence bytes not normalized"
+  }
+]

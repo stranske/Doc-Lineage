@@ -1,0 +1,140 @@
+[
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "ingest",
+      "before.pdf",
+      "--output",
+      "before",
+      "--no-docling",
+      "--no-ocr"
+    ],
+    "exit": 0,
+    "stdout": "ingested before.pdf [backend=offline-pdf-text run_id=ingest-4dadf63039b1 coverage=complete] -> 4 segment(s) across 4 page(s)\nmanifest: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/real-pdf-replay/before/artifact-manifest.json\nsegments: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/real-pdf-replay/before/segments.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "ingest",
+      "after.pdf",
+      "--output",
+      "after",
+      "--no-docling",
+      "--no-ocr"
+    ],
+    "exit": 0,
+    "stdout": "ingested after.pdf [backend=offline-pdf-text run_id=ingest-a78021f2f3b3 coverage=complete] -> 3 segment(s) across 3 page(s)\nmanifest: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/real-pdf-replay/after/artifact-manifest.json\nsegments: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/real-pdf-replay/after/segments.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "pair-sections",
+      "before",
+      "after",
+      "--store",
+      "store"
+    ],
+    "exit": 0,
+    "stdout": "cmp_a06ee73cba3f4821b25defc2fd8f4da1\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "lookup-section-pairing",
+      "cmp_a06ee73cba3f4821b25defc2fd8f4da1",
+      "--store",
+      "store"
+    ],
+    "exit": 0,
+    "stdout": "{\"comparison_id\": \"cmp_a06ee73cba3f4821b25defc2fd8f4da1\", \"decisions\": [{\"confidence\": 1.0, \"left_section_id\": \"1\", \"left_title\": \"FEES\", \"pairing_method\": \"section_id\", \"right_section_id\": \"1\", \"right_title\": \"FEES\", \"schema_version\": \"lineage-edges/v1\", \"section_id\": \"1\"}, {\"confidence\": 1.0, \"left_section_id\": \"2\", \"left_title\": \"TERM\", \"pairing_method\": \"manual_review\", \"right_section_id\": \"2\", \"right_title\": \"TERM\", \"schema_version\": \"lineage-edges/v1\", \"section_id\": \"2\"}, {\"confidence\": 1.0, \"left_section_id\": \"2\", \"left_title\": \"TERM\", \"pairing_method\": \"manual_review\", \"right_section_id\": null, \"right_title\": null, \"schema_version\": \"lineage-edges/v1\", \"section_id\": \"2\"}, {\"confidence\": 1.0, \"left_section_id\": \"3\", \"left_title\": \"NOTICE\", \"pairing_method\": \"manual_review\", \"right_section_id\": null, \"right_title\": null, \"schema_version\": \"lineage-edges/v1\", \"section_id\": \"3\"}, {\"confidence\": 1.0, \"left_section_id\": null, \"left_title\": null, \"pairing_method\": \"manual_review\", \"right_section_id\": \"4\", \"right_title\": \"TAXES\", \"schema_version\": \"lineage-edges/v1\", \"section_id\": \"4\"}], \"identity\": {\"mode\": \"extracted-pdf-sections\", \"modified\": {\"manifest_sha256\": \"4e40b07a67bed15ee1dbed20d405ec2b7cb268ab8a8e0499010e4b71afd32ee5\", \"segments_sha256\": \"89952acf634466ad97689e1e3fbfb1adfd667a0c97d94e1bf13eef3a5997aad9\", \"source_sha256\": \"a78021f2f3b3aaa98f95d13885e87ce619b961d74518d581e426d0387e48103c\"}, \"options\": {\"engine\": \"section-id/v1\", \"header_confidence_threshold\": 0.8}, \"original\": {\"manifest_sha256\": \"5077212373d6f9a6fbd8d4f2954cdea8e054dbe7370a64fb1476b43eb1cb449d\", \"segments_sha256\": \"3a35f4785d34b5e870b3d340d1b32ea08f6143e74d759d126199f84e1fd3a018\", \"source_sha256\": \"4dadf63039b159a63037293d77b9f9ff60a4e0dad418500cf21eaf9ff447a9df\"}, \"schema_version\": \"comparison-identity/v1\"}, \"identity_sha256\": \"f2d8215e5225dc5db11e21e832d1b14ac170aaff670762769bb1d2df618bce65\", \"record_sha256\": \"f6920dbf1ffe0c11e7272f460dac659785ceae3cadfd20aaa85f1bb0f79a7097\", \"runs\": {\"modified\": \"../after\", \"original\": \"../before\"}, \"schema_version\": \"section-pairing-comparison/v1\"}\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "lookup-section-pairing",
+      "cmp_a06ee73cba3f4821b25defc2fd8f4da1",
+      "--store",
+      "store",
+      "--original-run",
+      "after",
+      "--modified-run",
+      "before"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "doc-lineage lookup-section-pairing: source order mismatch\n"
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "lookup-section-pairing",
+      "cmp_a06ee73cba3f4821b25defc2fd8f4da1",
+      "--store",
+      "store",
+      "--threshold",
+      "0.5"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "doc-lineage lookup-section-pairing: pairing options mismatch\n"
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "lookup-section-pairing",
+      "cmp_ffffffffffffffffffffffffffffffff",
+      "--store",
+      "store"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "doc-lineage lookup-section-pairing: unknown comparison ID: cmp_ffffffffffffffffffffffffffffffff\n"
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "lookup-section-pairing",
+      "store/cmp_a06ee73cba3f4821b25defc2fd8f4da1.json",
+      "--store",
+      "store"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "doc-lineage lookup-section-pairing: not a comparison ID; expected cmp_<32 lowercase hex>, never a path\n"
+  },
+  {
+    "argv": [
+      "/private/tmp/dl129-main2-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "pair-sections",
+      "before",
+      "after",
+      "--store",
+      "never-published"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "doc-lineage pair-sections: ingest artifact hash/size mismatch: segments.json\n"
+  }
+]

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.785" timestamp="2026-10-17T08:40:39.917995-05:00" hostname="server.trs.private"><testcase classname="tests.blackline.test_section_id_pairing" name="test_persisted_section_pairing_binds_ordered_inputs_and_replays" time="0.595"><failure message="AssertionError: PERSISTED_SECTION_PAIRING_MUST_CALL_EXISTING_ENGINE&#10;assert [] == ['1', '2', '2', '3', '4']&#10;  &#10;  Right contains 5 more items, first extra item: '1'&#10;  Use -v to get more diff">tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2539/test_persisted_section_pairing0')
+
+    def test_persisted_section_pairing_binds_ordered_inputs_and_replays(tmp_path: Path) -&gt; None:
+        """Issue #112 production gate: validated independent ingests feed the real engine."""
+        from tests.blackline.test_comparison_run_cli import make_runs
+    
+        from doc_lineage.blackline import create_section_comparison, load_section_comparison
+    
+        left, right = make_runs(tmp_path)
+        store = tmp_path / "comparisons"
+        cid = create_section_comparison(left, right, store=store)
+        record = load_section_comparison(cid, store=store)
+&gt;       assert [d["section_id"] for d in record["decisions"]] == [
+            "1",
+            "2",
+            "2",
+            "3",
+            "4",
+        ], "PERSISTED_SECTION_PAIRING_MUST_CALL_EXISTING_ENGINE"
+E       AssertionError: PERSISTED_SECTION_PAIRING_MUST_CALL_EXISTING_ENGINE
+E       assert [] == ['1', '2', '2', '3', '4']
+E         
+E         Right contains 5 more items, first extra item: '1'
+E         Use -v to get more diff
+
+tests/blackline/test_section_id_pairing.py:346: AssertionError</failure></testcase></testsuite></testsuites>

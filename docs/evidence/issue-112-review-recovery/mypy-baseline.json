@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/private/tmp/doc-lineage-129-venv/bin/python",
+    "-m",
+    "mypy",
+    "--cache-dir=/private/tmp/doc129-baseline-mypy-cache",
+    "/private/tmp/doc129-merge-baseline/src"
+  ],
+  "cwd": "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener",
+  "exit_code": 1,
+  "log_sha256": "48f6733362bcff29f0d11490477562b8fd7d5f9ab2c94c212816ee347f6d98f2",
+  "baseline": "21328a7f7e8a1afb096683c60bcd772af4fa4d7e",
+  "unchanged_adapter_sha256": "e57b894d9a29ab5419cc1c3badf2a0645ef87fc587da542de1650783352eac87",
+  "errors": [
+    "docling_segmenter.py:111 unused-ignore",
+    "docling_segmenter.py:112 unused-ignore"
+  ]
+}

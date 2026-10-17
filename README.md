@@ -58,6 +58,18 @@ Source distributions include the export tests under `tests/export/` and their
 `tests/fixtures/fact_key_map/tracked_variables.json` fixture so the native
 tracked-changes acceptance tests can be run from the source archive.
 
+## Persisted PDF section pairing
+
+Use `doc-lineage pair-sections before-run after-run --store comparisons` to
+validate two persisted PDF ingests and publish a content-bound section-pairing
+artifact. `doc-lineage lookup-section-pairing <opaque-id> --store comparisons`
+revalidates original bytes, manifests, segments, order and options before replay.
+New ingests retain manifested original snapshots; legacy runs need re-ingest
+into new directories. See [commands, API and replay contract](docs/section-pairing.md).
+This is section alignment with manual review for ambiguous/unmatched sections;
+it does not classify text differences, confirm supersession or complete native
+DOCX export by ID. Issue #15 remains pending that separate acceptance.
+
 ## Intent
 
 - Take two or more versions of a recurring document (PPM, LPA, side letter, consultant report, manager letter, DDQ) and produce:

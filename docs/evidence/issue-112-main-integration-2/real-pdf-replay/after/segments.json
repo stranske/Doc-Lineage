@@ -1,0 +1,43 @@
+{
+  "backend": "offline-pdf-text",
+  "coverage": {
+    "pages_recognized": 0,
+    "pages_total": 3,
+    "pages_unreadable": 0,
+    "pages_with_text_layer": 3,
+    "status": "complete"
+  },
+  "pages_without_text_layer": [],
+  "schema_version": "doc-lineage-segments/v1",
+  "segments": [
+    {
+      "char_count": 33,
+      "method": "text",
+      "order": 1,
+      "page": 1,
+      "segment_id": "a78021f2f3b3aaa9-p0001-s0001",
+      "text": "1. FEES The fee is three percent.",
+      "word_count": 7
+    },
+    {
+      "char_count": 33,
+      "method": "text",
+      "order": 2,
+      "page": 2,
+      "segment_id": "a78021f2f3b3aaa9-p0002-s0002",
+      "text": "2. TERM The fee is three percent.",
+      "word_count": 7
+    },
+    {
+      "char_count": 34,
+      "method": "text",
+      "order": 3,
+      "page": 3,
+      "segment_id": "a78021f2f3b3aaa9-p0003-s0003",
+      "text": "4. TAXES The fee is three percent.",
+      "word_count": 7
+    }
+  ],
+  "source_sha256": "a78021f2f3b3aaa98f95d13885e87ce619b961d74518d581e426d0387e48103c",
+  "unreadable_pages": []
+}

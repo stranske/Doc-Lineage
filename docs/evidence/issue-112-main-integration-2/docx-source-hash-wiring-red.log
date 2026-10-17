@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /private/tmp/dl129-main2-causal
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_cli.py F                                                      [100%]
+
+=================================== FAILURES ===================================
+__________ test_comparison_sha256_check_disconnection[file-original] ___________
+
+comparison_inputs = (PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2541/test_comparison_s...ex/tmp/pytest-of-teacher/pytest-2541/test_comparison_sha256_check_d0/records'), 'cmp_bf5c5fb198504e2c9da8731412a71273')
+tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2541/test_comparison_sha256_check_d0')
+role = 'original', to_file = True
+
+    @pytest.mark.parametrize("role", ["original", "modified"])
+    @pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
+    def test_comparison_sha256_check_disconnection(comparison_inputs, tmp_path, role, to_file):
+        """Named mutation gate: valid changed DOCX bytes MUST fail before publication."""
+        original, modified, manifest, store, comparison_id = comparison_inputs
+        source = original if role == "original" else modified
+        source.write_bytes(_docx("Changed but still a valid DOCX package."))
+        record_path = store / f"{comparison_id}.json"
+        preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
+        output = tmp_path / "unchanged-output.docx"
+        output.write_bytes(b"existing output must survive")
+        result = _comparison_cli(
+            "export-docx",
+            "--blackline",
+            comparison_id,
+            "--comparison-store",
+            str(store),
+            *(["--output", str(output)] if to_file else []),
+            cwd=tmp_path,
+        )
+>       assert result.returncode != 0, "SHA256_CHECK_DISCONNECTION: changed bytes were exported"
+E       AssertionError: SHA256_CHECK_DISCONNECTION: changed bytes were exported
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/private/tmp/dl129-main2-venv/bin/python', '-m', 'doc_lineage.cli', 'export-docx', '--blacklin...t-runtime/codex/tmp/pytest-of-teacher/pytest-2541/test_comparison_sha256_check_d0/unchanged-output.docx\n', stderr=b'').returncode
+
+tests/test_cli.py:141: AssertionError
+- generated xml file: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/docx-source-hash-wiring-red.xml -
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::test_comparison_sha256_check_disconnection[file-original]
+============================== 1 failed in 2.24s ===============================

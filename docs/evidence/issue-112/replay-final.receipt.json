@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/opt/anaconda3/bin/python3",
+    "docs/evidence/issue-112/replay.py",
+    "$RAW/replay-final"
+  ],
+  "exit": 0,
+  "elapsed_seconds": 1.790647029876709
+}
