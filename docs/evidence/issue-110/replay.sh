@@ -16,7 +16,8 @@ import sys
 artifacts = Path(sys.argv[1]) / 'artifacts'
 record = json.loads((artifacts / 'comparison-record.json').read_text())
 for role in ('original', 'modified'):
-    assert hashlib.sha256((artifacts / f'{role}.docx').read_bytes()).hexdigest() == record[f'{role}_sha256']
+    if hashlib.sha256((artifacts / f'{role}.docx').read_bytes()).hexdigest() != record[f'{role}_sha256']:
+        raise SystemExit(f'Retained {role} package hash mismatch')
 print('Retained original package hashes verified; creating a NEW record with explicit relocated inputs.')
 PY
 id=$("$runtime" -m doc_lineage.cli create-comparison \
@@ -34,10 +35,14 @@ from zipfile import ZipFile
 from tests.export.test_docx_redline_golden import NS, _visible_text
 
 with ZipFile(BytesIO(Path(sys.argv[1]).read_bytes())) as package:
-    assert package.testzip() is None
+    if package.testzip() is not None:
+        raise SystemExit('Corrupt replay DOCX package')
     document = ET.fromstring(package.read('word/document.xml'))
-assert document.findall('.//w:ins', NS) and document.findall('.//w:del', NS)
-assert _visible_text(document, 'ins') == 'The fee is five dollars.'
-assert _visible_text(document, 'del') == 'The fee is ten dollars.'
+if not (document.findall('.//w:ins', NS) and document.findall('.//w:del', NS)):
+    raise SystemExit('Replay DOCX requires actual insertion and deletion markup')
+if _visible_text(document, 'ins') != 'The fee is five dollars.':
+    raise SystemExit('Replay reject-changes text does not reconstruct the original')
+if _visible_text(document, 'del') != 'The fee is ten dollars.':
+    raise SystemExit('Replay accept-changes text does not reconstruct the modified source')
 print('Native DOCX reject/accept reconstruction verified:', sys.argv[1])
 PY

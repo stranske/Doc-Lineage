@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
+import zlib
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from io import BytesIO
@@ -222,6 +224,8 @@ def _validate_docx(content: bytes, path: Path) -> None:
                 raise ValueError(f"Corrupt DOCX package: {path}")
     except BadZipFile as exc:
         raise ValueError(f"Not a DOCX package: {path}") from exc
+    except (zlib.error, EOFError, NotImplementedError, RuntimeError) as exc:
+        raise ValueError(f"Corrupt DOCX package: {path}") from exc
 
 
 def write_comparison_record(original: Path, modified: Path, *, store: Path | None = None) -> str:
@@ -234,9 +238,13 @@ def write_comparison_record(original: Path, modified: Path, *, store: Path | Non
         record[f"{role}_path"] = str(path)
         record[f"{role}_sha256"] = hashlib.sha256(content).hexdigest()
     directory = comparison_store_path(store)
-    directory.mkdir(parents=True, exist_ok=True)
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     # Exclusive creation never replaces an earlier record, even on an ID collision.
-    with (directory / f"{record['comparison_id']}.json").open("x", encoding="utf-8") as output:
+    target = directory / f"{record['comparison_id']}.json"
+    descriptor = os.open(
+        target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o600
+    )
+    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
         output.write(json.dumps(record, indent=2, sort_keys=True) + "\n")
     return record["comparison_id"]
 

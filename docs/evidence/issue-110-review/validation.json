@@ -1,0 +1,21 @@
+{
+  "base_head": "6201af9e62a64730f441bfaaa41601be8b970373",
+  "full_tests": {
+    "tests": 513,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "focused_tests": 64,
+  "disconnected_assertion_failures": 4,
+  "restored_tests": 4,
+  "optimized_native_replay_exit": 0,
+  "source_hashes": {
+    "src/doc_lineage/blackline.py": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270",
+    "tests/test_issue110_review.py": "51fd3682915dabef6ed51087e03dc1f9a9c4fc48c47f88f5c0f49baf4fada37b",
+    "docs/evidence/issue-110/replay.sh": "e46a1a264d4b08204dff79d7df7941ecc526cff1ad34e407efca2f810f64e784"
+  },
+  "focused_mypy": "PASS blackline.py; original full-mypy adapter debt retained; no clean full-typecheck asserted",
+  "tool_pins": "Existing isolated Anaconda-based runtime; exact repository dev pins remain UNKNOWN",
+  "historical_evidence": "Original453 component bindings preserved separately; no source/provider/Office acceptance claimed"
+}

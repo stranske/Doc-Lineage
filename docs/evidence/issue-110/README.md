@@ -45,3 +45,7 @@ comparison; no PDF conversion or new renderer is implemented.
 `full.log.gz` and `full.xml.gz` preserve the first failing run byte-for-byte
 without treating pytest traceback whitespace as source whitespace. Decompress
 with standard gzip tools; uncompressed raw originals remain in the run directory.
+
+## Current bounded review recovery
+
+Original4532945 delivery is historical component evidence, with its original source hashes and artifact checksum list retained as source-hashes.initial.json and SHA256SUMS.initial.txt. The original replay source is replay.initial.sh.txt; its historical name in the initial checksum list refers to that old script. Current source-hashes.json binds the changed source/test/replay, and current SHA256SUMS binds the current evidence directory. The subsequent native6201 payload is preserved. Current review controls and validation live separately in ../issue-110-review; no old full-suite or mutation receipt is relabeled as a new execution.
