@@ -19,6 +19,26 @@ agreement on an architecture or on giving every library a command. The owner
 accepted this bounded audit separately (F12, brief `current-54-oct15-2026-v1`,
 scope SHA-256 `615624fcb7c6de0876ca338cbdbe646f68d741f8c2b0e096506f6e786e8a1719`).
 
+## Main integration qualification (PR #130 continuation)
+
+The earlier “final/current main” and `c339…` statements below describe the
+immutable original audit/recovery snapshots, not the later combined head.
+Main `c274b866e695d92a083c182c19f3119cab01e0b0` merged #127's source #110
+DOCX comparison records. Actual callers are `cli.main(create-comparison)` →
+`blackline.write_comparison_record` (reads and validates original DOCX ZIP bytes),
+and `_run_export_docx` → `load_comparison_record` → original/modified byte hash
+checks → `export_docx_redline`. This persisted DOCX record is a working adjacent
+route, outside I1's persisted PDF ingest seam: these callers do not consume
+`segments.json`, ingest manifests or quoted PDF evidence. Sharing `blackline.py`
+does not turn DOCX ID lookup into I3's PDF comparison/reopen transition.
+I3/#129 ownership and H1/H2 report-only dispositions remain as recorded; no new
+audit, remediation or sibling acceptance is implied. Fresh full-suite, causal
+PDF control and legal/control replay evidence for the combined source/test
+revision is separate in [main-integration proof](../evidence/issue-113-main-integration/README.md).
+Archive verification checks immutable revisions; current admission additionally
+requires that fresh integration inputs match the working tree. Neither is a
+provider verdict or source-issue acceptance.
+
 ## Boundary and enumeration rule
 
 Start with README's blackline, lineage and extracted tracked-variable outputs,

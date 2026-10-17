@@ -285,3 +285,68 @@ def test_control_replays_current_parameterized_regression(tmp_path):
     assert receipt["changed"] == [True, False]
     assert receipt["classes"] == ["gate_provision_change"]
     assert len(list(destination.glob("*.pdf"))) == 2
+
+
+@pytest.mark.parametrize("change", ["unchanged", "producer", "test", "missing", "corrupt"])
+def test_immutable_archive_distinguishes_current_drift(tmp_path, monkeypatch, change):
+    verifier = load("verify_evidence")
+    checkout = tmp_path / "archive"
+    checkout.mkdir()
+    subprocess.run(["git", "init", str(checkout)], check=True, capture_output=True)
+    inputs = {"producer.py": b"original producer\n", "test.py": b"original regression\n"}
+    for name, content in inputs.items():
+        (checkout / name).write_bytes(content)
+    subprocess.run(["git", "-C", str(checkout), "add", "."], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "-c",
+            "user.name=control",
+            "-c",
+            "user.email=control@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "gc.auto=0",
+            "commit",
+            "-m",
+            "immutable execution inputs",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    revision = subprocess.check_output(
+        ["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True
+    ).strip()
+    bindings = {name: hashlib.sha256(content).hexdigest() for name, content in inputs.items()}
+    monkeypatch.setattr(verifier, "ROOT", checkout)
+    if change in ("producer", "test"):
+        (checkout / f"{change}.py").write_bytes(b"future unrelated bytes\n")
+    elif change == "missing":
+        (checkout / "producer.py").unlink()
+    elif change == "corrupt":
+        bindings["producer.py"] = "0" * 64
+        with pytest.raises(ValueError, match="immutable source/test binding mismatch"):
+            verifier.verify_revision_inputs(bindings, revision)
+        return
+    drift = verifier.verify_revision_inputs(bindings, revision)
+    assert drift == (
+        {
+            "producer": ["producer.py"],
+            "test": ["test.py"],
+            "missing": ["producer.py"],
+            "unchanged": [],
+        }[change]
+    )
+    if drift:
+        with pytest.raises(ValueError, match="CURRENT_ADMISSION_FAIL"):
+            verifier.require_current(drift)
+    else:
+        verifier.require_current(drift)
+
+
+def test_current_admission_requires_fresh_integration_proof():
+    with pytest.raises(ValueError, match="CURRENT_ADMISSION_FAIL"):
+        load("verify_evidence").require_current(None)

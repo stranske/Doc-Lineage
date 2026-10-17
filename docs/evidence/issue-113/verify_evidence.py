@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -14,6 +15,24 @@ ROOT = HERE.parents[2]
 # The continuation changed the regression after these genuine runs. Never rebind
 # historical XML/mutation proof to today's test bytes.
 HISTORICAL_REVISION = "a9e5ce23c4295a1948f6f7bd58ea50fcddd67521"
+RECOVERY_REVISION = "c27168e94364d52ec681d3b3827281118d46a8ba"
+INTEGRATION = HERE.parent / "issue-113-main-integration"
+INPUT_PATHS = (
+    "src",
+    "tests",
+    "schemas",
+    "vocab",
+    "docs/contracts/schemas",
+    "docs/evidence/issue-113/deliberate_break.py",
+    "docs/evidence/issue-113/probe_base.py",
+    "docs/evidence/issue-113/probe_current.py",
+    "docs/evidence/issue-113/replay_control.py",
+    "docs/evidence/issue-113/replay_legal.py",
+    "docs/evidence/issue-113/verify_evidence.py",
+    "pyproject.toml",
+    "requirements.lock",
+    "requirements-dev.lock",
+)
 
 
 def sha(path: Path) -> str:
@@ -113,13 +132,76 @@ def validate_junit(path: Path, tests: int, failures: int = 0) -> None:
                 raise ValueError(f"JUnit aggregate mismatch: {path}: {key}")
 
 
-def historical_sha(name: str) -> str:
+def historical_sha(name: str, revision: str = HISTORICAL_REVISION) -> str:
     contained(ROOT, name)
-    raw = subprocess.check_output(["git", "show", f"{HISTORICAL_REVISION}:{name}"], cwd=ROOT)
+    raw = subprocess.check_output(["git", "show", f"{revision}:{name}"], cwd=ROOT)
     return hashlib.sha256(raw).hexdigest()
 
 
-def main() -> None:
+def verify_revision_inputs(inputs: dict[str, str], revision: str) -> list[str]:
+    """Reject corrupt archive bindings; report working-tree drift separately."""
+    if re.fullmatch(r"[0-9a-f]{40}", revision) is None or not inputs:
+        raise ValueError("nonempty bindings and full immutable revision required")
+    drift = []
+    for name, expected in inputs.items():
+        if historical_sha(name, revision) != expected:
+            raise ValueError(f"immutable source/test binding mismatch: {revision}:{name}")
+        current = contained(ROOT, name)
+        if not current.is_file() or sha(current) != expected:
+            drift.append(name)
+    return sorted(drift)
+
+
+def input_inventory(revision: str | None = None) -> set[str]:
+    argv = (
+        ["git", "ls-tree", "-r", "--name-only", revision, "--"]
+        if revision is not None
+        else ["git", "ls-files", "--cached", "--others", "--exclude-standard", "--"]
+    )
+    return set(subprocess.check_output([*argv, *INPUT_PATHS], cwd=ROOT, text=True).splitlines())
+
+
+def verify_mutation(directory: Path, revision: str) -> None:
+    mutation = json.loads((directory / "mutation.json").read_text())
+    if (
+        not mutation["tests_unchanged"]
+        or mutation["production_original_sha256"] != mutation["production_restored_sha256"]
+        or historical_sha("tests/blackline/test_section_id_pairing.py", revision)
+        != mutation["test_sha256"]
+        or historical_sha("src/doc_lineage/blackline.py", revision)
+        != mutation["production_restored_sha256"]
+    ):
+        raise ValueError("immutable mutation binding/restoration mismatch")
+
+
+def verify_integration(directory: Path) -> list[str]:
+    verify_checksums(directory)
+    binding = json.loads((directory / "source-bindings.json").read_text())
+    revision, inputs = binding["revision"], binding["inputs"]
+    drift = verify_revision_inputs(inputs, revision)
+    if set(inputs) != input_inventory(revision):
+        raise ValueError("integration immutable input inventory mismatch")
+    drift = sorted(set(drift) | (input_inventory() ^ set(inputs)))
+    for entry in binding["junit"]:
+        validate_junit(contained(directory, entry["path"]), entry["tests"], entry["failures"])
+    for name in binding["commands"]:
+        command = json.loads(contained(directory, name).read_text())
+        if command["revision"] != revision or command["bindings"] != inputs:
+            raise ValueError(f"integration execution binding mismatch: {name}")
+        if sha(contained(directory, command["log"])) != command["log_sha256"]:
+            raise ValueError(f"integration execution log mismatch: {name}")
+        if command["exit_code"] != 0:
+            raise ValueError(f"integration execution failed: {name}")
+    verify_mutation(directory / "mutation", revision)
+    return drift
+
+
+def require_current(drift: list[str] | None) -> None:
+    if drift is None or drift:
+        raise ValueError(f"CURRENT_ADMISSION_FAIL: integration inputs absent or drifted: {drift}")
+
+
+def main(strict_current: bool = False) -> None:
     verify_checksums(HERE)
     source = json.loads((HERE / "source-hashes.json").read_text())
     for path, expected in source["final_full_bindings"].items():
@@ -153,28 +235,35 @@ def main() -> None:
             if sha(path) != artifact["sha256"] or path.stat().st_size != artifact["bytes"]:
                 raise ValueError(f"actual persisted artifact binding mismatch: {path.name}")
     refresh = json.loads((HERE / "recovery/source-bindings.json").read_text())
-    for name, expected in refresh["current_inputs"].items():
-        if sha(contained(ROOT, name)) != expected:
-            raise ValueError(f"current recovery binding mismatch: {name}")
+    recovery_drift = verify_revision_inputs(refresh["current_inputs"], RECOVERY_REVISION)
     for entry in refresh["junit"]:
         validate_junit(
             contained(HERE / "recovery", entry["path"]), entry["tests"], entry["failures"]
         )
-    current_mutation = json.loads((HERE / "recovery/mutation/mutation.json").read_text())
-    if (
-        not current_mutation["tests_unchanged"]
-        or current_mutation["production_original_sha256"]
-        != current_mutation["production_restored_sha256"]
-        or sha(ROOT / "tests/blackline/test_section_id_pairing.py")
-        != current_mutation["test_sha256"]
-        or sha(ROOT / "src/doc_lineage/blackline.py")
-        != current_mutation["production_restored_sha256"]
-    ):
-        raise ValueError("current mutation binding/restoration mismatch")
+    verify_mutation(HERE / "recovery/mutation", RECOVERY_REVISION)
+    integration_drift = verify_integration(INTEGRATION) if INTEGRATION.exists() else None
+    print("ARCHIVE_PASS: exact inventories, immutable bindings, genuine JUnit/mutation")
     print(
-        "EVIDENCE_BINDINGS_PASS: exact inventory, historical/current bindings, genuine JUnit/mutation"
+        json.dumps(
+            {
+                "recovery_revision": RECOVERY_REVISION,
+                "recovery_current_input_drift": recovery_drift,
+                "integration_current_input_drift": integration_drift,
+                "current_admission": "MATCH" if integration_drift == [] else "UNQUALIFIED",
+            },
+            sort_keys=True,
+        )
     )
+    if strict_current:
+        require_current(integration_drift)
+        print("CURRENT_ADMISSION_PASS: fresh integration proof matches current inputs")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--require-current",
+        action="store_true",
+        help="also require fresh integration proof matching current source/test inputs",
+    )
+    main(parser.parse_args().require_current)
