@@ -19,6 +19,8 @@ Document lineage and blackline engine for recurring investment documents.
 
 Gaps and fidelity limits remain in the linked sections (for example PDF text compare vs DOCX blackline).
 
+**Issue #115 scope and verification:** status-paragraph accuracy only — no runtime feature work, and library-only `compare` / `mutations` / `emit` / blackline helpers are not claimed as top-level CLI deliveries. Observable check: `python -m pytest tests/test_repo_hygiene.py -q` (nonzero collection; status and deliberate-break assertions pass). Deliberate-break: replacing this Status block with the pre-#115 unimplemented-engine paragraph fails `test_readme_mentions_every_cli_subcommand`; restoring this block restores a green run. A second control replaces the Status block with a CLI-name-only prose paragraph (no shipped/partial markers or markdown links) and fails the same test until restored.
+
 ## DOCX tracked-changes export
 
 Install the package and compare two DOCX files with the bundled local engine:

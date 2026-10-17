@@ -91,15 +91,24 @@ def test_readme_mentions_every_cli_subcommand() -> None:
         ), f"README status paragraph must mention doc-lineage subcommand `{name}`"
 
 
-def test_deliberate_break_stale_readme_status_fails(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+def _prose_only_status_paragraph() -> str:
+    """Valid-input control twin: every CLI name present, but no per-capability status/links."""
+    names = ", ".join(f"`{name}`" for name in sorted(_cli_subcommand_names()))
+    return (
+        "**Status:** created 2026-09-04 as part of the Research Program 2026-09 "
+        "(see `stranske/Ready` → `research-program/`). Scope and architecture follow "
+        "research briefs R1 and R2. The offline engine under `src/doc_lineage/` covers "
+        f"{names}. Gaps are described in later sections."
+    )
+
+
+def _assert_status_break_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replacement: str
 ) -> None:
-    """Keep the deliberate-break acceptance gate reproducible without editing README.md."""
     original = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     status = _readme_status_paragraph(original)
-    broken = original.replace(status, STALE_STATUS_PARAGRAPH, 1)
+    broken = original.replace(status, replacement, 1)
     assert broken != original
-    assert STALE_ENGINE_SENTENCE in broken
 
     candidate = tmp_path / "README.md"
     candidate.write_text(broken, encoding="utf-8")
@@ -107,3 +116,25 @@ def test_deliberate_break_stale_readme_status_fails(
 
     with pytest.raises(AssertionError):
         test_readme_mentions_every_cli_subcommand()
+
+
+def test_deliberate_break_stale_readme_status_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Pre-#115 unimplemented-engine paragraph must fail the status hygiene gate."""
+    assert STALE_ENGINE_SENTENCE in STALE_STATUS_PARAGRAPH
+    _assert_status_break_fails(tmp_path, monkeypatch, STALE_STATUS_PARAGRAPH)
+
+
+def test_deliberate_break_prose_only_status_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CLI names alone are not enough: shipped/partial markers and markdown links are required."""
+    prose = _prose_only_status_paragraph()
+    assert STALE_ENGINE_SENTENCE not in prose
+    for name in _cli_subcommand_names():
+        assert name in prose
+    assert "shipped" not in prose
+    assert "partial" not in prose
+    assert "](" not in prose
+    _assert_status_break_fails(tmp_path, monkeypatch, prose)
