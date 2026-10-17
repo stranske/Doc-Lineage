@@ -1,0 +1,3 @@
+ARCHIVE_PASS: exact inventories, immutable bindings, genuine JUnit/mutation
+{"current_admission": "MATCH", "integration_current_input_drift": [], "recovery_current_input_drift": ["docs/evidence/issue-113/verify_evidence.py", "src/doc_lineage/blackline.py", "src/doc_lineage/cli.py", "tests/evidence/test_issue113_harness.py", "tests/export/test_docx_redline_golden.py", "tests/test_cli.py"], "recovery_revision": "c27168e94364d52ec681d3b3827281118d46a8ba"}
+CURRENT_ADMISSION_PASS: fresh integration proof matches current inputs

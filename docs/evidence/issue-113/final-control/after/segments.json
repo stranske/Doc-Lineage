@@ -1,0 +1,34 @@
+{
+  "backend": "offline-pdf-text",
+  "coverage": {
+    "pages_recognized": 0,
+    "pages_total": 2,
+    "pages_unreadable": 0,
+    "pages_with_text_layer": 2,
+    "status": "complete"
+  },
+  "pages_without_text_layer": [],
+  "schema_version": "doc-lineage-segments/v1",
+  "segments": [
+    {
+      "char_count": 53,
+      "method": "text",
+      "order": 1,
+      "page": 1,
+      "segment_id": "511c0e6859158162-p0001-s0001",
+      "text": "1. MANAGEMENT FEE The annual management fee is 2.00%.",
+      "word_count": 9
+    },
+    {
+      "char_count": 27,
+      "method": "text",
+      "order": 2,
+      "page": 2,
+      "segment_id": "511c0e6859158162-p0002-s0002",
+      "text": "2. TERM The term is annual.",
+      "word_count": 6
+    }
+  ],
+  "source_sha256": "511c0e68591581626404fc522d9558fdc8a0f1badec223a7f40198ac9ca65e09",
+  "unreadable_pages": []
+}

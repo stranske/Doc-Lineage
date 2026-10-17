@@ -1,0 +1,2 @@
+# Genuine PDF inputs are binary artifacts even when their streams contain no NUL.
+*.pdf binary

@@ -1,0 +1,21 @@
+{
+  "versions": {
+    "pytest": "9.1.1",
+    "pytest-cov": "7.1.0",
+    "ruff": "0.16.7",
+    "black": "26.5.1",
+    "mypy": "2.3.1",
+    "reportlab": "5.0.1",
+    "setuptools": "83.0.0",
+    "python-redlines": "0.3.0",
+    "python-redlines-docxodus": "1.0.0"
+  },
+  "python": "/tmp/doc-lineage-130-venv/bin/python",
+  "base_python": "/opt/anaconda3/bin/python3",
+  "shared_runtime_mutations": false,
+  "native_archive_sha256": "c231bd1aefa7af56932cf0aebbd7a0fbe8cf1143eb3baff6abf42dc426c04571",
+  "native_binary_sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "publisher": "UNKNOWN; prior verified ad-hoc signature, no TeamIdentifier",
+  "explanation": "parent 127-integration-brief; same installed bytes",
+  "approval_prompt_observed": false
+}

@@ -1,0 +1,39 @@
+from pathlib import Path
+import subprocess,json,hashlib,os,shutil,types
+ROOT=Path('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener')
+RAW=Path(__file__).parent
+OUT=ROOT/'docs/evidence/issue-113-main-integration'
+PY='/private/tmp/doc-lineage-130-main-integration-venv/bin/python'
+VERIFIER=ROOT/'docs/evidence/issue-113/verify_evidence.py'
+producer=ROOT/'src/doc_lineage/blackline.py'
+original=producer.read_bytes()
+rows=[]
+def run(name,flags):
+ a=[PY,str(VERIFIER),*flags]
+ r=subprocess.run(a,cwd=ROOT,capture_output=True,text=True,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'},timeout=90)
+ log=RAW/f'{name}.log';log.write_text(r.stdout+r.stderr)
+ rows.append({'label':name,'argv':a,'exit_code':r.returncode,'log_sha256':hashlib.sha256(log.read_bytes()).hexdigest(),'producer_sha256':hashlib.sha256(producer.read_bytes()).hexdigest()})
+ return r
+try:
+ producer.write_bytes(original+b'\n# temporary future producer drift control; restored exactly\n')
+ default=run('drift-archive',[]);strict=run('drift-current',['--require-current'])
+ assert default.returncode==0 and 'ARCHIVE_PASS' in default.stdout and '"current_admission": "UNQUALIFIED"' in default.stdout
+ assert strict.returncode!=0 and 'CURRENT_ADMISSION_FAIL' in strict.stderr and 'ARCHIVE_PASS' in strict.stdout
+finally:
+ producer.write_bytes(original)
+assert producer.read_bytes()==original
+restored=run('restored-current',['--require-current']);assert restored.returncode==0 and 'CURRENT_ADMISSION_PASS' in restored.stdout
+# Deliberately invalid COPY, never a replacement for genuine proof.
+copy=RAW/'INVALID-integration-binding-control'
+shutil.copytree(OUT,copy)
+binding=json.loads((copy/'source-bindings.json').read_text());binding['inputs']['src/doc_lineage/blackline.py']='0'*64
+(copy/'source-bindings.json').write_text(json.dumps(binding,indent=2)+'\n')
+(copy/'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(copy).as_posix()}\n' for p in sorted(copy.rglob('*')) if p.is_file() and p.name!='SHA256SUMS'))
+v=types.ModuleType('v');v.__file__=str(VERIFIER);exec(compile(VERIFIER.read_bytes(),str(VERIFIER),'exec'),v.__dict__)
+try:v.verify_integration(copy)
+except ValueError as exc:
+ assert 'immutable source/test binding mismatch' in str(exc)
+ rows.append({'label':'corrupt-integration-binding-copy','result':'REJECTED','reason':str(exc),'checksums_recomputed':True})
+else:raise AssertionError('corrupt integration binding admitted')
+(RAW/'admission-control.json').write_text(json.dumps({'runs':rows,'production_restored':producer.read_bytes()==original,'test_bytes_changed':False,'genuine_archive_bytes_changed':False},indent=2)+'\n')
+print(json.dumps(rows,indent=2))

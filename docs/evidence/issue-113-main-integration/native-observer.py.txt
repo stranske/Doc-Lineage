@@ -1,0 +1,26 @@
+import os
+if os.environ.get('DOC130_NATIVE_LOG'):
+    import subprocess, pathlib, hashlib, json, time
+    _original_run = subprocess.run
+    def _observed_run(*args, **kwargs):
+        argv = args[0] if args else kwargs.get('args')
+        native = isinstance(argv, (list, tuple)) and pathlib.Path(str(argv[0])).name == 'redline'
+        if not native:
+            return _original_run(*args, **kwargs)
+        path = pathlib.Path(argv[0])
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        row = {'phase': 'before', 'argv': list(map(str, argv)), 'path': str(path), 'sha256': digest, 'time': time.time()}
+        def record(data):
+            with open(os.environ['DOC130_NATIVE_LOG'], 'a') as stream:
+                stream.write(json.dumps(data) + '\n')
+        record(row)
+        if digest != '12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36':
+            raise RuntimeError('unexplained native helper bytes; stopped before launch')
+        try:
+            result = _original_run(*args, **kwargs)
+        except BaseException as exc:
+            record({**row, 'phase': 'exception', 'exception': type(exc).__name__, 'message': str(exc)})
+            raise
+        record({**row, 'phase': 'after', 'returncode': result.returncode})
+        return result
+    subprocess.run = _observed_run

@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.8, pytest-9.1.1, pluggy-1.7.0
+rootdir: /home/runner/work/Doc-Lineage/Doc-Lineage
+configfile: pyproject.toml
+plugins: platformdirs-4.13.3, langsmith-0.14.11, cov-7.1.0, anyio-4.15.1
+collected 2 items
+
+tests/blackline/test_section_id_pairing.py ..                            [100%]
+
+- generated xml file: /tmp/doc-lineage-113-continuation-mutation/restored.xml --
+============================== 2 passed in 0.55s ===============================

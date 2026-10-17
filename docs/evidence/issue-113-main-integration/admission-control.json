@@ -1,0 +1,45 @@
+{
+  "runs": [
+    {
+      "label": "drift-archive",
+      "argv": [
+        "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+        "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/verify_evidence.py"
+      ],
+      "exit_code": 0,
+      "log_sha256": "96ff7d89df83a96f914d6214d1766b16809fcd42080d19bf77c35381ea3ff02a",
+      "producer_sha256": "556c6e3a7f2e21e56abf3053783221ce864074d8bc56f54a2dc59c2e8c867d90"
+    },
+    {
+      "label": "drift-current",
+      "argv": [
+        "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+        "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/verify_evidence.py",
+        "--require-current"
+      ],
+      "exit_code": 1,
+      "log_sha256": "11973cf1267e481ba8e2ba2c4d2ca77166a49736230c455daa6e6d1be10d391b",
+      "producer_sha256": "556c6e3a7f2e21e56abf3053783221ce864074d8bc56f54a2dc59c2e8c867d90"
+    },
+    {
+      "label": "restored-current",
+      "argv": [
+        "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+        "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/verify_evidence.py",
+        "--require-current"
+      ],
+      "exit_code": 0,
+      "log_sha256": "82fcba8f08ca7612421e254141cddbfab5d72740bdcc0f49d79966a35058dd19",
+      "producer_sha256": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270"
+    },
+    {
+      "label": "corrupt-integration-binding-copy",
+      "result": "REJECTED",
+      "reason": "immutable source/test binding mismatch: fadb1b05fc5849aff145a53d2a542dfec1999422:src/doc_lineage/blackline.py",
+      "checksums_recomputed": true
+    }
+  ],
+  "production_restored": true,
+  "test_bytes_changed": false,
+  "genuine_archive_bytes_changed": false
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "argv": [
+      "$VENV/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "ingest",
+      "$REPO/tests/fixtures/synthetic_lpa.pdf",
+      "--output",
+      "$RAW/current-legal/ingest",
+      "--no-docling",
+      "--no-ocr"
+    ],
+    "exit_code": 0,
+    "stdout": "ingested synthetic_lpa.pdf [backend=offline-pdf-text run_id=ingest-b709931830bf coverage=complete] -> 2 segment(s) across 2 page(s)\nmanifest: /private$RAW/current-legal/ingest/artifact-manifest.json\nsegments: /private$RAW/current-legal/ingest/segments.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "$VENV/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "extract-variables",
+      "$RAW/current-legal/ingest",
+      "--source",
+      "$REPO/tests/fixtures/synthetic_lpa.pdf",
+      "--entity-ref",
+      "fund:synthetic_alpha",
+      "--output",
+      "$RAW/current-legal/claims"
+    ],
+    "exit_code": 0,
+    "stdout": "manifest: $RAW/current-legal/claims/artifact-manifest.json\nunresolved: $RAW/current-legal/claims/unresolved.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "$VENV/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "export-fact-key-map",
+      "$RAW/current-legal/claims/tracked-variables.json",
+      "--output",
+      "$RAW/current-legal/map"
+    ],
+    "exit_code": 0,
+    "stdout": "manifest: $RAW/current-legal/map/artifact-manifest.json\n",
+    "stderr": ""
+  }
+]

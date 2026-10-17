@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/tmp/doc-lineage-130-venv/bin/python",
+    "/tmp/doc-lineage-130-historical/docs/evidence/issue-113/probe_base.py",
+    "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe"
+  ],
+  "exit_code": 0,
+  "production_base": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+  "probe_sha256": "db7231588fbd0251e24fd5e6e36c17541c0d7f7451936dbc127605e9e71dd2d8",
+  "src_git_tree": "91cac6a9ba6e9a4b7166d138832e4c4af73d228f"
+}

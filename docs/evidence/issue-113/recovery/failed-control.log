@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/replay_control.py", line 51, in <module>
+    run(Path(sys.argv[1]))
+  File "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/replay_control.py", line 23, in run
+    namespace["test_persisted_pdf_ingest_replays_existing_production_pairing"](destination)
+TypeError: test_persisted_pdf_ingest_replays_existing_production_pairing() missing 1 required positional argument: 'reorder_after'

@@ -1,0 +1,1517 @@
+{
+  "all_head_scan": {
+    "at": "2026-10-17T12:25:32.064589+00:00",
+    "all_pr_heads": [
+      {
+        "number": 129,
+        "headRefOid": "d0ef0da712a0152d27707f0fdd55696eaad4f98c",
+        "headRefName": "codex/issue-112-content-bound-section-pairing"
+      },
+      {
+        "number": 128,
+        "headRefOid": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+        "headRefName": "codex/issue-111-evidence-backed-legal-extraction"
+      },
+      {
+        "number": 127,
+        "headRefOid": "89542e1103330e076ce1afad24091e3428fd56ee",
+        "headRefName": "codex/issue-110-persisted-comparison"
+      },
+      {
+        "number": 126,
+        "headRefOid": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+        "headRefName": "codex/issue-109-protect-export-inputs"
+      },
+      {
+        "number": 125,
+        "headRefOid": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+        "headRefName": "codex/issue-108-font-aware-evidence"
+      },
+      {
+        "number": 124,
+        "headRefOid": "423abb37aad006321c29af78e369da77c07fbd18",
+        "headRefName": "codex/issue-107-immutable-extraction-snapshot"
+      },
+      {
+        "number": 123,
+        "headRefOid": "f7f8048dc7db85938bba0ff0da42de20feb88400",
+        "headRefName": "muse/issue-121"
+      },
+      {
+        "number": 122,
+        "headRefOid": "bc67cfd5f1d9c784fbe65e5613de6f4ae965d5f1",
+        "headRefName": "deps/sync-dev-versions-1b6ed54c18d9"
+      },
+      {
+        "number": 120,
+        "headRefOid": "d799c7cdde3855c9cacba1c457b5b6caf3cdcf7c",
+        "headRefName": "owner/muse-belt-registry"
+      },
+      {
+        "number": 119,
+        "headRefOid": "6fe0941a28db4c5e05c47a318bc8b7373f47f395",
+        "headRefName": "owner/deliver-ledger-validate"
+      },
+      {
+        "number": 118,
+        "headRefOid": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+        "headRefName": "cursor/issue-117"
+      },
+      {
+        "number": 116,
+        "headRefOid": "03d66836f9a8adbc0848819d6a09c63070d6ed5a",
+        "headRefName": "owner/runner-lib-muse-provider"
+      },
+      {
+        "number": 106,
+        "headRefOid": "a4648d35a05f37a8c4c081799c5e8c30bb113fbf",
+        "headRefName": "muse/issue-105"
+      },
+      {
+        "number": 104,
+        "headRefOid": "1b047482df785e9b7327ccfdad40afc17a956824",
+        "headRefName": "owner/cursor-belt-registry-3929"
+      },
+      {
+        "number": 103,
+        "headRefOid": "1087e8c89f2252ef4a0f6e0994b90e35e3dd9ce9",
+        "headRefName": "owner/muse-template-delivery-3934"
+      },
+      {
+        "number": 102,
+        "headRefOid": "ba15cae78789b3a8d75e153bbab6312cb381d2f8",
+        "headRefName": "owner/n806-fix-issue-3925"
+      },
+      {
+        "number": 101,
+        "headRefOid": "20463452b69910fc28053c37f9898836cdae6a9a",
+        "headRefName": "owner/sync-close-1ff5c1223456-20261016"
+      },
+      {
+        "number": 100,
+        "headRefOid": "4e3584a3b395607f4417f6a1218f14a2c498a23c",
+        "headRefName": "cursor/issue-99"
+      },
+      {
+        "number": 98,
+        "headRefOid": "193f766a81c014c96bb7b704cc6f5f1150249868",
+        "headRefName": "deps/sync-dev-versions-33cb201f650a"
+      },
+      {
+        "number": 97,
+        "headRefOid": "a9295c7a67886865aa74cb8b90c197425fad2e90",
+        "headRefName": "codex/issue-95-lineage-content-hashes"
+      },
+      {
+        "number": 96,
+        "headRefOid": "a8833a28e6fd487986e4ba01bc3b72ca6827d376",
+        "headRefName": "codex/issue-94-document-identity-audit"
+      },
+      {
+        "number": 93,
+        "headRefOid": "1b806ddd1c8003cd9f5db59dc00f126289875809",
+        "headRefName": "codex/issue-92-ocr-ingest"
+      },
+      {
+        "number": 91,
+        "headRefOid": "f9ca4b8aaaa073a46b88cbbe77bf175900b2f1f0",
+        "headRefName": "codex/issue-90-supersession-evidence"
+      },
+      {
+        "number": 89,
+        "headRefOid": "e545811c7eb71e8cfc09dc1865ecd39689c6276a",
+        "headRefName": "codex/issue-88-docling-item-boundaries"
+      },
+      {
+        "number": 87,
+        "headRefOid": "31d55352bcd551745dadde02255cafbbfaf36359",
+        "headRefName": "codex/issue-86-zero-based-locators"
+      },
+      {
+        "number": 85,
+        "headRefOid": "ed7c85692ca77103f894a10a9fce3fa16bec8ab1",
+        "headRefName": "deps/sync-dev-versions-ab725abacde7"
+      },
+      {
+        "number": 84,
+        "headRefOid": "31015ea7243dc53cd27b53d87ecfcdcdd81f0f22",
+        "headRefName": "deps/sync-dev-versions-c1762b8ace76"
+      },
+      {
+        "number": 83,
+        "headRefOid": "13a8068c20c1e70d8075059ab5bf2784a90dd97e",
+        "headRefName": "deps/sync-dev-versions-34572ab72851"
+      },
+      {
+        "number": 82,
+        "headRefOid": "72a3609e7328a5c1669a0bd4295d47751b103e15",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 81,
+        "headRefOid": "55b190eed137814e40fd41b9ed99883e104b596c",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 80,
+        "headRefOid": "782329bb24d6b74d26203eed5103ca1a6afd5c64",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 79,
+        "headRefOid": "ef28ce93334ad36089066f1add46a7cf3a5afb27",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 78,
+        "headRefOid": "602b28e009c063f356da6ddfc6b26120e43d294c",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 77,
+        "headRefOid": "fa9b87c86b4d861cd77c543149cfe5039a96a31f",
+        "headRefName": "chore/sonnet-5-5"
+      },
+      {
+        "number": 76,
+        "headRefOid": "7396285d1f5180f604b0b3dfecee8ad749620541",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 75,
+        "headRefOid": "45ad6fdc1e1d4aabeb79ed8f9cf832f041b1f232",
+        "headRefName": "codex/issue-74-deliberate-break-evidence"
+      },
+      {
+        "number": 73,
+        "headRefOid": "67c1528cac0cc9f4c68be42e0f5aff3033a679dd",
+        "headRefName": "codex/issue-72-fork-gate-readonly-token"
+      },
+      {
+        "number": 71,
+        "headRefOid": "e93e9b5137ffe3efa230c9a45908e9aa85d6dd33",
+        "headRefName": "cursor/issue-45-redline-renderer-break-evidence"
+      },
+      {
+        "number": 70,
+        "headRefOid": "77b039bfa13e1e02949759a155b1b23490e5ce65",
+        "headRefName": "cursor/issue-38-section-id-blackline-break-evidence"
+      },
+      {
+        "number": 69,
+        "headRefOid": "8ffc4ce6da0484a5e8e72ab6b95ebb75ec81d886",
+        "headRefName": "cursor/issue-37-ocr-fallback-break-evidence"
+      },
+      {
+        "number": 68,
+        "headRefOid": "9c38eca0900782100347b233a54a2938fb394510",
+        "headRefName": "cursor/issue-36-ingest-sha256-break-evidence"
+      },
+      {
+        "number": 67,
+        "headRefOid": "9cf7cffcc6584addc71e386ac371dabbb333100f",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 66,
+        "headRefOid": "47ee0772ab6ed130810a3935762ce63d10111641",
+        "headRefName": "deps/sync-dev-versions-8e06e2550e46"
+      },
+      {
+        "number": 65,
+        "headRefOid": "602220faf7982036d2a313acd8bf5272793e500b",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 64,
+        "headRefOid": "b83a59f0aa7478844b45cd13c04dc2233899899e",
+        "headRefName": "deps/sync-dev-versions-5b7f2704042c"
+      },
+      {
+        "number": 63,
+        "headRefOid": "8b50cdbaa7591c24f041c38e7151e761227d4fe7",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 62,
+        "headRefOid": "02af153c3177c322183d7369eadc7b4f465e2c62",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 61,
+        "headRefOid": "5e1d5ec9b7da61a901349fd3b83433e62a8b9579",
+        "headRefName": "codex/issue-60-pdf-source-lines"
+      },
+      {
+        "number": 59,
+        "headRefOid": "bcfc2ecb1290eda6c119335928cf018c7b78734b",
+        "headRefName": "codex/issue-58-jsonschema-426"
+      },
+      {
+        "number": 57,
+        "headRefOid": "0f1f76b7818fb4774d4e364cd2fd448e7c0a0422",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 56,
+        "headRefOid": "33fd56e4a53308f72c50428d91dd149cddadfb49",
+        "headRefName": "codex/issue-51-doc-lineage-project-urls"
+      },
+      {
+        "number": 55,
+        "headRefOid": "91b3392a8f749433f1998488b903c0e24a2f418f",
+        "headRefName": "cursor/issue-50-edgar-atomic-publish"
+      },
+      {
+        "number": 54,
+        "headRefOid": "45c596ce226cab75752bcba625d0776ca33740c1",
+        "headRefName": "codex/issue-49-manifest-ingest-size"
+      },
+      {
+        "number": 53,
+        "headRefOid": "81b6990039ef66f981e0cf9df4f1f638070354ba",
+        "headRefName": "codex/issue-48-manifest-root-containment"
+      },
+      {
+        "number": 52,
+        "headRefOid": "525f1ff3ed16f998f770aa025f1eb8d7f4d15116",
+        "headRefName": "codex/issue-47-package-fact-key-map-fixture"
+      },
+      {
+        "number": 46,
+        "headRefOid": "e7a173b75b7d1d8241ef638ef74b1803b0197828",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 44,
+        "headRefOid": "f679ec2958c8f3bc1799c853575d1ed5b56bfa29",
+        "headRefName": "codex/issue-14-triple-link-resolver"
+      },
+      {
+        "number": 43,
+        "headRefOid": "ae7f6355c3e41cc9e866e5843d40e36795cd4e86",
+        "headRefName": "codex/issue-5-catalog-consistency"
+      },
+      {
+        "number": 42,
+        "headRefOid": "673cd7fc661a3be2555ddbf3b8b585ac0851e99b",
+        "headRefName": "codex/issue-13-fact-key-map"
+      },
+      {
+        "number": 41,
+        "headRefOid": "534c5cbbfd2d7a27ba86f4e4f37ed20ab8b948a8",
+        "headRefName": "cursor/issue-12-mutation-harness"
+      },
+      {
+        "number": 40,
+        "headRefOid": "50c1aab2031209c0ff71cafeeff6f907d2887ef8",
+        "headRefName": "cursor/issue-11-edgar-ex10"
+      },
+      {
+        "number": 39,
+        "headRefOid": "491fb6097d74dd67bdbd60de7789e10df80ff968",
+        "headRefName": "cursor/issue-5-lineage-engine"
+      },
+      {
+        "number": 35,
+        "headRefOid": "ee3a531fb2e7509291787f0502c6a47a50f8ade7",
+        "headRefName": "cursor/issue-10-blackline-engine"
+      },
+      {
+        "number": 34,
+        "headRefOid": "8953c55f4098e645a0dc70f8bc4c75ec875f7016",
+        "headRefName": "claude/issue-9-evidence-object"
+      },
+      {
+        "number": 33,
+        "headRefOid": "96c30555d8adab66efb47a258fb092bc210d37e6",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 32,
+        "headRefOid": "5dcdd99b0d2e473f0a85aa99a130e64fac59a1ee",
+        "headRefName": "claude/issue-8-m1-ingest-pipeline"
+      },
+      {
+        "number": 31,
+        "headRefOid": "8af49d590c9ab280e2c3761bf39a8f96a8a3e1da",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 30,
+        "headRefOid": "ce0b58b60e9a59e7faa794f83b19abafb92ca751",
+        "headRefName": "cursor/issue-7-fixture-corpus"
+      },
+      {
+        "number": 29,
+        "headRefOid": "eee93361ea0596aa51cdf91742b1bedfb2a14d82",
+        "headRefName": "cursor/issue-4-ledger-schemas"
+      },
+      {
+        "number": 28,
+        "headRefOid": "1681da0d5b8769084bca08acdfff2b64390f5f02",
+        "headRefName": "cursor/issue-3-extract-coverage"
+      },
+      {
+        "number": 27,
+        "headRefOid": "2b7f0cc08d0f72f2cd610c1cdf531d48feddb854",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 26,
+        "headRefOid": "a30b5751a9d680c929f9247f6c2c058f446dbf4f",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 25,
+        "headRefOid": "7307d153d2074c28666d11132b1cbf9982cc0ad7",
+        "headRefName": "codex/issue-2-document-identity"
+      },
+      {
+        "number": 24,
+        "headRefOid": "079938594bac7fac247de219c7be47dbf6d55772",
+        "headRefName": "deps/sync-dev-versions-da45be92183d"
+      },
+      {
+        "number": 23,
+        "headRefOid": "134e1d9c3b51ff603468e92e6e1fdf360d4fd5b5",
+        "headRefName": "codex/issue-6"
+      },
+      {
+        "number": 22,
+        "headRefOid": "834b5487ffac6a307bb799cfee110d81eb28568b",
+        "headRefName": "codex/issue-15"
+      },
+      {
+        "number": 21,
+        "headRefOid": "8e6a63ed39dafa8b77c4228460bd5cfe1efe1dd4",
+        "headRefName": "deps/sync-dev-versions-c333e7448d42"
+      },
+      {
+        "number": 20,
+        "headRefOid": "c18cc9c9e135b5d407892d9d72926fc72857b6e3",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 18,
+        "headRefOid": "bf60b4ba23deb9197bc824bf284442f87cee82eb",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 17,
+        "headRefOid": "e253bf69bb73b46f93b49c0539a446df67ed5caf",
+        "headRefName": "sync/workflows-delivery"
+      },
+      {
+        "number": 16,
+        "headRefOid": "a62d70c236558fb3b46655ee0266bcdb1dc410d0",
+        "headRefName": "scaffold-package"
+      }
+    ],
+    "comments_scanned": 1013,
+    "inline_comments_scanned": 209,
+    "source113_runner_records": [],
+    "recorded_attempts": [],
+    "earlier_implementation_terminality": "no reservations, completions or workflow_attempt_id recorded for source113 across all PR heads and source comments"
+  },
+  "decoded_records": [
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6223617489,
+      "pr": 100,
+      "head_sha": "ab1a267b529bd33689466407e247fb016beddcff",
+      "reservation_id": "a6f4c0cc64f14c4e8a2fe5e4b8c0494c",
+      "key": "88cf341b46ce0b12487045873e9cdc7b2b910975de10e48ff055419373ed8f42",
+      "provider": "cursor",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38958898371:1",
+      "started_at": "2026-10-16T19:59:56Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6223684644,
+      "pr": 100,
+      "head_sha": "ab1a267b529bd33689466407e247fb016beddcff",
+      "observed_head_sha": "7049c491854a5b5bd2a596d4d4993cc404dee84a",
+      "reservation_id": "a6f4c0cc64f14c4e8a2fe5e4b8c0494c",
+      "key": "88cf341b46ce0b12487045873e9cdc7b2b910975de10e48ff055419373ed8f42",
+      "provider": "cursor",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38958898371:1",
+      "started_at": "2026-10-16T19:59:56Z",
+      "completed_at": "2026-10-16T20:04:05Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6223717866,
+      "pr": 100,
+      "head_sha": "7049c491854a5b5bd2a596d4d4993cc404dee84a",
+      "reservation_id": "74bdabbd43484b1192a96d927f1a29bf",
+      "key": "9d1a74c8a0642b7f817b10936ea4c3efb650d562ec9481eae4e194af7d2b094e",
+      "provider": "cursor",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38959704638:1",
+      "started_at": "2026-10-16T20:05:56Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6223773840,
+      "pr": 100,
+      "head_sha": "7049c491854a5b5bd2a596d4d4993cc404dee84a",
+      "observed_head_sha": "7049c491854a5b5bd2a596d4d4993cc404dee84a",
+      "reservation_id": "74bdabbd43484b1192a96d927f1a29bf",
+      "key": "9d1a74c8a0642b7f817b10936ea4c3efb650d562ec9481eae4e194af7d2b094e",
+      "provider": "cursor",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38959704638:1",
+      "started_at": "2026-10-16T20:05:56Z",
+      "completed_at": "2026-10-16T20:09:14Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6224913818,
+      "pr": 106,
+      "head_sha": "5e2aeb0d57f506c49f71cbd40d4071be82dd2fd3",
+      "reservation_id": "d3fa08a762174af49511b194495d15ba",
+      "key": "1bef2123b10eca6e8667b6aa924e31c7f68a1bf5534b3ee64d9baefa2d70d1f7",
+      "provider": "muse",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38967985592:1",
+      "started_at": "2026-10-16T21:20:01Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6225171439,
+      "pr": 106,
+      "head_sha": "5e2aeb0d57f506c49f71cbd40d4071be82dd2fd3",
+      "observed_head_sha": "a4648d35a05f37a8c4c081799c5e8c30bb113fbf",
+      "reservation_id": "d3fa08a762174af49511b194495d15ba",
+      "key": "1bef2123b10eca6e8667b6aa924e31c7f68a1bf5534b3ee64d9baefa2d70d1f7",
+      "provider": "muse",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38967985592:1",
+      "started_at": "2026-10-16T21:20:01Z",
+      "completed_at": "2026-10-16T21:36:59Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6226286597,
+      "pr": 118,
+      "head_sha": "900ba186614082cf2d0d78dae3eb87d1fb3d4f9b",
+      "reservation_id": "650082670f0d43ea8da234f4e060c01e",
+      "key": "d50226f03cb1ec1abb722d356fa97de43c481f49420142f976bbae86dac3942a",
+      "provider": "cursor",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38978974852:1",
+      "started_at": "2026-10-16T23:00:48Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6226328873,
+      "pr": 118,
+      "head_sha": "900ba186614082cf2d0d78dae3eb87d1fb3d4f9b",
+      "observed_head_sha": "ad64e13a9a9d5781ffcded2f227c61c647dcd168",
+      "reservation_id": "650082670f0d43ea8da234f4e060c01e",
+      "key": "d50226f03cb1ec1abb722d356fa97de43c481f49420142f976bbae86dac3942a",
+      "provider": "cursor",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38978974852:1",
+      "started_at": "2026-10-16T23:00:48Z",
+      "completed_at": "2026-10-16T23:04:27Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6226371010,
+      "pr": 118,
+      "head_sha": "ad64e13a9a9d5781ffcded2f227c61c647dcd168",
+      "reservation_id": "646c1520bc7248e3a979032ea7c4e1ea",
+      "key": "a30667d24eec9c3f34bcf11de3bb5bdaea591b93e5eedb70c43d05e8879dd624",
+      "provider": "cursor",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38979718512:1",
+      "started_at": "2026-10-16T23:08:01Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6226558868,
+      "pr": 118,
+      "head_sha": "ad64e13a9a9d5781ffcded2f227c61c647dcd168",
+      "observed_head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "reservation_id": "646c1520bc7248e3a979032ea7c4e1ea",
+      "key": "a30667d24eec9c3f34bcf11de3bb5bdaea591b93e5eedb70c43d05e8879dd624",
+      "provider": "cursor",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38979718512:1",
+      "started_at": "2026-10-16T23:08:01Z",
+      "completed_at": "2026-10-16T23:24:21Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6226612160,
+      "pr": 118,
+      "head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "reservation_id": "043e76ecb6cb4349ba35af767401ce93",
+      "key": "5544aa18837f961b2c7905a494a337dcef4f6ef9d0df3a127e3452a94c42463d",
+      "provider": "cursor",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38980819435:1",
+      "started_at": "2026-10-16T23:29:15Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6226784156,
+      "pr": 118,
+      "head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "observed_head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "reservation_id": "043e76ecb6cb4349ba35af767401ce93",
+      "key": "5544aa18837f961b2c7905a494a337dcef4f6ef9d0df3a127e3452a94c42463d",
+      "provider": "cursor",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38980819435:1",
+      "started_at": "2026-10-16T23:29:15Z",
+      "completed_at": "2026-10-16T23:43:43Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6226822791,
+      "pr": 118,
+      "head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "reservation_id": "853c729dbe104a07b76247fe8ca7bf5f",
+      "key": "5544aa18837f961b2c7905a494a337dcef4f6ef9d0df3a127e3452a94c42463d",
+      "provider": "cursor",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38982763648:1",
+      "started_at": "2026-10-16T23:46:27Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6226938489,
+      "pr": 118,
+      "head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "observed_head_sha": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "reservation_id": "853c729dbe104a07b76247fe8ca7bf5f",
+      "key": "5544aa18837f961b2c7905a494a337dcef4f6ef9d0df3a127e3452a94c42463d",
+      "provider": "cursor",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38982763648:1",
+      "started_at": "2026-10-16T23:46:27Z",
+      "completed_at": "2026-10-16T23:55:39Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6228329547,
+      "pr": 123,
+      "head_sha": "49f3e0cace9efa528143cdebb1bce5f24d3cc264",
+      "reservation_id": "6e3f6e28149749fbaee9c842e892599a",
+      "key": "7e7529f0d5d733873ba0e9e3b2ef858416874586a953a1e620e46d60d6463bfd",
+      "provider": "muse",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38993587459:1",
+      "started_at": "2026-10-17T02:09:06Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6228385294,
+      "pr": 123,
+      "head_sha": "49f3e0cace9efa528143cdebb1bce5f24d3cc264",
+      "observed_head_sha": "f7f8048dc7db85938bba0ff0da42de20feb88400",
+      "reservation_id": "6e3f6e28149749fbaee9c842e892599a",
+      "key": "7e7529f0d5d733873ba0e9e3b2ef858416874586a953a1e620e46d60d6463bfd",
+      "provider": "muse",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:38993587459:1",
+      "started_at": "2026-10-17T02:09:06Z",
+      "completed_at": "2026-10-17T02:15:22Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230520882,
+      "pr": 124,
+      "head_sha": "695660d314f3b00cf85d0393b81640fde848253c",
+      "reservation_id": "6d52ae7db65b46af89f46cb43d57a26f",
+      "key": "9dc99589138c8b0e9f7d9d43c65379a5c31161a01a2986edc908414d68e130a9",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39008786764:1",
+      "started_at": "2026-10-17T06:08:48Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230562456,
+      "pr": 124,
+      "head_sha": "695660d314f3b00cf85d0393b81640fde848253c",
+      "observed_head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "6d52ae7db65b46af89f46cb43d57a26f",
+      "key": "9dc99589138c8b0e9f7d9d43c65379a5c31161a01a2986edc908414d68e130a9",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39008786764:1",
+      "started_at": "2026-10-17T06:08:48Z",
+      "completed_at": "2026-10-17T06:13:25Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230563985,
+      "pr": 125,
+      "head_sha": "cfb07797a03a103b60c8a28f3777a63f21efd0b1",
+      "reservation_id": "1638a36a07724d2fb506f086a8f27848",
+      "key": "e4dd77abcd0d2784a355d2246659effb1ea2eecccc49a54ea428e417fb8bd057",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009087868:1",
+      "started_at": "2026-10-17T06:13:36Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230580401,
+      "pr": 124,
+      "head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "8c451425ebcd47e2b904cdb3e53ce346",
+      "key": "bbee5ca8f5d90b581d17a62ba3ed718803ad2b258b6eb9839307b1edfa221436",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009219587:1",
+      "started_at": "2026-10-17T06:15:36Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230596032,
+      "pr": 126,
+      "head_sha": "4b8269d4569bd2da5eec6dee5cdfe719cdbf6163",
+      "reservation_id": "0984fdd133774914b8bd09fa7afe72f6",
+      "key": "3912b06d0e42b0be45a571bb8cb5f92ca6670eb8e288b70bd186e926fff44048",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009313003:1",
+      "started_at": "2026-10-17T06:17:28Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230598118,
+      "pr": 124,
+      "head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "observed_head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "8c451425ebcd47e2b904cdb3e53ce346",
+      "key": "bbee5ca8f5d90b581d17a62ba3ed718803ad2b258b6eb9839307b1edfa221436",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009219587:1",
+      "started_at": "2026-10-17T06:15:36Z",
+      "completed_at": "2026-10-17T06:17:42Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230619978,
+      "pr": 125,
+      "head_sha": "cfb07797a03a103b60c8a28f3777a63f21efd0b1",
+      "observed_head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "1638a36a07724d2fb506f086a8f27848",
+      "key": "e4dd77abcd0d2784a355d2246659effb1ea2eecccc49a54ea428e417fb8bd057",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009087868:1",
+      "started_at": "2026-10-17T06:13:36Z",
+      "completed_at": "2026-10-17T06:20:19Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230636185,
+      "pr": 126,
+      "head_sha": "4b8269d4569bd2da5eec6dee5cdfe719cdbf6163",
+      "observed_head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "0984fdd133774914b8bd09fa7afe72f6",
+      "key": "3912b06d0e42b0be45a571bb8cb5f92ca6670eb8e288b70bd186e926fff44048",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009313003:1",
+      "started_at": "2026-10-17T06:17:28Z",
+      "completed_at": "2026-10-17T06:22:17Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230637627,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "8a309a04eb9b458d89fa886b8326178d",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009648706:1",
+      "started_at": "2026-10-17T06:22:29Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230655206,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "277d8ff1e76642538f36dbc57bb71b28",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009779385:1",
+      "started_at": "2026-10-17T06:24:38Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230656414,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "observed_head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "8a309a04eb9b458d89fa886b8326178d",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009648706:1",
+      "started_at": "2026-10-17T06:22:29Z",
+      "completed_at": "2026-10-17T06:24:46Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230671856,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "observed_head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "277d8ff1e76642538f36dbc57bb71b28",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009779385:1",
+      "started_at": "2026-10-17T06:24:38Z",
+      "completed_at": "2026-10-17T06:26:40Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230735164,
+      "pr": 124,
+      "head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "fe23a8058fb04e7fb6f443b74ddd1dda",
+      "key": "bbee5ca8f5d90b581d17a62ba3ed718803ad2b258b6eb9839307b1edfa221436",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010368664:1",
+      "started_at": "2026-10-17T06:34:25Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230744305,
+      "pr": 124,
+      "head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "observed_head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "fe23a8058fb04e7fb6f443b74ddd1dda",
+      "key": "bbee5ca8f5d90b581d17a62ba3ed718803ad2b258b6eb9839307b1edfa221436",
+      "provider": "claude",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010368664:1",
+      "started_at": "2026-10-17T06:34:25Z",
+      "completed_at": "2026-10-17T06:35:32Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230745772,
+      "pr": 124,
+      "head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "02e7a119b7e541c3b3ddecd2410c0f03",
+      "key": "bbee5ca8f5d90b581d17a62ba3ed718803ad2b258b6eb9839307b1edfa221436",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010471949:1",
+      "started_at": "2026-10-17T06:35:43Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230754657,
+      "pr": 124,
+      "head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "observed_head_sha": "423abb37aad006321c29af78e369da77c07fbd18",
+      "reservation_id": "02e7a119b7e541c3b3ddecd2410c0f03",
+      "key": "bbee5ca8f5d90b581d17a62ba3ed718803ad2b258b6eb9839307b1edfa221436",
+      "provider": "claude",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010471949:1",
+      "started_at": "2026-10-17T06:35:43Z",
+      "completed_at": "2026-10-17T06:36:50Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230815650,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "1886d1cb9c43450a8885f9c1678f31d8",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010934773:1",
+      "started_at": "2026-10-17T06:43:16Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230815964,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "595a131b8f6c4ae584e565dd943ebd84",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010937291:1",
+      "started_at": "2026-10-17T06:43:18Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230834103,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "observed_head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "1886d1cb9c43450a8885f9c1678f31d8",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010934773:1",
+      "started_at": "2026-10-17T06:43:16Z",
+      "completed_at": "2026-10-17T06:45:28Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230837545,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "observed_head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "595a131b8f6c4ae584e565dd943ebd84",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010937291:1",
+      "started_at": "2026-10-17T06:43:18Z",
+      "completed_at": "2026-10-17T06:45:54Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230984040,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "c2e4550d8e1c4ce2a11e211ecc6e0509",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012129138:1",
+      "started_at": "2026-10-17T07:02:27Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6230992874,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "observed_head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "c2e4550d8e1c4ce2a11e211ecc6e0509",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012129138:1",
+      "started_at": "2026-10-17T07:02:27Z",
+      "completed_at": "2026-10-17T07:03:27Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6230993983,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "5fdf31f860af40b3af2f9804e244db45",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012197528:1",
+      "started_at": "2026-10-17T07:03:36Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6231004176,
+      "pr": 125,
+      "head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "observed_head_sha": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "reservation_id": "5fdf31f860af40b3af2f9804e244db45",
+      "key": "6d5def38f2c164ec48360e4124e4b656072a78c006297f36add51b76c6588cd6",
+      "provider": "claude",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012197528:1",
+      "started_at": "2026-10-17T07:03:36Z",
+      "completed_at": "2026-10-17T07:04:43Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6231012708,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "091982f66fb647bdac28e174780f9830",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012332069:1",
+      "started_at": "2026-10-17T07:05:39Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6231023918,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "observed_head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "091982f66fb647bdac28e174780f9830",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012332069:1",
+      "started_at": "2026-10-17T07:05:39Z",
+      "completed_at": "2026-10-17T07:06:57Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6231025086,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "fb003ca77349424c95ef01d8832b31d6",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012410615:1",
+      "started_at": "2026-10-17T07:07:06Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6231037548,
+      "pr": 126,
+      "head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "observed_head_sha": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "reservation_id": "fb003ca77349424c95ef01d8832b31d6",
+      "key": "7ab04f3572b0ad555a4d2f4840479b59d474a4f6e3f1a89560334d25770fe96f",
+      "provider": "claude",
+      "status": "error",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012410615:1",
+      "started_at": "2026-10-17T07:07:06Z",
+      "completed_at": "2026-10-17T07:08:34Z"
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233354578,
+      "pr": 127,
+      "head_sha": "45329457cbcc0e7a42e693e6614ae0769420c4d8",
+      "reservation_id": "207ae8aa4bc94f47b96cab70b149af7c",
+      "key": "56b70d508f52d4e444ebda7f6367386e898bf39099e63025567a740a7af94478",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39028813549:1",
+      "started_at": "2026-10-17T11:28:45Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6233402760,
+      "pr": 127,
+      "head_sha": "45329457cbcc0e7a42e693e6614ae0769420c4d8",
+      "observed_head_sha": "714ef2c4f9d46de97f871c9a0ff239b8bc5af2fa",
+      "reservation_id": "207ae8aa4bc94f47b96cab70b149af7c",
+      "key": "56b70d508f52d4e444ebda7f6367386e898bf39099e63025567a740a7af94478",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39028813549:1",
+      "started_at": "2026-10-17T11:28:45Z",
+      "completed_at": "2026-10-17T11:34:15Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233420709,
+      "pr": 127,
+      "head_sha": "714ef2c4f9d46de97f871c9a0ff239b8bc5af2fa",
+      "reservation_id": "a152bf42742a48109218276a50100f95",
+      "key": "6312920256a4bc1d4dff17b5662773ae75ef8e3d14cb67e099aed4a00a3a5437",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029314307:1",
+      "started_at": "2026-10-17T11:36:19Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6233471222,
+      "pr": 127,
+      "head_sha": "714ef2c4f9d46de97f871c9a0ff239b8bc5af2fa",
+      "observed_head_sha": "6201af9e62a64730f441bfaaa41601be8b970373",
+      "reservation_id": "a152bf42742a48109218276a50100f95",
+      "key": "6312920256a4bc1d4dff17b5662773ae75ef8e3d14cb67e099aed4a00a3a5437",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029314307:1",
+      "started_at": "2026-10-17T11:36:19Z",
+      "completed_at": "2026-10-17T11:42:08Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233488952,
+      "pr": 127,
+      "head_sha": "6201af9e62a64730f441bfaaa41601be8b970373",
+      "reservation_id": "e37dbd523d6f4d388bd4f75c63bd6d03",
+      "key": "2555e443a0374488c9578f9189200bee205cc804fc3c0ae52495f9973aeddc33",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029814200:1",
+      "started_at": "2026-10-17T11:44:14Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6233507026,
+      "pr": 127,
+      "head_sha": "6201af9e62a64730f441bfaaa41601be8b970373",
+      "observed_head_sha": "6201af9e62a64730f441bfaaa41601be8b970373",
+      "reservation_id": "e37dbd523d6f4d388bd4f75c63bd6d03",
+      "key": "2555e443a0374488c9578f9189200bee205cc804fc3c0ae52495f9973aeddc33",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029814200:1",
+      "started_at": "2026-10-17T11:44:14Z",
+      "completed_at": "2026-10-17T11:46:20Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233511647,
+      "pr": 128,
+      "head_sha": "9d8f403bd92bf4d108ab1868b0396afe47aef29b",
+      "reservation_id": "ff7e72d2da0249a3985478a6753ada6f",
+      "key": "8f139ea7a7c78e3071bc70c90e5c75c7dfac5437c8ffb50d1f712a1cea3ed608",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029946327:1",
+      "started_at": "2026-10-17T11:46:53Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6233570442,
+      "pr": 128,
+      "head_sha": "9d8f403bd92bf4d108ab1868b0396afe47aef29b",
+      "observed_head_sha": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+      "reservation_id": "ff7e72d2da0249a3985478a6753ada6f",
+      "key": "8f139ea7a7c78e3071bc70c90e5c75c7dfac5437c8ffb50d1f712a1cea3ed608",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029946327:1",
+      "started_at": "2026-10-17T11:46:53Z",
+      "completed_at": "2026-10-17T11:53:37Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233589022,
+      "pr": 128,
+      "head_sha": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+      "reservation_id": "3b177fdc593245eaa07eb928ae16992c",
+      "key": "d1994ded93fc78d8bce67af58d6744f499083e17fe12284cc1b0a095753b0dc6",
+      "provider": "claude",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39030529716:1",
+      "started_at": "2026-10-17T11:55:50Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6233606369,
+      "pr": 128,
+      "head_sha": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+      "observed_head_sha": "acf58d2f2a909252ab98883b884eb03a1d27513b",
+      "reservation_id": "3b177fdc593245eaa07eb928ae16992c",
+      "key": "d1994ded93fc78d8bce67af58d6744f499083e17fe12284cc1b0a095753b0dc6",
+      "provider": "claude",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39030529716:1",
+      "started_at": "2026-10-17T11:55:50Z",
+      "completed_at": "2026-10-17T11:57:51Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233763026,
+      "pr": 129,
+      "head_sha": "d0ef0da712a0152d27707f0fdd55696eaad4f98c",
+      "reservation_id": "a2492d2c744a49a8bd500a8acc4e60ea",
+      "key": "92e590e07ae18b3b788dc89bc0c439da677c1e44c0e4096856b5e4fd82849417",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39031755731:1",
+      "started_at": "2026-10-17T12:15:10Z"
+    },
+    {
+      "kind": "runner-completion",
+      "comment_id": 6233817912,
+      "pr": 129,
+      "head_sha": "d0ef0da712a0152d27707f0fdd55696eaad4f98c",
+      "observed_head_sha": "aecb5f3b80b79df9b9681033e287c6af16d31636",
+      "reservation_id": "a2492d2c744a49a8bd500a8acc4e60ea",
+      "key": "92e590e07ae18b3b788dc89bc0c439da677c1e44c0e4096856b5e4fd82849417",
+      "provider": "codex",
+      "status": "completed",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39031755731:1",
+      "started_at": "2026-10-17T12:15:10Z",
+      "completed_at": "2026-10-17T12:21:26Z",
+      "completion_incomplete": false
+    },
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233830718,
+      "pr": 129,
+      "head_sha": "aecb5f3b80b79df9b9681033e287c6af16d31636",
+      "reservation_id": "3998a27fcb344312a47944cf45296912",
+      "key": "25d0ada858c84b911964fdee987f07098dde337b33850fae94f4dec3ccf4ae62",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39032272403:1",
+      "started_at": "2026-10-17T12:22:55Z"
+    }
+  ],
+  "actual_recorded_attempts": [
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38958898371:1",
+      "id": 38958898371,
+      "head_sha": "b9daca70b27f452d62d8c6ccdb3bcd3b5dc7a783",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38958898371",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38959704638:1",
+      "id": 38959704638,
+      "head_sha": "b9daca70b27f452d62d8c6ccdb3bcd3b5dc7a783",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38959704638",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38967985592:1",
+      "id": 38967985592,
+      "head_sha": "d874c2428fa389e05421c745d8959f06bc488823",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38967985592",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38978974852:1",
+      "id": 38978974852,
+      "head_sha": "d874c2428fa389e05421c745d8959f06bc488823",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38978974852",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38979718512:1",
+      "id": 38979718512,
+      "head_sha": "d874c2428fa389e05421c745d8959f06bc488823",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38979718512",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38980819435:1",
+      "id": 38980819435,
+      "head_sha": "d874c2428fa389e05421c745d8959f06bc488823",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38980819435",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38982763648:1",
+      "id": 38982763648,
+      "head_sha": "d874c2428fa389e05421c745d8959f06bc488823",
+      "head_branch": "main",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38982763648",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:38993587459:1",
+      "id": 38993587459,
+      "head_sha": "c647fabaf0d4d3033e2ba763053d7f499126db70",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/38993587459",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39008786764:1",
+      "id": 39008786764,
+      "head_sha": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39008786764",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009087868:1",
+      "id": 39009087868,
+      "head_sha": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39009087868",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009219587:1",
+      "id": 39009219587,
+      "head_sha": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39009219587",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009313003:1",
+      "id": 39009313003,
+      "head_sha": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39009313003",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009648706:1",
+      "id": 39009648706,
+      "head_sha": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39009648706",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39009779385:1",
+      "id": 39009779385,
+      "head_sha": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39009779385",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010368664:1",
+      "id": 39010368664,
+      "head_sha": "8755ce298a2685e524f659bea449d9114b700cba",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39010368664",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010471949:1",
+      "id": 39010471949,
+      "head_sha": "8755ce298a2685e524f659bea449d9114b700cba",
+      "head_branch": "main",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39010471949",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010934773:1",
+      "id": 39010934773,
+      "head_sha": "8755ce298a2685e524f659bea449d9114b700cba",
+      "head_branch": "main",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39010934773",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39010937291:1",
+      "id": 39010937291,
+      "head_sha": "8755ce298a2685e524f659bea449d9114b700cba",
+      "head_branch": "main",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39010937291",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012129138:1",
+      "id": 39012129138,
+      "head_sha": "7f59fdd5b345d550b5d07e775281d7318e261cd0",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39012129138",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012197528:1",
+      "id": 39012197528,
+      "head_sha": "3325989829734b7773cfab878e7eb8fedfc8377e",
+      "head_branch": "main",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39012197528",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012332069:1",
+      "id": 39012332069,
+      "head_sha": "3325989829734b7773cfab878e7eb8fedfc8377e",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39012332069",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39012410615:1",
+      "id": 39012410615,
+      "head_sha": "3325989829734b7773cfab878e7eb8fedfc8377e",
+      "head_branch": "main",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39012410615",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39028813549:1",
+      "id": 39028813549,
+      "head_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39028813549",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029314307:1",
+      "id": 39029314307,
+      "head_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029314307",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029814200:1",
+      "id": 39029814200,
+      "head_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39029946327:1",
+      "id": 39029946327,
+      "head_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029946327",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39030529716:1",
+      "id": 39030529716,
+      "head_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030529716",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39031755731:1",
+      "id": 39031755731,
+      "head_sha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39031755731",
+      "error": null
+    },
+    {
+      "workflow_attempt_id": "stranske/Doc-Lineage:39032272403:1",
+      "id": 39032272403,
+      "head_sha": "aa2351f72636e76f80b4e0013e9a099b2d9a495b",
+      "head_branch": "main",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032272403",
+      "error": null
+    }
+  ],
+  "unmatched_reservations": [
+    {
+      "kind": "runner-reservation",
+      "comment_id": 6233830718,
+      "pr": 129,
+      "head_sha": "aecb5f3b80b79df9b9681033e287c6af16d31636",
+      "reservation_id": "3998a27fcb344312a47944cf45296912",
+      "key": "25d0ada858c84b911964fdee987f07098dde337b33850fae94f4dec3ccf4ae62",
+      "provider": "codex",
+      "status": "pending",
+      "workflow_attempt_id": "stranske/Doc-Lineage:39032272403:1",
+      "started_at": "2026-10-17T12:22:55Z"
+    }
+  ],
+  "source113_records": [],
+  "own_dispatcher_claim": "source113 / codex / expected original dispatcher claim retained; no other source113 writer identified",
+  "disposition": "No target prior implementation found. Unmatched sibling reservations remain incumbents even when their recorded parent run is completed; preserved, never treated as source113 or taken over."
+}

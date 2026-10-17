@@ -1,0 +1,39 @@
+from pathlib import Path
+import json,hashlib,shutil,re,xml.etree.ElementTree as ET
+ROOT=Path('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener')
+RAW=Path(__file__).parent
+OUT=ROOT/'docs/evidence/issue-113-main-integration'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def counts(p):
+ root=ET.parse(p).getroot();cases=list(root.iter('testcase'))
+ return {'path':str(p.relative_to(RAW)),'tests':len(cases),'failures':sum(len(c.findall('failure')) for c in cases),'errors':sum(len(c.findall('error')) for c in cases),'skips':sum(len(c.findall('skipped')) for c in cases)}
+full=counts(RAW/'full.xml');assert full['tests']==613 and full['failures']==full['errors']==full['skips']==0
+OUT.mkdir(exist_ok=False)
+map=[]
+selected=[*RAW.glob('*-command.json'),*RAW.glob('*.log'),RAW/'full.xml',RAW/'controls.xml',RAW/'exact.xml',RAW/'coverage.xml',RAW/'environment.json',RAW/'execution-inputs.json',RAW/'native.jsonl',RAW/'preserved-history.json',RAW/'previous-SHA256SUMS',RAW/'capability-consult.json',RAW/'capability.stdout',RAW/'capability.stderr',RAW/'install-diagnostic.json']
+for directory in ('mutation','control','legal','preflight','first-full-attempt'):
+ selected.extend(p for p in (RAW/directory).rglob('*') if p.is_file())
+for path in sorted(set(selected)):
+ relative=path.relative_to(RAW);target=OUT/relative;target.parent.mkdir(parents=True,exist_ok=True)
+ raw=path.read_bytes();public=raw
+ if relative.as_posix() in ('mutation/disconnected.log','mutation/disconnected.xml'):
+  public=re.sub(rb'[\t ]+(?=\r?$)',b'',raw,flags=re.M)
+ target.write_bytes(public)
+ map.append({'path':relative.as_posix(),'raw_sha256':sha(path),'public_sha256':sha(target),'transformation':'strip trailing horizontal whitespace only' if raw!=public else 'none'})
+for name in ('run-proof.py','rerun-full.py','preflight.py','bundle.py','admission-control.py'):
+ shutil.copyfile(RAW/name,OUT/(name+'.txt'))
+shutil.copyfile(ROOT/'docs/evidence/issue-113/recovery/native-observer.py.txt',OUT/'native-observer.py.txt')
+(OUT/'.gitattributes').write_text('*.pdf binary\n')
+(OUT/'raw-to-public.json').write_text(json.dumps(map,indent=2)+'\n')
+binding=json.loads((RAW/'execution-inputs.json').read_text())
+binding['junit']=[{k:v for k,v in counts(RAW/n).items() if k not in ('errors','skips')} for n in ('full.xml','controls.xml','exact.xml','mutation/disconnected.xml','mutation/restored.xml')]
+binding['commands']=[f'{label}-command.json' for label in ('full','controls','exact','mutation','control','legal','navigation','lint','format','type-verifier','type-focused')]
+for n in binding['commands']:
+ row=json.loads((OUT/n).read_text());assert row['exit_code']==0 and row['inputs_restored'];assert row['log_sha256']==sha(OUT/row['log'])
+(OUT/'source-bindings.json').write_text(json.dumps(binding,indent=2)+'\n')
+coverage=ET.parse(RAW/'coverage.xml').getroot();percent=float(re.search(r'Total coverage: ([0-9.]+)%',(RAW/'full.log').read_text())[1])
+native=[json.loads(l) for l in (RAW/'native.jsonl').read_text().splitlines()]
+before=[r for r in native if r['phase']=='before'];after=[r for r in native if r['phase']=='after'];assert len(before)==len(after) and all(r['returncode']==0 for r in after)
+summary={'revision':binding['revision'],'input_bindings':len(binding['inputs']),'full':full,'controls':counts(RAW/'controls.xml'),'exact':counts(RAW/'exact.xml'),'mutation_red':counts(RAW/'mutation/disconnected.xml'),'mutation_restored':counts(RAW/'mutation/restored.xml'),'coverage_percent':percent,'native_calls':len(after),'native_all_rc0':True}
+(OUT/'validation-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
+print(json.dumps(summary,indent=2))

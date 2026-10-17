@@ -1,0 +1,42 @@
+{
+  "replace_once": {
+    "old": "        parsed = _parse_section_header(segment.text)",
+    "new": "        parsed = None  # ISSUE113_TEMPORARY_PRODUCTION_DISCONNECTION"
+  },
+  "production_original_sha256": "c339f553462d1437ee512e07ef5a20a401779dedf703c904534b3003f907afd7",
+  "production_mutated_sha256": "1174e49079b382b57ecd19499778eece27a42e763d455d3c8028bf8ee05435af",
+  "production_restored_sha256": "c339f553462d1437ee512e07ef5a20a401779dedf703c904534b3003f907afd7",
+  "test_sha256": "bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a",
+  "runs": [
+    {
+      "label": "disconnected",
+      "argv": [
+        "/opt/hostedtoolcache/Python/3.14.8/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py::test_persisted_pdf_ingest_replays_existing_production_pairing",
+        "-q",
+        "--junitxml=/tmp/doc-lineage-113-continuation-mutation/disconnected.xml"
+      ],
+      "exit_code": 1,
+      "production_sha256": "1174e49079b382b57ecd19499778eece27a42e763d455d3c8028bf8ee05435af",
+      "test_sha256": "bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a"
+    },
+    {
+      "label": "restored",
+      "argv": [
+        "/opt/hostedtoolcache/Python/3.14.8/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py::test_persisted_pdf_ingest_replays_existing_production_pairing",
+        "-q",
+        "--junitxml=/tmp/doc-lineage-113-continuation-mutation/restored.xml"
+      ],
+      "exit_code": 0,
+      "production_sha256": "c339f553462d1437ee512e07ef5a20a401779dedf703c904534b3003f907afd7",
+      "test_sha256": "bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a"
+    }
+  ],
+  "named_assertion": "PERSISTED_INGEST_PAIRING_DISCONNECTED",
+  "tests_unchanged": true
+}

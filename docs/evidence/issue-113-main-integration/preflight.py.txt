@@ -1,0 +1,38 @@
+import pathlib,sys,subprocess,json,re,base64,datetime
+OUT=pathlib.Path(__file__).parent/sys.argv[1];OUT.mkdir(exist_ok=False)
+WRAP='/Users/teacher/.codex/bin/detached-net.sh'
+def gh(label,args):
+ p=subprocess.run([WRAP,'gh',*args],cwd='/tmp',capture_output=True,text=True,timeout=90)
+ (OUT/f'{label}.stderr').write_text(p.stderr)
+ (OUT/f'{label}.json').write_text(p.stdout)
+ if p.returncode:raise RuntimeError(label+' failed: '+p.stderr)
+ return json.loads(p.stdout)
+pr=gh('pr',['pr','view','130','-R','stranske/Doc-Lineage','--json','headRefOid,headRefName,isDraft,state,url'])
+if pr['headRefOid']!='c27168e94364d52ec681d3b3827281118d46a8ba' or pr['isDraft'] or pr['state']!='OPEN':raise RuntimeError('exact target changed or not ready/open')
+records=[]
+for n in (130,113):
+ pages=gh(f'comments-{n}',['api','--paginate','--slurp',f'repos/stranske/Doc-Lineage/issues/{n}/comments?per_page=100'])
+ for page in pages:
+  for c in page:
+   for m in re.finditer(r'<!-- (runner-(?:reservation|completion)):[^ ]+ (.*?) -->',c['body'],re.S):
+    payload=m[2];raw=json.loads(base64.b64decode(payload[7:])) if payload.startswith('base64:') else json.loads(payload)
+    records.append({'kind':m[1],'comment_id':c['id'],'raw':raw,'record':raw.get('record',raw)})
+gh('source',['api','repos/stranske/Doc-Lineage/issues/113'])
+gh('inline',['api','--paginate','--slurp','repos/stranske/Doc-Lineage/pulls/130/comments?per_page=100'])
+gh('reviews',['api','--paginate','--slurp','repos/stranske/Doc-Lineage/pulls/130/reviews?per_page=100'])
+(OUT/'decoded-all-heads.json').write_text(json.dumps(records,indent=2)+'\n')
+reservations=[r['record'] for r in records if r['kind']=='runner-reservation']
+completions={r['record']['reservation_id']:r['record'] for r in records if r['kind']=='runner-completion'}
+for r in reservations:
+ c=completions.get(r['reservation_id'])
+ if not c or c.get('status')!='completed' or c.get('completion_incomplete',True):raise RuntimeError('PARK admitted pending/absent child '+r['reservation_id'])
+ids=sorted({r['record']['workflow_attempt_id'] for r in records if r['record'].get('workflow_attempt_id')})
+for wid in ids:
+ repo,run,attempt=wid.rsplit(':',2)
+ d=gh('native-'+run+'-'+attempt,['run','view',run,'--attempt',attempt,'--repo',repo,'--json','databaseId,status,conclusion,event,headSha,jobs,url'])
+ if d['status']!='completed' or any(j['status']!='completed' for j in d['jobs']):raise RuntimeError('PARK nonterminal native '+wid)
+ impl=[j for j in d['jobs'] if re.search('keepalive next task.* / ',j['name'],re.I)]
+ if not impl:raise RuntimeError('PARK implementation child absent '+wid)
+summary={'timestamp':datetime.datetime.now(datetime.timezone.utc).isoformat(),'head':pr['headRefOid'],'source_comments_all_pages':True,'pr_comments_all_pages':True,'all_heads_decoded':True,'reservations':len(reservations),'completions':len(completions),'unmatched':[],'workflow_attempt_ids':ids,'gate':'PASS','parent_claim':'expected; retained','parent_pause':'retained','original_writer':'owner-provided verified done rc0/release0'}
+(OUT/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
+print(json.dumps(summary))
