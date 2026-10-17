@@ -17,12 +17,12 @@ def test_missing_posix_capabilities_warn_and_retain_complete_ingest(tmp_path, mo
     with pytest.warns(RuntimeWarning) as observed:
         result = ingest_document(source, output_dir=tmp_path / "run", allow_docling=False)
     messages = [str(w.message) for w in observed]
-    assert any(
-        "directory durability is unsupported" in w for w in messages
-    ), "MISSING_DIRECTORY_CAPABILITY_IS_EXPLICIT"
-    assert any(
-        "owner-only privacy is unverified" in w for w in messages
-    ), "MISSING_PRIVACY_CAPABILITY_IS_EXPLICIT"
+    assert any("directory durability is unsupported" in w for w in messages), (
+        "MISSING_DIRECTORY_CAPABILITY_IS_EXPLICIT"
+    )
+    assert any("owner-only privacy is unverified" in w for w in messages), (
+        "MISSING_PRIVACY_CAPABILITY_IS_EXPLICIT"
+    )
     assert (
         result.manifest_path.parent / f"source-{result.source_sha256}.bin"
     ).read_bytes() == source.read_bytes()

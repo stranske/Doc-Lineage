@@ -637,9 +637,9 @@ def test_tracked_variable_changed_fee_follows_source_text(tmp_path: Path) -> Non
     assert not result["unresolved"]
     (record,) = result["records"]
     # Independent numeric oracle; this MUST fail if production parsing is disconnected.
-    assert (
-        record["value_structured"]["schedule"][0]["rate"] == 2.0
-    ), "MANAGEMENT_RATE_SOURCE_DISCONNECTION"
+    assert record["value_structured"]["schedule"][0]["rate"] == 2.0, (
+        "MANAGEMENT_RATE_SOURCE_DISCONNECTION"
+    )
     assert record["value_structured"]["schedule"][1]["rate"] == 1.25
     assert "equal to 2.0%" in record["evidence"]["excerpt"]
     assert record["evidence"]["source_id"] == _sha256(source) != _sha256(FIXTURE)

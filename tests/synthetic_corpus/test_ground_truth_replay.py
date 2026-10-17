@@ -50,6 +50,6 @@ def test_replay_matches_ground_truth_manifest() -> None:
             e["section_id"]: {"change_type": e["change_type"], "tier": e["tier"]}
             for e in case["expected"]
         }
-        assert (
-            actual == expected_map
-        ), f"Mismatch for case {case['case_id']}: actual={actual}, expected={expected_map}"
+        assert actual == expected_map, (
+            f"Mismatch for case {case['case_id']}: actual={actual}, expected={expected_map}"
+        )

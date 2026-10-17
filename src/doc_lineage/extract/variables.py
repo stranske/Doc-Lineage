@@ -245,7 +245,9 @@ def publish_variables(ingest_dir: Path, source: Path, output_dir: Path, *, entit
                 "kind": (
                     "tracked_variables"
                     if path == "tracked-variables.json"
-                    else "evidence" if path.startswith("evidence/") else "data"
+                    else "evidence"
+                    if path.startswith("evidence/")
+                    else "data"
                 ),
                 "path": path,
                 "sha256": sha256_bytes(data),
