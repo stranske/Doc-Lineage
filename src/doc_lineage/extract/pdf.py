@@ -34,6 +34,7 @@ def extract_pdf(
     pages_with_text_layer = 0
     pages_recognized = 0
     pages_unreadable = 0
+    unreadable_pages: list[int] = []
     # The recognition mode is part of the cache identity: an empty result from a
     # run with OCR off must not be replayed to a later run with OCR on.
     mode: OCRMode = "ocr" if (ocr_enabled and ocr_backend is not None) else "off"
@@ -56,12 +57,15 @@ def extract_pdf(
             spans.extend(page_spans)
         pages_with_text_layer += int(outcome == "text_layer")
         pages_recognized += int(outcome == "ocr")
-        pages_unreadable += int(outcome in {"unreadable", "retryable"})
+        if outcome in {"unreadable", "retryable"}:
+            pages_unreadable += 1
+            unreadable_pages.append(page_index)
 
     coverage = CoverageStats(
         pages_with_text_layer=pages_with_text_layer,
         pages_recognized=pages_recognized,
         pages_unreadable=pages_unreadable,
+        unreadable_pages=tuple(unreadable_pages),
     )
     return Document(stable_id=stable_id, spans=spans, coverage=coverage)
 

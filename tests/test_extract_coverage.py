@@ -325,6 +325,33 @@ def test_cache_writes_are_atomic(cache_dir: Path, tmp_path: Path) -> None:
     assert list(entry.parent.glob("*.tmp")) == []
 
 
+def test_partly_unreadable_pdf_reports_unreadable_page_identities(
+    cache_dir: Path,
+    tmp_path: Path,
+) -> None:
+    pdf_path = tmp_path / "partly-unreadable.pdf"
+    pdf = canvas.Canvas(str(pdf_path), pagesize=letter)
+    pdf.drawString(72, 720, "readable page one")
+    pdf.showPage()
+    pdf.save()
+    _write_image_only_pdf(tmp_path / "image-only.pdf")
+    reader = PdfReader(str(tmp_path / "image-only.pdf"))
+    writer = PdfWriter()
+    writer.add_page(PdfReader(str(pdf_path)).pages[0])
+    writer.add_page(reader.pages[0])
+    with pdf_path.open("wb") as stream:
+        writer.write(stream)
+
+    active_cache = ExtractCache(cache_dir)
+    cold = extract(pdf_path, ocr_enabled=False, cache=active_cache)
+    assert cold.coverage.pages_unreadable == 1
+    assert cold.coverage.unreadable_pages == (2,)
+
+    cached = extract(pdf_path, ocr_enabled=False, cache=active_cache)
+    assert cached.coverage.unreadable_pages == cold.coverage.unreadable_pages
+    assert cached.coverage.pages_unreadable == cold.coverage.pages_unreadable
+
+
 def test_coverage_always_reports_all_three_counts(cache_dir: Path, tmp_path: Path) -> None:
     pdf_path = tmp_path / "counts.pdf"
     _write_text_pdf(pdf_path, ["one"])
@@ -338,6 +365,7 @@ def test_coverage_always_reports_all_three_counts(cache_dir: Path, tmp_path: Pat
     assert (
         coverage.pages_with_text_layer + coverage.pages_recognized + coverage.pages_unreadable
     ) == 1
+    assert len(coverage.unreadable_pages) == coverage.pages_unreadable
 
 
 def test_deliberate_break_per_document_detection_violates_mixed_pdf_contract(
