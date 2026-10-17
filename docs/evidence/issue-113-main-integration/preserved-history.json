@@ -1,0 +1,15 @@
+{
+  "revision": "c27168e94364d52ec681d3b3827281118d46a8ba",
+  "files_checked": 205,
+  "unchanged_files": 203,
+  "exceptions": {
+    "docs/evidence/issue-113/SHA256SUMS": {
+      "before": "fd1899bd208e77d4cbac33063279fc5c1c27e0bb5126e662b66bd308cc11059a",
+      "after": "b55c602b01569f3d9dc8fbf26eded3673fdd0a28540d837062d687dcec38204a"
+    },
+    "docs/evidence/issue-113/verify_evidence.py": {
+      "before": "e5136ede431ace66530b8f775a6cc312fd0b63cd21ae7b7d0d2d5825de54383d",
+      "after": "12f0e765f1dbed2e951e8ead0f560073284f93fbb9ef78f1889594dc0bcd97b8"
+    }
+  }
+}

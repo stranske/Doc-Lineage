@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/opt/anaconda3/bin/python3",
+    "/Users/teacher/Library/CloudStorage/Dropbox/Learning/Code/Orchestrator/src/capability_advisor.py",
+    "--surface",
+    "opener-lane",
+    "--repository",
+    "stranske/Doc-Lineage",
+    "--lane",
+    "opener",
+    "--json",
+    "Bounded SAME source113 PR130 main integration continuation: merge current main, immutable point-in-time audit archive bindings, full pytest, named PDF pairing causal RED restored GREEN, existing harness rejection controls; no product schema workflow repair, Brain or publication"
+  ],
+  "exit_code": 1,
+  "offers": null,
+  "declines": [],
+  "disposition": "fail-open error; no offers returned"
+}

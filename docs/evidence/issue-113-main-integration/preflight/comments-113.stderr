@@ -1,0 +1,2 @@
+launchd-exec: launchctl submit failed for com.teacher.codex.exec.job.tXvHrp-4101-2342 with exit 1
+detached-net: launchd wrapper failed; retrying in current shell with detached auth

@@ -1,0 +1,42 @@
+import subprocess,sys,os,json,hashlib,pathlib,time,types,importlib.metadata
+ROOT=pathlib.Path('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener')
+OUT=pathlib.Path(__file__).parent
+PY='/private/tmp/doc-lineage-130-main-integration-venv/bin/python'
+p=ROOT/'docs/evidence/issue-113/verify_evidence.py';v=types.ModuleType('v');v.__file__=str(p);exec(compile(p.read_bytes(),str(p),'exec'),v.__dict__)
+revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+inputs={n:v.sha(ROOT/n) for n in sorted(v.input_inventory())}
+assert set(inputs)==v.input_inventory(revision)
+assert not v.verify_revision_inputs(inputs,revision)
+(OUT/'execution-inputs.json').write_text(json.dumps({'revision':revision,'inputs':inputs},indent=2)+'\n')
+archive=pathlib.Path('/opt/anaconda3/lib/python3.12/site-packages/python_redlines_docxodus/bin.zip')
+archives=list(archive.parent.rglob('*.tar.gz'))
+actual=[{'path':str(p),'sha256':v.sha(p)} for p in archives]
+assert len(actual)==1 and actual[0]['sha256']=='c231bd1aefa7af56932cf0aebbd7a0fbe8cf1143eb3baff6abf42dc426c04571',actual
+(OUT/'environment.json').write_text(json.dumps({'python':sys.executable,'base_python':sys.base_prefix,'versions':{n:importlib.metadata.version(n) for n in ['pytest','pytest-cov','ruff','black','mypy','reportlab','setuptools','python-redlines','python-redlines-docxodus']},'native_archive':actual,'native_expected_sha256':'12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36','publisher':'UNKNOWN; prior ad-hoc/no TeamIdentifier','new_downloads':False,'shared_runtime_mutation':False},indent=2)+'\n')
+env={**os.environ,'PATH':str(pathlib.Path(PY).parent)+':'+os.environ['PATH'],'PYTHONPATH':str(ROOT/'src'),'PYTHONDONTWRITEBYTECODE':'1','PIP_NO_DEPS':'1','PIP_NO_INDEX':'1','COVERAGE_FILE':str(OUT/'.coverage'),'DOC130_NATIVE_LOG':str(OUT/'native.jsonl'),'XDG_CACHE_HOME':str(OUT/'cache')}
+def run(label,argv):
+ assert not v.verify_revision_inputs(inputs,revision)
+ start=time.time()
+ with (OUT/f'{label}.log').open('w') as f:
+  result=subprocess.run(argv,cwd=ROOT,env=env,stdout=f,stderr=subprocess.STDOUT,timeout=300)
+ row={'argv':argv,'cwd':str(ROOT),'exit_code':result.returncode,'elapsed_seconds':time.time()-start,'revision':revision,'bindings':inputs,'log':f'{label}.log','log_sha256':v.sha(OUT/f'{label}.log'),'inputs_restored':not v.verify_revision_inputs(inputs,revision)}
+ (OUT/f'{label}-command.json').write_text(json.dumps(row,indent=2)+'\n');print(label,result.returncode,flush=True)
+ return result.returncode
+commands=[
+ ('full',[PY,'-m','pytest','--cov=src','--cov-report=term-missing',f'--cov-report=xml:{OUT}/coverage.xml',f'--junitxml={OUT}/full.xml']),
+ ('controls',[PY,'-m','pytest','tests/evidence/test_issue113_harness.py','-q',f'--junitxml={OUT}/controls.xml']),
+ ('exact',[PY,'-m','pytest','tests/blackline/test_section_id_pairing.py','-q',f'--junitxml={OUT}/exact.xml']),
+ ('mutation',[PY,'docs/evidence/issue-113/deliberate_break.py',str(OUT/'mutation')]),
+ ('control',[PY,'docs/evidence/issue-113/replay_control.py',str(OUT/'control')]),
+ ('legal',[PY,'docs/evidence/issue-113/replay_legal.py',str(OUT/'legal')]),
+ ('navigation',[PY,'docs/evidence/issue-113/probe_current.py',str(OUT/'legal/claims')]),
+ ('lint',[PY,'-m','ruff','check','docs/evidence/issue-113','tests/evidence/test_issue113_harness.py','src/doc_lineage/blackline.py','src/doc_lineage/cli.py']),
+ ('format',[PY,'-m','black','--check','docs/evidence/issue-113','tests/evidence/test_issue113_harness.py','src/doc_lineage/blackline.py','src/doc_lineage/cli.py']),
+ ('type-verifier',[PY,'-m','mypy','--cache-dir='+str(OUT/'mypy-cache'),'--follow-imports=silent','docs/evidence/issue-113/verify_evidence.py']),
+ ('type-focused',[PY,'-m','mypy','--cache-dir='+str(OUT/'mypy-cache'),'--follow-imports=silent','src/doc_lineage/blackline.py','src/doc_lineage/cli.py']),
+ ('type-production',[PY,'-m','mypy','--cache-dir='+str(OUT/'mypy-cache'),'src']),
+]
+failed=[]
+for label,argv in commands:
+ if run(label,argv):failed.append(label)
+print('FAILED',failed,flush=True)

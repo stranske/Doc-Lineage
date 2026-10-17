@@ -1,0 +1,25 @@
+{
+  "producer": "cli.main -> publish_variables -> ingest._extract_verified",
+  "consumer": "doc_lineage.render.resolve_triple_link",
+  "contract": "docs/triple-link-resolver.md; tracked-variable/v1 provenance",
+  "input_claims_sha256": "dc983103907633c9b640cc529c42e79d44a048a250ccb206f7f22fa1f92f94e8",
+  "input_evidence_sha256": "eb1dace149f285e63b02c71d65003b4de64d9c1392a6d0c9ade3bd5a74ba8a6a",
+  "input_variable_id": "var:adb4c4fd4ae6da9af018e0d1daa8048197245cc765f847fb355fa1c43a305081",
+  "input_evidence_id": "48060ba6590f638153af45133c50ca43",
+  "provenance": {
+    "document": {
+      "locator": {
+        "order": 1,
+        "page": 0
+      },
+      "source_id": "b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f"
+    },
+    "mirror": {
+      "blob_path": "source/synthetic_lpa.pdf",
+      "mirror_root": ".",
+      "page_anchor": "#page=1"
+    }
+  },
+  "exception": "ValueError",
+  "message": "mirror_root must be a relative POSIX path without traversal"
+}

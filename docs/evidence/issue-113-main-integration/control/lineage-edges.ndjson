@@ -1,0 +1,2 @@
+{"confidence": 1.0, "left_section_id": "1", "left_title": "MANAGEMENT FEE", "pairing_method": "section_id", "right_section_id": "1", "right_title": "MANAGEMENT FEE", "schema_version": "lineage-edges/v1", "section_id": "1"}
+{"confidence": 1.0, "left_section_id": "2", "left_title": "TERM", "pairing_method": "section_id", "right_section_id": "2", "right_title": "TERM", "schema_version": "lineage-edges/v1", "section_id": "2"}

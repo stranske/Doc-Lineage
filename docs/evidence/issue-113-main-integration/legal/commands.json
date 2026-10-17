@@ -1,0 +1,56 @@
+[
+  {
+    "argv": [
+      "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "ingest",
+      "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/tests/fixtures/synthetic_lpa.pdf",
+      "--output",
+      "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/ingest",
+      "--no-docling",
+      "--no-ocr"
+    ],
+    "exit_code": 0,
+    "status": "passed",
+    "timeout_seconds": 300,
+    "stdout": "ingested synthetic_lpa.pdf [backend=offline-pdf-text run_id=ingest-b709931830bf coverage=complete] -> 2 segment(s) across 2 page(s)\nmanifest: /Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/ingest/artifact-manifest.json\nsegments: /Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/ingest/segments.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "extract-variables",
+      "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/ingest",
+      "--source",
+      "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/tests/fixtures/synthetic_lpa.pdf",
+      "--entity-ref",
+      "fund:synthetic_alpha",
+      "--output",
+      "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/claims"
+    ],
+    "exit_code": 0,
+    "status": "passed",
+    "timeout_seconds": 300,
+    "stdout": "manifest: /Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/claims/artifact-manifest.json\nunresolved: /Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/claims/unresolved.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "export-fact-key-map",
+      "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/claims/tracked-variables.json",
+      "--output",
+      "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/map"
+    ],
+    "exit_code": 0,
+    "status": "passed",
+    "timeout_seconds": 300,
+    "stdout": "manifest: /Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/legal/map/artifact-manifest.json\n",
+    "stderr": ""
+  }
+]

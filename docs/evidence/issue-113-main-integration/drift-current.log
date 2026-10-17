@@ -1,0 +1,10 @@
+ARCHIVE_PASS: exact inventories, immutable bindings, genuine JUnit/mutation
+{"current_admission": "UNQUALIFIED", "integration_current_input_drift": ["src/doc_lineage/blackline.py"], "recovery_current_input_drift": ["docs/evidence/issue-113/verify_evidence.py", "src/doc_lineage/blackline.py", "src/doc_lineage/cli.py", "tests/evidence/test_issue113_harness.py", "tests/export/test_docx_redline_golden.py", "tests/test_cli.py"], "recovery_revision": "c27168e94364d52ec681d3b3827281118d46a8ba"}
+Traceback (most recent call last):
+  File "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/verify_evidence.py", line 269, in <module>
+    main(parser.parse_args().require_current)
+  File "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/verify_evidence.py", line 258, in main
+    require_current(integration_drift)
+  File "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener/docs/evidence/issue-113/verify_evidence.py", line 201, in require_current
+    raise ValueError(f"CURRENT_ADMISSION_FAIL: integration inputs absent or drifted: {drift}")
+ValueError: CURRENT_ADMISSION_FAIL: integration inputs absent or drifted: ['src/doc_lineage/blackline.py']

@@ -1,0 +1,42 @@
+{
+  "revision": "fadb1b05fc5849aff145a53d2a542dfec1999422",
+  "input_bindings": 148,
+  "full": {
+    "path": "full.xml",
+    "tests": 613,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "controls": {
+    "path": "controls.xml",
+    "tests": 44,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "exact": {
+    "path": "exact.xml",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "mutation_red": {
+    "path": "mutation/disconnected.xml",
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skips": 0
+  },
+  "mutation_restored": {
+    "path": "mutation/restored.xml",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "coverage_percent": 90.64,
+  "native_calls": 30,
+  "native_all_rc0": true
+}

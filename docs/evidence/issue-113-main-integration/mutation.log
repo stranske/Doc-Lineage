@@ -1,0 +1,42 @@
+{
+  "replace_once": {
+    "old": "        parsed = _parse_section_header(segment.text)",
+    "new": "        parsed = None  # ISSUE113_TEMPORARY_PRODUCTION_DISCONNECTION"
+  },
+  "production_original_sha256": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270",
+  "production_mutated_sha256": "843c0a19873f6c1c1c2fcc71d5ee0dd18c128316d0eb99d6e8502fe8a703fd1e",
+  "production_restored_sha256": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270",
+  "test_sha256": "bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a",
+  "runs": [
+    {
+      "label": "disconnected",
+      "argv": [
+        "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py::test_persisted_pdf_ingest_replays_existing_production_pairing",
+        "-q",
+        "--junitxml=/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/mutation/disconnected.xml"
+      ],
+      "exit_code": 1,
+      "production_sha256": "843c0a19873f6c1c1c2fcc71d5ee0dd18c128316d0eb99d6e8502fe8a703fd1e",
+      "test_sha256": "bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a"
+    },
+    {
+      "label": "restored",
+      "argv": [
+        "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py::test_persisted_pdf_ingest_replays_existing_production_pairing",
+        "-q",
+        "--junitxml=/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-main-integration/mutation/restored.xml"
+      ],
+      "exit_code": 0,
+      "production_sha256": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270",
+      "test_sha256": "bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a"
+    }
+  ],
+  "named_assertion": "PERSISTED_INGEST_PAIRING_DISCONNECTED",
+  "tests_unchanged": true
+}
