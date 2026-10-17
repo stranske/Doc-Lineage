@@ -2,7 +2,24 @@
 
 Document lineage and blackline engine for recurring investment documents.
 
-**Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope, architecture and first issues arrive from research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). The initial legal clause vocabulary and Python loader are available; the document processing engine remains to be implemented.
+**Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope and architecture follow research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). The offline engine under `src/doc_lineage/` is partially shipped. Per-capability status (CLI names are `doc-lineage` subcommands from `build_parser()`):
+
+| Capability | Status | CLI / entry | Details |
+| --- | --- | --- | --- |
+| Ingest (+ optional OCR) | shipped | `ingest` | [Ingest (M1)](#ingest-m1) |
+| DOCX tracked-changes export | shipped | `export-docx`, `create-comparison` | [DOCX tracked-changes export](#docx-tracked-changes-export), [Comparison records](#comparison-records) |
+| PDF section pairing | shipped | `pair-sections`, `lookup-section-pairing` | [Persisted PDF section pairing](#persisted-pdf-section-pairing), [section-pairing contract](docs/section-pairing.md) |
+| Legal variable extraction | partial | `extract-variables` | documented management-fee forms only; [extraction coverage](docs/contracts/tracked-variable-v1.md#extraction-coverage) |
+| Fact-key map export | shipped | `export-fact-key-map` | [fact-key map](docs/fact-key-map.md) |
+| EDGAR EX-10 harvest | shipped | `harvest-edgar` | `src/doc_lineage/harvest/` (fixture-backed offline harvest) |
+| Legal clause vocabulary | shipped | library (`doc_lineage.vocab`) | [Interoperability](#interoperability) |
+| Confirmed supersession / lineage | partial | library (CLI scan emits hints only) | [Confirmed document supersession](#confirmed-document-supersession) |
+| PDF text extract for metrics | shipped | library (`doc_lineage.extract`) | [PDF extraction for metric consumers](#pdf-extraction-for-metric-consumers) |
+| Compare / mutations / emit / blackline helpers | library / partial | no dedicated top-level CLI | packages under `src/doc_lineage/`; PDF text compare is not DOCX `export-docx` blackline |
+
+Gaps and fidelity limits remain in the linked sections (for example PDF text compare vs DOCX blackline).
+
+**Issue #115 scope and verification:** status-paragraph accuracy only — no runtime feature work, and library-only `compare` / `mutations` / `emit` / blackline helpers are not claimed as top-level CLI deliveries. Observable check: `python -m pytest tests/test_repo_hygiene.py -q` (nonzero collection; status and deliberate-break assertions pass). Deliberate-break: replacing this Status block with the pre-#115 unimplemented-engine paragraph fails `test_readme_mentions_every_cli_subcommand`; restoring this block restores a green run. A second control replaces the Status block with a CLI-name-only prose paragraph (no shipped/partial markers or markdown links) and fails the same test until restored.
 
 ## DOCX tracked-changes export
 
