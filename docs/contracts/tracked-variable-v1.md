@@ -96,7 +96,7 @@ Supported English clause forms (case insensitive, normalized spaces) are exactly
 - The same sentence with ` during the Commitment Period, and Y% of invested capital thereafter.` replacing its final period.
 
 An optional numbered `N. MANAGEMENT FEE ` heading is accepted. X and Y are
-literal percentages between 0 and 100, with at most four decimal places.
+literal percentages between 0 and 100 inclusive, with at most four decimal places.
 `value_structured.unit` is `percent_per_annum`, **not** a fractional rate. The
 `schedule` retains each rate, basis and period: `Commitment Period`/`thereafter`
 for the two-tier form and `all` for the flat form. `value_text` preserves the

@@ -645,6 +645,107 @@ def test_tracked_variable_changed_fee_follows_source_text(tmp_path: Path) -> Non
     assert record["evidence"]["source_id"] == _sha256(source) != _sha256(FIXTURE)
 
 
+@pytest.mark.parametrize(
+    "initial, subsequent, expected",
+    [
+        ("0", "100", [0.0, 100.0]),
+        ("100.0000", "0.0001", [100.0, 0.0001]),
+        ("1.2345", "99.9999", [1.2345, 99.9999]),
+        ("100.0001", "1.25", None),
+        ("2.0", "100.0001", None),
+        ("1.23456", "1.25", None),
+        ("2.0", "1.23456", None),
+        ("-1", "1.25", None),
+        ("2.0", "-1", None),
+    ],
+)
+def test_tracked_variable_documented_rate_limits(
+    tmp_path: Path, initial: str, subsequent: str, expected: list[float] | None
+) -> None:
+    from doc_lineage.ingest import extract_variables
+
+    source = _fee_control_pdf(
+        tmp_path,
+        transform=lambda text: text.replace("2.0%", f"{initial}%").replace(
+            "1.25%", f"{subsequent}%"
+        ),
+    )
+    ingested = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+    if expected is None:
+        assert result["records"] == []
+        (unresolved,) = result["unresolved"]
+        assert unresolved["reason"] == "unsupported_management_fee_clause"
+        assert "value_structured" not in unresolved and "value_text" not in unresolved
+    else:
+        assert result["unresolved"] == []
+        (record,) = result["records"]
+        assert [entry["rate"] for entry in record["value_structured"]["schedule"]] == expected
+        assert f"equal to {initial}%" in record["evidence"]["excerpt"]
+        assert f"and {subsequent}%" in record["evidence"]["excerpt"]
+
+
+def test_tracked_variable_truncated_evidence_cannot_support_an_assertion(tmp_path: Path) -> None:
+    from doc_lineage.emit.evidence import EXCERPT_MAX_CHARS
+    from doc_lineage.extract.variables import publish_variables
+
+    # Keep the fee itself supported, but make its page segment exceed the quote limit.
+    source = _fee_control_pdf(
+        tmp_path,
+        transform=lambda text: text + " 2. OTHER TERMS " + "Additional terms apply. " * 120,
+    )
+    ingested = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    assert len(ingested.segments[0].text) > EXCERPT_MAX_CHARS
+    assert len(ingested.evidence[0]["excerpt"]) == EXCERPT_MAX_CHARS
+    output = tmp_path / "extraction"
+    publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+    assert json.loads((output / "tracked-variables.json").read_text()) == []
+    (unresolved,) = json.loads((output / "unresolved.json").read_text())
+    assert unresolved["reason"] == "unsupported_management_fee_clause"
+    assert "value_structured" not in unresolved and "value_text" not in unresolved
+    (reference,) = unresolved["evidence_refs"]
+    assert json.loads((output / reference).read_text()) == ingested.evidence[0]
+
+
+def test_tracked_variable_second_page_navigation(tmp_path: Path) -> None:
+    from reportlab.pdfgen import canvas
+
+    from doc_lineage.extract.variables import publish_variables, validate
+
+    source = tmp_path / "second-page.pdf"
+    pdf = canvas.Canvas(str(source), invariant=1)
+    pdf.drawString(40, 750, "LIMITED PARTNERSHIP AGREEMENT Alpha Fund L.P.")
+    pdf.showPage()
+    # A heading is optional; extraction accepts uppercase text recovered across lines.
+    pdf.drawString(40, 750, "THE PARTNERSHIP SHALL PAY THE GENERAL PARTNER")
+    pdf.drawString(40, 735, "AN ANNUAL MANAGEMENT FEE EQUAL TO 3.125%")
+    pdf.drawString(40, 720, "OF AGGREGATE CAPITAL COMMITMENTS.")
+    pdf.save()
+    ingested = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    output = tmp_path / "extraction"
+    publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+    (record,) = json.loads((output / "tracked-variables.json").read_text())
+    validate("tracked-variable-v1", record)
+    assert record["value_structured"]["schedule"] == [
+        {"rate": 3.125, "basis": "aggregate Capital Commitments", "period": "all"}
+    ]
+    assert record["evidence"]["excerpt"] == ingested.segments[1].text
+    assert record["evidence"]["locator"]["page"] == 1
+    assert record["provenance"]["document"]["locator"]["page"] == 1
+    assert record["provenance"]["mirror"]["page_anchor"] == "#page=2"
+    assert (
+        output / record["provenance"]["mirror"]["blob_path"]
+    ).read_bytes() == source.read_bytes()
+    assert json.loads((output / record["evidence_ref"]).read_text()) == record["evidence"]
+    assert json.loads((output / "unresolved.json").read_text()) == []
+
+
 @pytest.mark.parametrize("changed, expected", [(False, 1.75), (True, 2.0)])
 def test_tracked_variable_original_mutation_controls(
     tmp_path: Path, changed: bool, expected: float
