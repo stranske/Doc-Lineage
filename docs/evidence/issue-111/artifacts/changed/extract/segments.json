@@ -1,0 +1,34 @@
+{
+  "backend": "offline-pdf-text",
+  "coverage": {
+    "pages_recognized": 0,
+    "pages_total": 2,
+    "pages_unreadable": 0,
+    "pages_with_text_layer": 2,
+    "status": "complete"
+  },
+  "pages_without_text_layer": [],
+  "schema_version": "doc-lineage-segments/v1",
+  "segments": [
+    {
+      "char_count": 409,
+      "method": "text",
+      "order": 1,
+      "page": 1,
+      "segment_id": "172b21d45253abcd-p0001-s0001",
+      "text": "SYNTHETIC LIMITED PARTNERSHIP AGREEMENT Alpha Opportunities Fund IV, L.P. 1. MANAGEMENT FEE The Partnership shall pay the General Partner an annual management fee equal to 2.0% of aggregate Capital Commitments during the Commitment Period, and 1.25% of invested capital thereafter. 2. CARRIED INTEREST Carried interest is 20% of Distributable Proceeds, subject to a preferred return of 8% compounded annually.",
+      "word_count": 59
+    },
+    {
+      "char_count": 308,
+      "method": "text",
+      "order": 2,
+      "page": 2,
+      "segment_id": "172b21d45253abcd-p0002-s0002",
+      "text": "3. KEY PERSON EVENT A Key Person Event occurs if fewer than two Key Persons devote substantially all business time to the Partnership. 4. TRANSFER RESTRICTIONS No Limited Partner may transfer its Interest without the prior written consent of the General Partner, which may be withheld in its sole discretion.",
+      "word_count": 50
+    }
+  ],
+  "source_sha256": "172b21d45253abcddb1984a24133f8fd02c41b6ede62aab35af826f7eb4c1687",
+  "unreadable_pages": []
+}

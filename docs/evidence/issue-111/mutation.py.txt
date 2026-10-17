@@ -1,0 +1,25 @@
+from capture import run,root,repo,digest,bindings
+import json,xml.etree.ElementTree as ET
+path=repo/'src/doc_lineage/ingest.py'
+original=path.read_bytes(); before=bindings()
+needle=b'rate = float(token)'; replacement=b'rate = 1.75  # deliberate source disconnection'
+assert original.count(needle)==1
+(root/'ingest.green.py').write_bytes(original)
+mutant=original.replace(needle,replacement)
+(root/'ingest.red.py').write_bytes(mutant)
+command=['{VENV}/bin/python','-m','pytest','tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_changed_fee_follows_source_text','-q','-o','addopts=']
+try:
+    path.write_bytes(mutant)
+    red=run('red',command+['--junitxml='+str(root/'red.xml')])
+finally:
+    path.write_bytes(original)
+assert path.read_bytes()==original
+assert red==1
+failure=ET.parse(root/'red.xml').find('.//failure')
+assert failure is not None and 'AssertionError: MANAGEMENT_RATE_SOURCE_DISCONNECTION' in (failure.text or '')
+green=run('green',command+['--junitxml='+str(root/'green.xml')])
+assert green==0
+assert bindings()==before, 'Source, tests or fixtures changed across restoration'
+report={'production_file':'src/doc_lineage/ingest.py','needle':needle.decode(),'replacement':replacement.decode(),'original_sha256':digest(root/'ingest.green.py'),'mutant_sha256':digest(root/'ingest.red.py'),'restored_sha256':digest(path),'red_returncode':red,'green_returncode':green,'named_assertion':'MANAGEMENT_RATE_SOURCE_DISCONNECTION','byte_identical_restoration':True,'all_test_and_fixture_bindings_unchanged':True}
+(root/'mutation.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps(report,indent=2))

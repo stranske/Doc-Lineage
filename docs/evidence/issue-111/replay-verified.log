@@ -1,0 +1,28 @@
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "ingest", "{REPO}/tests/fixtures/synthetic_lpa.pdf", "--no-docling", "--no-ocr", "--output", "{RAW}/replay-verified/baseline/ingest"]}
+ingested synthetic_lpa.pdf [backend=offline-pdf-text run_id=ingest-b709931830bf coverage=complete] -> 2 segment(s) across 2 page(s)
+manifest: {RAW}/replay-verified/baseline/ingest/artifact-manifest.json
+segments: {RAW}/replay-verified/baseline/ingest/segments.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "extract-variables", "{RAW}/replay-verified/baseline/ingest", "--source", "{REPO}/tests/fixtures/synthetic_lpa.pdf", "--entity-ref", "fund:alpha_iv", "--output", "{RAW}/replay-verified/baseline/extract"]}
+manifest: {RAW}/replay-verified/baseline/extract/artifact-manifest.json
+unresolved: {RAW}/replay-verified/baseline/extract/unresolved.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "export-fact-key-map", "{RAW}/replay-verified/baseline/extract/tracked-variables.json", "--output", "{RAW}/replay-verified/baseline/map"]}
+manifest: {RAW}/replay-verified/baseline/map/artifact-manifest.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "ingest", "{RAW}/replay-verified/changed/control.pdf", "--no-docling", "--no-ocr", "--output", "{RAW}/replay-verified/changed/ingest"]}
+ingested control.pdf [backend=offline-pdf-text run_id=ingest-172b21d45253 coverage=complete] -> 2 segment(s) across 2 page(s)
+manifest: {RAW}/replay-verified/changed/ingest/artifact-manifest.json
+segments: {RAW}/replay-verified/changed/ingest/segments.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "extract-variables", "{RAW}/replay-verified/changed/ingest", "--source", "{RAW}/replay-verified/changed/control.pdf", "--entity-ref", "fund:alpha_iv", "--output", "{RAW}/replay-verified/changed/extract"]}
+manifest: {RAW}/replay-verified/changed/extract/artifact-manifest.json
+unresolved: {RAW}/replay-verified/changed/extract/unresolved.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "export-fact-key-map", "{RAW}/replay-verified/changed/extract/tracked-variables.json", "--output", "{RAW}/replay-verified/changed/map"]}
+manifest: {RAW}/replay-verified/changed/map/artifact-manifest.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "ingest", "{RAW}/replay-verified/ambiguous/control.pdf", "--no-docling", "--no-ocr", "--output", "{RAW}/replay-verified/ambiguous/ingest"]}
+ingested control.pdf [backend=offline-pdf-text run_id=ingest-9fa8322d0bf0 coverage=complete] -> 2 segment(s) across 2 page(s)
+manifest: {RAW}/replay-verified/ambiguous/ingest/artifact-manifest.json
+segments: {RAW}/replay-verified/ambiguous/ingest/segments.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "extract-variables", "{RAW}/replay-verified/ambiguous/ingest", "--source", "{RAW}/replay-verified/ambiguous/control.pdf", "--entity-ref", "fund:alpha_iv", "--output", "{RAW}/replay-verified/ambiguous/extract"]}
+manifest: {RAW}/replay-verified/ambiguous/extract/artifact-manifest.json
+unresolved: {RAW}/replay-verified/ambiguous/extract/unresolved.json
+{"argv": ["{VENV}/bin/python", "-m", "doc_lineage.cli", "export-fact-key-map", "{RAW}/replay-verified/ambiguous/extract/tracked-variables.json", "--output", "{RAW}/replay-verified/ambiguous/map"]}
+doc-lineage export-fact-key-map: at least one tracked variable is required
+OFFLINE_ACCEPTANCE_PASS: actual PDF -> persisted ingest -> claims/evidence -> fact map; changed/ambiguous controls

@@ -1,0 +1,2 @@
+ERROR: Could not install packages due to an OSError: [Errno 1] Operation not permitted: '{HOME}/.local/lib/python3.12/site-packages/__editable___doc_lineage_0_1_0_finder.py'
+

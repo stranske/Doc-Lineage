@@ -1,0 +1,27 @@
+import json,subprocess,pathlib,re,sys,datetime
+root=pathlib.Path('{RAW}'); phase=sys.argv[1]
+commands=[]
+def gh(*args):
+    argv=['{HOME}/.codex/bin/detached-net.sh','gh',*args]
+    r=subprocess.run(argv,cwd='/tmp',capture_output=True,text=True)
+    commands.append({'argv':argv,'returncode':r.returncode,'stderr':r.stderr})
+    r.check_returncode();return json.loads(r.stdout)
+repo='stranske/Doc-Lineage'
+source=gh('issue','view','111','-R',repo,'--json','title,body,state,comments,labels,updatedAt')
+prs=gh('pr','list','-R',repo,'--state','all','--limit','1000','--json','number,headRefName,headRefOid,state,body,closingIssuesReferences')
+linked=[p for p in prs if re.search(r'(?:#111\b|meta:issue:111\b|/issues/111\b)',p['body']) or re.match(r'(?:codex|claude|cursor|gemini|muse|aider|orch)/issue-111(?:-|$)',p['headRefName']) or any(i['number']==111 for i in p['closingIssuesReferences'])]
+comments=[c['body'] for c in source['comments']]
+for p in linked:
+    p['conversation']=gh('pr','view',str(p['number']),'-R',repo,'--json','comments,reviews,isDraft,state,headRefOid')
+    p['inline']=gh('api',f'repos/{repo}/pulls/{p["number"]}/comments','--paginate')
+    comments.extend(c['body'] for c in p['conversation']['comments'])
+    comments.extend(c['body'] for c in p['conversation']['reviews'])
+    comments.extend(c['body'] for c in p['inline'])
+markers=[c for c in comments if re.search(r'runner[-_]reservation|runner[-_]completion',c,re.I)]
+# Zero records is explicitly counted across all heads. Any new record requires direct attempt inspection.
+report={'at':datetime.datetime.now(datetime.UTC).isoformat(),'source':source,'all_pr_heads':[{k:p[k] for k in ('number','headRefName','headRefOid','state')} for p in prs],'linked':linked,'native_record_comments':markers,'native_records_decoded':0,'recorded_attempts':[],'commands':commands}
+(root/f'ownership-{phase}.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps({'phase':phase,'all_heads':len(prs),'linked':[p['number'] for p in linked],'native_records':len(markers),'source_state':source['state']}))
+assert not markers,'New native records: decode all reservations/completions and inspect recorded workflow attempts directly before writing'
+assert not linked,'An incumbent linked PR exists: preserve it'
+assert source['state']=='OPEN'
