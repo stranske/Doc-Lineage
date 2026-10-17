@@ -1,0 +1,50 @@
+[
+  {
+    "argv": [
+      "/opt/hostedtoolcache/Python/3.14.8/x64/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "ingest",
+      "/home/runner/work/Doc-Lineage/Doc-Lineage/tests/fixtures/synthetic_lpa.pdf",
+      "--output",
+      "/tmp/doc-lineage-113-continuation-legal/ingest",
+      "--no-docling",
+      "--no-ocr"
+    ],
+    "exit_code": 0,
+    "stdout": "ingested synthetic_lpa.pdf [backend=offline-pdf-text run_id=ingest-b709931830bf coverage=complete] -> 2 segment(s) across 2 page(s)\nmanifest: /tmp/doc-lineage-113-continuation-legal/ingest/artifact-manifest.json\nsegments: /tmp/doc-lineage-113-continuation-legal/ingest/segments.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/hostedtoolcache/Python/3.14.8/x64/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "extract-variables",
+      "/tmp/doc-lineage-113-continuation-legal/ingest",
+      "--source",
+      "/home/runner/work/Doc-Lineage/Doc-Lineage/tests/fixtures/synthetic_lpa.pdf",
+      "--entity-ref",
+      "fund:synthetic_alpha",
+      "--output",
+      "/tmp/doc-lineage-113-continuation-legal/claims"
+    ],
+    "exit_code": 0,
+    "stdout": "manifest: /tmp/doc-lineage-113-continuation-legal/claims/artifact-manifest.json\nunresolved: /tmp/doc-lineage-113-continuation-legal/claims/unresolved.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/hostedtoolcache/Python/3.14.8/x64/bin/python",
+      "-m",
+      "doc_lineage.cli",
+      "export-fact-key-map",
+      "/tmp/doc-lineage-113-continuation-legal/claims/tracked-variables.json",
+      "--output",
+      "/tmp/doc-lineage-113-continuation-legal/map"
+    ],
+    "exit_code": 0,
+    "stdout": "manifest: /tmp/doc-lineage-113-continuation-legal/map/artifact-manifest.json\n",
+    "stderr": ""
+  }
+]

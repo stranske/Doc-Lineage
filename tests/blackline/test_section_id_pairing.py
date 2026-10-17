@@ -307,7 +307,10 @@ def test_docling_items_survive_ingest_and_section_pairing(
     assert pairs[1].left.text != pairs[1].right.text
 
 
-def test_persisted_pdf_ingest_replays_existing_production_pairing(tmp_path: Path) -> None:
+@pytest.mark.parametrize("reorder_after", [False, True], ids=["same-order", "reordered-sections"])
+def test_persisted_pdf_ingest_replays_existing_production_pairing(
+    tmp_path: Path, reorder_after: bool
+) -> None:
     """Issue 113 control: real PDF bytes survive restart into the existing caller.
 
     The fresh process uses mutations.detect's production JSON loader/composition.
@@ -322,11 +325,16 @@ def test_persisted_pdf_ingest_replays_existing_production_pairing(tmp_path: Path
     for name, rate in (("before", "1.75"), ("after", "2.00")):
         source = tmp_path / f"{name}.pdf"
         canvas = Canvas(str(source), invariant=True)
-        canvas.drawString(72, 720, "1. MANAGEMENT FEE")
-        canvas.drawString(72, 700, f"The annual management fee is {rate}%.")
-        canvas.showPage()
-        canvas.drawString(72, 720, "2. TERM")
-        canvas.drawString(72, 700, "The term is annual.")
+        sections = [
+            ("1. MANAGEMENT FEE", f"The annual management fee is {rate}%."),
+            ("2. TERM", "The term is annual."),
+        ]
+        if name == "after" and reorder_after:
+            sections.reverse()
+        for header, body in sections:
+            canvas.drawString(72, 720, header)
+            canvas.drawString(72, 700, body)
+            canvas.showPage()
         canvas.save()
         result = ingest_document(
             source, output_dir=tmp_path / name, allow_docling=False, ocr_enabled=False
@@ -366,6 +374,7 @@ print(json.dumps({'classes': detect_change_classes(before, after),
                   'methods': [p.pairing_method for p in pairs],
                   'changed': [p.left.text != p.right.text for p in pairs],
                   'left_segments': [list(p.left.segment_ids) for p in pairs],
+                  'right_segments': [list(p.right.segment_ids) for p in pairs],
                   'edges': [json.loads(line) for line in emit_lineage_edges_ndjson(pairs).splitlines()],
                   'sources': [a.source_sha256, b.source_sha256]}))
 """
@@ -389,5 +398,26 @@ print(json.dumps({'classes': detect_change_classes(before, after),
     assert replay["sources"][0] != replay["sources"][1]
     persisted = json.loads((tmp_path / "before" / "segments.json").read_text())
     assert replay["left_segments"] == [[s["segment_id"]] for s in persisted["segments"]]
+    revised = json.loads((tmp_path / "after" / "segments.json").read_text())
+    right_segments = revised["segments"][::-1] if reorder_after else revised["segments"]
+    assert replay["right_segments"] == [
+        [s["segment_id"]] for s in right_segments
+    ], "PERSISTED_INGEST_SECTION_MEMBERSHIP_DISCONNECTED"
+    # Reordering changes the fee's page locator, not its section identity. Check
+    # the actual published evidence rather than treating an edge as provenance.
+    for name, payload, membership, fee_page in (
+        ("before", persisted, replay["left_segments"], 0),
+        ("after", revised, replay["right_segments"], int(reorder_after)),
+    ):
+        evidence_by_ref = {
+            evidence["fact_ref"]: evidence
+            for path in (tmp_path / name / "evidence").glob("*.json")
+            for evidence in [json.loads(path.read_text())]
+        }
+        (fee_segment_id,) = membership[0]
+        fee_evidence = evidence_by_ref[f"segment:{fee_segment_id}"]
+        assert fee_evidence["source_id"] == payload["source_sha256"]
+        assert fee_evidence["locator"]["page"] == fee_page
+        assert "MANAGEMENT FEE" in fee_evidence["excerpt"]
     assert [e["section_id"] for e in replay["edges"]] == ["1", "2"]
     assert all(e["schema_version"] == "lineage-edges/v1" for e in replay["edges"])

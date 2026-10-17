@@ -1,0 +1,33 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.8, pytest-9.1.1, pluggy-1.7.0
+rootdir: /home/runner/work/Doc-Lineage/Doc-Lineage
+configfile: pyproject.toml
+plugins: platformdirs-4.13.3, langsmith-0.14.11, cov-7.1.0, anyio-4.15.1
+collected 167 items
+
+tests/blackline/test_mutation_pairs.py .                                 [  0%]
+tests/blackline/test_section_id_pairing.py ............                  [  7%]
+tests/mutations/test_materialization_contract.py .                       [  8%]
+tests/mutations/test_mutation_pair_known_diff.py .....                   [ 11%]
+tests/ingest/test_variables_provenance.py ............................   [ 28%]
+tests/emit/test_evidence_object.py .......................               [ 41%]
+tests/export/test_fact_key_map.py ......................                 [ 55%]
+tests/export/test_fact_key_map_cli.py ......                             [ 58%]
+tests/render/test_triple_link_resolver.py .............................. [ 76%]
+.......                                                                  [ 80%]
+tests/test_cli.py ....................                                   [ 92%]
+tests/compare/test_segment_classification.py ........                    [ 97%]
+tests/compare/test_silence_invariant.py ....                             [100%]
+
+=============================== warnings summary ===============================
+tests/render/test_triple_link_resolver.py: 16 warnings
+  /home/runner/work/Doc-Lineage/Doc-Lineage/src/doc_lineage/render/links.py:60: DeprecationWarning: pathlib.PurePath.as_uri() is deprecated and scheduled for removal in Python 3.19. Use pathlib.Path.as_uri().
+    return (PurePosixPath(root) / blob).as_uri()
+
+tests/render/test_triple_link_resolver.py::test_portable_mirror_roots[C:\\Manager Library-file:///C:/Manager%20Library/blobs/notice.pdf]
+tests/render/test_triple_link_resolver.py::test_portable_mirror_roots[\\\\server\\share\\Manager Library-file://server/share/Manager%20Library/blobs/notice.pdf]
+  /home/runner/work/Doc-Lineage/Doc-Lineage/src/doc_lineage/render/links.py:47: DeprecationWarning: pathlib.PurePath.as_uri() is deprecated and scheduled for removal in Python 3.19. Use pathlib.Path.as_uri().
+    return (windows / PurePosixPath(blob)).as_uri()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 167 passed, 18 warnings in 1.98s =======================
