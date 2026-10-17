@@ -9,6 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 
+from doc_lineage.cli import main
 from doc_lineage.export import export_docx_redline
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -158,6 +159,7 @@ def test_golden_rejects_partial_markup(engine_cache, monkeypatch, removed_tag, e
         test_tracked_changes_present(engine_cache)
 
 
+@pytest.mark.parametrize("by_id", [False, True], ids=["direct", "comparison-id"])
 @pytest.mark.parametrize(
     ("original_text", "modified_text", "has_insertions", "has_deletions"),
     [
@@ -169,9 +171,53 @@ def test_golden_rejects_partial_markup(engine_cache, monkeypatch, removed_tag, e
     ids=["insertion-only", "deletion-only", "unchanged", "unicode-and-xml-characters"],
 )
 def test_revision_round_trip(
-    engine_cache, original_text, modified_text, has_insertions, has_deletions
+    engine_cache,
+    tmp_path,
+    capsys,
+    by_id,
+    original_text,
+    modified_text,
+    has_insertions,
+    has_deletions,
 ):
-    redline = export_docx_redline(_docx(original_text), _docx(modified_text))
+    if by_id:
+        original, modified = tmp_path / "original.docx", tmp_path / "modified.docx"
+        original.write_bytes(_docx(original_text))
+        modified.write_bytes(_docx(modified_text))
+        store = tmp_path / "comparisons"
+        assert (
+            main(
+                [
+                    "create-comparison",
+                    "--original",
+                    str(original),
+                    "--modified",
+                    str(modified),
+                    "--comparison-store",
+                    str(store),
+                ]
+            )
+            == 0
+        )
+        comparison_id = capsys.readouterr().out.strip()
+        output = tmp_path / "redline.docx"
+        assert (
+            main(
+                [
+                    "export-docx",
+                    "--blackline",
+                    comparison_id,
+                    "--comparison-store",
+                    str(store),
+                    "--output",
+                    str(output),
+                ]
+            )
+            == 0
+        )
+        redline = output.read_bytes()
+    else:
+        redline = export_docx_redline(_docx(original_text), _docx(modified_text))
 
     with ZipFile(BytesIO(redline)) as package:
         assert package.testzip() is None

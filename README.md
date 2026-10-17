@@ -17,14 +17,42 @@ The command writes native Word insertion/deletion markup. Without `--output`, it
 writes DOCX bytes to standard output. Input files remain unchanged: destinations
 that alias either input, including symbolic and hard links, are rejected.
 
-Here `--blackline` is a boolean flag for a file-pair comparison. The planned
-`--blackline <id>` interface in [issue #15](https://github.com/stranske/Doc-Lineage/issues/15)
-is not implemented: it needs a persisted comparison-ID lookup contract connecting
-[ingest #8](https://github.com/stranske/Doc-Lineage/issues/8) and
-[blackline #10](https://github.com/stranske/Doc-Lineage/issues/10). Ingest excludes
-blackline/diff, and the section-pairing issue does not yet define that lookup.
-A path is not treated as a substitute comparison ID. File-pair export therefore
-does not complete the ID-based scope of #15.
+## Comparison records
+
+Create a local record, then export by ID in another process (even from another
+working directory):
+
+```bash
+doc-lineage create-comparison --original original.docx --modified revised.docx
+# prints cmp_<32 lowercase hexadecimal characters>
+doc-lineage export-docx --blackline cmp_<printed value> --output redline.docx
+```
+
+Each JSON record has `schema_version: "docx-comparison/v1"`, a random UUID4-based
+`comparison_id` (`cmp_` followed by 32 lowercase hex characters), ordered
+`original_path` / `modified_path` absolute DOCX locations, and
+`original_sha256` / `modified_sha256` digests of the complete original packages.
+Records are created exclusively as `<ID>.json` in `~/.doc-lineage/comparisons`.
+Use `--comparison-store /absolute/local/directory` on both commands to select a
+different store. The ID is separate from ingest run IDs and content identities;
+a filesystem path is never a comparison ID. Unknown IDs, malformed records and
+unsupported schema versions fail explicitly.
+
+At every ID export, both files are reopened and their bytes checked against the
+stored SHA-256 digests before those same buffers reach the native redline renderer.
+Missing/deleted sources or changed bytes fail without publishing output, including
+stdout. An ID cannot be combined with replacement input paths. The bare boolean
+`--blackline` file-pair form above remains available. Output aliases of either
+source or the selected comparison record are rejected.
+
+Retain the original DOCX files and any ingest manifests locally as immutable
+evidence; these commands neither edit them nor copy them into a managed archive.
+Records preserve source locations and hashes, not backup bytes: moving or deleting
+an input prevents replay, and the CLI never silently substitutes another source.
+This is a DOCX/package comparison through the existing tracked-changes renderer,
+with its existing fidelity limits. Extracted-PDF text/section comparison remains a
+distinct mode: it does not preserve DOCX layout, generate a Word package, or imply
+PDF-to-DOCX conversion. No hosted service or database is required.
 
 Source distributions include the export tests under `tests/export/` and their
 `tests/fixtures/fact_key_map/tracked_variables.json` fixture so the native

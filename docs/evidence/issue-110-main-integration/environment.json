@@ -1,0 +1,20 @@
+{
+  "python": "3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:54:21) [Clang 16.0.6 ]",
+  "executable": "/tmp/doc110-integration-venv/bin/python",
+  "prefix": "/tmp/doc110-integration-venv",
+  "base_prefix": "/opt/anaconda3",
+  "versions": {
+    "pytest": "9.1.1",
+    "pytest-cov": "7.1.0",
+    "ruff": "0.16.7",
+    "black": "26.5.1",
+    "mypy": "2.3.1",
+    "setuptools": "83.0.0",
+    "python-redlines": "0.3.0",
+    "python-redlines-docxodus": "1.0.0"
+  },
+  "archive": "/opt/anaconda3/lib/python3.12/site-packages/python_redlines_docxodus/_binaries/osx-arm64.tar.gz",
+  "archive_sha256": "c231bd1aefa7af56932cf0aebbd7a0fbe8cf1143eb3baff6abf42dc426c04571",
+  "publisher": "UNKNOWN",
+  "signature": "parent verified ad-hoc; no Team ID"
+}

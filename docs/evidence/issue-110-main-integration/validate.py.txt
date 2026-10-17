@@ -1,0 +1,22 @@
+import sys,os,json,subprocess,time,hashlib,importlib.metadata
+from pathlib import Path
+repo=Path('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__127__opener')
+p=repo/'docs/evidence/issue-110-main-integration'; python='/tmp/doc110-integration-venv/bin/python'
+env=os.environ.copy();env.update(PIP_NO_BUILD_ISOLATION='0',PIP_NO_DEPS='1',PYTHONPATH='/tmp/doc110-native-audit:'+str(repo/'src')+':'+str(repo),XDG_CACHE_HOME='/tmp/doc110-integration-cache',DOC110_NATIVE_EVIDENCE='/tmp/doc110-native-records')
+results=[]
+def run(name,args,extra=None):
+ start=time.time(); local=env.copy();local.update(extra or {})
+ with (p/f'{name}.log').open('w') as out:
+  r=subprocess.run(args,cwd=repo,env=local,stdout=out,stderr=subprocess.STDOUT)
+ d={'argv':args,'cwd':str(repo),'returncode':r.returncode,'seconds':round(time.time()-start,3),'environment':{k:local[k] for k in ['PIP_NO_BUILD_ISOLATION','PIP_NO_DEPS','PYTHONPATH','XDG_CACHE_HOME','DOC110_NATIVE_EVIDENCE']}}
+ (p/f'{name}.json').write_text(json.dumps(d,indent=2));results.append(d);print(name,r.returncode,flush=True)
+ return r.returncode
+focused=['tests/test_cli.py','tests/test_issue110_review.py','tests/compare/test_comparison_records.py','tests/export','tests/ingest','tests/blackline','tests/test_package_identity.py']
+focused=[x for x in focused if (repo/x).exists()]
+run('focused',[python,'-m','pytest',*focused,'--junitxml='+str(p/'focused.xml'),'-q'])
+run('full',[python,'-m','pytest','--cov=src','--cov-report=term-missing','--cov-report=xml:'+str(p/'coverage.xml'),'--junitxml='+str(p/'full.xml'),'-q'])
+run('ruff',[python,'-m','ruff','check','src','tests'])
+run('black',[python,'-m','black','--check','src','tests'])
+run('mypy-full',[python,'-m','mypy','src'])
+run('mypy-cli',[python,'-m','mypy','--follow-imports=silent','src/doc_lineage/cli.py'])
+(p/'commands.json').write_text(json.dumps(results,indent=2))

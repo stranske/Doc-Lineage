@@ -1,0 +1,136 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: <REPO>
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_issue110_review.py FFFF                                       [100%]
+
+=================================== FAILURES ===================================
+___________ test_corrupt_deflate_has_clean_cli_error_without_record ____________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_corrupt_deflate_has_clean0')
+
+    def test_corrupt_deflate_has_clean_cli_error_without_record(tmp_path):
+        archive = BytesIO()
+        with (
+            ZipFile(BytesIO(_docx("A legal source."))) as source,
+            ZipFile(archive, "w", compression=ZIP_DEFLATED) as target,
+        ):
+            for member in source.infolist():
+                target.writestr(member.filename, source.read(member.filename))
+        payload = bytearray(archive.getvalue())
+        with ZipFile(BytesIO(payload)) as package:
+            member = package.getinfo("word/document.xml")
+        name, extra = struct.unpack_from("<HH", payload, member.header_offset + 26)
+        payload[member.header_offset + 30 + name + extra] = 0xFF
+        broken, valid = tmp_path / "broken.docx", tmp_path / "valid.docx"
+        broken.write_bytes(payload)
+        valid.write_bytes(_docx("Other source."))
+        store = tmp_path / "records"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "doc_lineage.cli",
+                "create-comparison",
+                "--original",
+                str(broken),
+                "--modified",
+                str(valid),
+                "--comparison-store",
+                str(store),
+            ],
+            env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+            capture_output=True,
+            check=False,
+            timeout=60,
+        )
+        assert result.returncode == 1
+>       assert b"Corrupt DOCX package" in result.stderr, "CORRUPT_ZIP_ERROR_CONTRACT"
+E       AssertionError: CORRUPT_ZIP_ERROR_CONTRACT
+E       assert b'Corrupt DOCX package' in b'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n  File "<frozen runpy...           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n'
+E        +  where b'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n  File "<frozen runpy...           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n' = CompletedProcess(args=['<PYTHON_ENV>/bin/python', '-m', 'doc_lineage.cli', 'create-compa...          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n').stderr
+
+tests/test_issue110_review.py:61: AssertionError
+______ test_new_records_are_private_and_exclusive_under_permissive_umask _______
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_new_records_are_private_a0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b930f20>
+
+    def test_new_records_are_private_and_exclusive_under_permissive_umask(tmp_path, monkeypatch):
+        original, modified = tmp_path / "a.docx", tmp_path / "b.docx"
+        original.write_bytes(_docx("Original."))
+        modified.write_bytes(_docx("Modified."))
+        store = tmp_path / "records"
+        previous = os.umask(0)
+        try:
+            identity = blackline.write_comparison_record(original, modified, store=store)
+        finally:
+            os.umask(previous)
+        record = store / f"{identity}.json"
+>       assert stat.S_IMODE(store.stat().st_mode) == 0o700, "PRIVATE_COMPARISON_STORE"
+E       AssertionError: PRIVATE_COMPARISON_STORE
+E       assert 511 == 448
+E        +  where 511 = <built-in function S_IMODE>(16895)
+E        +    where <built-in function S_IMODE> = stat.S_IMODE
+E        +    and   16895 = os.stat_result(st_mode=16895, st_ino=440743457, st_dev=16777232, st_nlink=3, st_uid=502, st_gid=20, st_size=96, st_atime=1792238115, st_mtime=1792238115, st_ctime=1792238115).st_mode
+E        +      where os.stat_result(st_mode=16895, st_ino=440743457, st_dev=16777232, st_nlink=3, st_uid=502, st_gid=20, st_size=96, st_atime=1792238115, st_mtime=1792238115, st_ctime=1792238115) = stat()
+E        +        where stat = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_new_records_are_private_a0/records').stat
+
+tests/test_issue110_review.py:78: AssertionError
+____________ test_replay_hash_validation_survives_optimized_python _____________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_replay_hash_validation_su0')
+
+    def test_replay_hash_validation_survives_optimized_python(tmp_path):
+        programs = re.findall(r"<<'PY'\n(.*?)\nPY", (EVIDENCE / "replay.sh").read_text(), re.S)
+        artifacts = tmp_path / "artifacts"
+        artifacts.mkdir()
+        record = {}
+        for role in ("original", "modified"):
+            content = _docx(role)
+            (artifacts / f"{role}.docx").write_bytes(content)
+            record[f"{role}_sha256"] = hashlib.sha256(content).hexdigest()
+        (artifacts / "comparison-record.json").write_text(json.dumps(record))
+        assert _optimized(programs[0], tmp_path).returncode == 0
+        (artifacts / "original.docx").write_bytes(_docx("Changed valid document."))
+>       assert _optimized(programs[0], tmp_path).returncode != 0, "OPTIMIZED_REPLAY_HASH_CHECK"
+E       AssertionError: OPTIMIZED_REPLAY_HASH_CHECK
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['<PYTHON_ENV>/bin/python', '-O', '-c', "import hashlib\nimport js...dout=b'Retained original package hashes verified; creating a NEW record with explicit relocated inputs.\n', stderr=b'').returncode
+E        +    where CompletedProcess(args=['<PYTHON_ENV>/bin/python', '-O', '-c', "import hashlib\nimport js...dout=b'Retained original package hashes verified; creating a NEW record with explicit relocated inputs.\n', stderr=b'') = _optimized("import hashlib\nimport json\nfrom pathlib import Path\nimport sys\n\nartifacts = Path(sys.argv[1]) / 'artifacts'\nrec...e}_sha256']\nprint('Retained original package hashes verified; creating a NEW record with explicit relocated inputs.')", PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_replay_hash_validation_su0'))
+
+tests/test_issue110_review.py:109: AssertionError
+__________ test_replay_revision_validation_survives_optimized_python ___________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_replay_revision_validatio0')
+
+    def test_replay_revision_validation_survives_optimized_python(tmp_path):
+        programs = re.findall(r"<<'PY'\n(.*?)\nPY", (EVIDENCE / "replay.sh").read_text(), re.S)
+        original = EVIDENCE / "artifacts/redline.docx"
+        assert _optimized(programs[1], original).returncode == 0
+        changed = tmp_path / "wrong-revisions.docx"
+        with ZipFile(original) as source, ZipFile(changed, "w") as target:
+            for member in source.infolist():
+                content = source.read(member.filename)
+                if member.filename == "word/document.xml":
+                    assert b"five" in content
+                    content = content.replace(b"five", b"eleven")
+                target.writestr(member, content)
+>       assert _optimized(programs[1], changed).returncode != 0, "OPTIMIZED_REPLAY_REVISION_CHECK"
+E       AssertionError: OPTIMIZED_REPLAY_REVISION_CHECK
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['<PYTHON_ENV>/bin/python', '-O', '-c', "from io import BytesIO\nf...6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_replay_revision_validatio0/wrong-revisions.docx\n', stderr=b'').returncode
+E        +    where CompletedProcess(args=['<PYTHON_ENV>/bin/python', '-O', '-c', "from io import BytesIO\nf...6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_replay_revision_validatio0/wrong-revisions.docx\n', stderr=b'') = _optimized("from io import BytesIO\nfrom pathlib import Path\nimport sys\nfrom xml.etree import ElementTree as ET\nfrom zipfile i...ocument, 'del') == 'The fee is ten dollars.'\nprint('Native DOCX reject/accept reconstruction verified:', sys.argv[1])", PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4803/test_replay_revision_validatio0/wrong-revisions.docx'))
+
+tests/test_issue110_review.py:124: AssertionError
+- generated xml file: <RAW>/127-review-disconnected-red.xml -
+=========================== short test summary info ============================
+FAILED tests/test_issue110_review.py::test_corrupt_deflate_has_clean_cli_error_without_record
+FAILED tests/test_issue110_review.py::test_new_records_are_private_and_exclusive_under_permissive_umask
+FAILED tests/test_issue110_review.py::test_replay_hash_validation_survives_optimized_python
+FAILED tests/test_issue110_review.py::test_replay_revision_validation_survives_optimized_python
+============================== 4 failed in 1.01s ===============================

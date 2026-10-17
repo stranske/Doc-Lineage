@@ -1,0 +1,37 @@
+{
+  "prior_head": "89542e1103330e076ce1afad24091e3428fd56ee",
+  "merged_main": "aa2351f72636e76f80b4e0013e9a099b2d9a495b",
+  "merge_strategy": "ordinary two-parent merge, no force push",
+  "actual_conflict": "src/doc_lineage/cli.py dispatch insertion; README auto-merged",
+  "resolution": "retain create-comparison unchanged and append exact extract-variables handler from main; CLI only contains main extraction additions",
+  "tests": {
+    "focused": {
+      "tests": 228,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "full": {
+      "tests": 567,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "coverage_percent": 90.64,
+  "coverage_floor_percent": 80,
+  "ruff": "PASS",
+  "black": "PASS 80 files",
+  "mypy_cli": "PASS with follow-imports=silent",
+  "mypy_full": "FAIL 2 unused-ignore errors in unchanged adapters/docling_segmenter.py:111-112; module hash identical to prior and main",
+  "historical_proof": "Prior 64 focused/513 full/4 RED tests remain historical component evidence; no new product mutation was manufactured",
+  "workflow_and_schema_changes": false,
+  "native": "26 captured real helper invocations, each matching expected SHA-256 and returncode 0; startup observation limitation in native-summary.json",
+  "capability_consult": "ERROR_FAIL_OPEN: shared ledger lock sandbox denied; no offers returned",
+  "risk_unknowns": [
+    "Ruff/Black/mypy versions differ from pins; exact-pinned checks UNKNOWN",
+    "Native helper publisher UNKNOWN; parent verified ad-hoc/no Team ID",
+    "Hosted CI, provider verdict, source acceptance, Office and deployment not established"
+  ],
+  "diffcheck": "src/tests/README/MANIFEST PASS; whole incoming-main diff retains historical raw evidence/PDF whitespace without rewriting it"
+}
