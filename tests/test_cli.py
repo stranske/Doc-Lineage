@@ -65,7 +65,8 @@ def comparison_inputs(tmp_path):
 
 
 @pytest.mark.parametrize("by_id", [True, False], ids=["id-only", "file-pair"])
-def test_comparison_new_process_native_round_trip(comparison_inputs, tmp_path, by_id):
+@pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
+def test_comparison_new_process_native_round_trip(comparison_inputs, tmp_path, by_id, to_file):
     original, modified, manifest, store, comparison_id = comparison_inputs
     record_path = store / f"{comparison_id}.json"
     preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
@@ -87,10 +88,24 @@ def test_comparison_new_process_native_round_trip(comparison_inputs, tmp_path, b
         else ["--blackline", "--original", str(original), "--modified", str(modified)]
     )
     result = _comparison_cli(
-        "export-docx", *selection, "--output", str(output), "--author", "Counsel", cwd=elsewhere
+        "export-docx",
+        *selection,
+        *(["--output", str(output)] if to_file else []),
+        "--author",
+        "Counsel",
+        cwd=elsewhere,
     )
     assert result.returncode == 0, result.stderr.decode()
-    with ZipFile(BytesIO(output.read_bytes())) as package:
+    assert result.stderr == b""
+    if to_file:
+        assert result.stdout.decode().splitlines() == [f"blackline: {output}"]
+        redline = output.read_bytes()
+    else:
+        assert not output.exists()
+        # Parse the raw stream, so a status line or text-mode corruption fails.
+        assert result.stdout.startswith(b"PK\x03\x04")
+        redline = result.stdout
+    with ZipFile(BytesIO(redline)) as package:
         assert package.testzip() is None
         document = ET.fromstring(package.read("word/document.xml"))
     revisions = document.findall(".//w:ins", NS) + document.findall(".//w:del", NS)
