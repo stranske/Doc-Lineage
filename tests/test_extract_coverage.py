@@ -269,8 +269,9 @@ def test_malformed_cache_entry_is_a_miss_not_a_crash(cache_dir: Path, tmp_path: 
     assert json.loads(entry.read_text(encoding="utf-8"))["spans"]
 
 
+@pytest.mark.parametrize("reopen_cache", [False, True], ids=["shared-memory", "reopened-disk"])
 def test_pdf_replacement_keeps_snapshot_identity_and_cached_text(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, reopen_cache: bool
 ) -> None:
     from doc_lineage.extract import pdf as pdf_module
 
@@ -289,9 +290,10 @@ def test_pdf_replacement_keeps_snapshot_identity_and_cached_text(
         return content
 
     cache_root = tmp_path / "snapshot-cache"
+    active_cache = ExtractCache(cache_root if reopen_cache else None)
     with monkeypatch.context() as patch:
         patch.setattr(Path, "read_bytes", replace_after_read)
-        first = extract(path, ocr_enabled=False, cache=ExtractCache(cache_root))
+        first = extract(path, ocr_enabled=False, cache=active_cache)
 
     assert path.read_bytes() == revised
     assert first.stable_id == hashlib.sha256(original).hexdigest()
@@ -299,10 +301,11 @@ def test_pdf_replacement_keeps_snapshot_identity_and_cached_text(
     path.write_bytes(original)
 
     def fail_reextraction(*_args: object, **_kwargs: object) -> None:
-        raise AssertionError("original snapshot must be served from its disk cache")
+        raise AssertionError("original snapshot must be served from its cache")
 
     monkeypatch.setattr(pdf_module, "_extract_pdf_page", fail_reextraction)
-    replay = extract(path, ocr_enabled=False, cache=ExtractCache(cache_root))
+    replay_cache = ExtractCache(cache_root) if reopen_cache else active_cache
+    replay = extract(path, ocr_enabled=False, cache=replay_cache)
     assert replay.stable_id == first.stable_id
     assert replay.spans == first.spans
     assert [span.text for span in replay.spans] == ["Original snapshot"]

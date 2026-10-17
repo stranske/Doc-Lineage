@@ -90,8 +90,9 @@ def test_legacy_binary_office_formats_are_rejected(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("suffix", [".docx", ".pptx"])
+@pytest.mark.parametrize("reopen_cache", [False, True], ids=["shared-memory", "reopened-disk"])
 def test_office_replacement_keeps_snapshot_identity_and_cached_text(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str, reopen_cache: bool
 ) -> None:
     path = tmp_path / f"snapshot{suffix}"
 
@@ -118,9 +119,10 @@ def test_office_replacement_keeps_snapshot_identity_and_cached_text(
         return content
 
     cache_root = tmp_path / "snapshot-cache"
+    active_cache = ExtractCache(cache_root if reopen_cache else None)
     with monkeypatch.context() as patch:
         patch.setattr(Path, "read_bytes", replace_after_read)
-        first = extract(path, cache=ExtractCache(cache_root))
+        first = extract(path, cache=active_cache)
 
     assert path.read_bytes() == revised
     assert first.stable_id == hashlib.sha256(original).hexdigest()
@@ -128,10 +130,11 @@ def test_office_replacement_keeps_snapshot_identity_and_cached_text(
     path.write_bytes(original)
 
     def fail_reparse(*_args: object, **_kwargs: object) -> None:
-        raise AssertionError("original snapshot must be served from its disk cache")
+        raise AssertionError("original snapshot must be served from its cache")
 
     monkeypatch.setattr("docx.Document" if suffix == ".docx" else "pptx.Presentation", fail_reparse)
-    replay = extract(path, cache=ExtractCache(cache_root))
+    replay_cache = ExtractCache(cache_root) if reopen_cache else active_cache
+    replay = extract(path, cache=replay_cache)
     assert replay.stable_id == first.stable_id
     assert replay.spans == first.spans
     assert [span.text for span in replay.spans] == ["Original snapshot"]
