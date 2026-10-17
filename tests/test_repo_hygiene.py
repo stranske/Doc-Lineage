@@ -66,10 +66,15 @@ def _cli_subcommand_names() -> set[str]:
 
 
 def _readme_status_paragraph(readme: str) -> str:
-    for line in readme.splitlines():
-        if line.startswith(STATUS_PREFIX):
-            return line
-    raise AssertionError("README.md missing **Status:** paragraph")
+    """Return the Status block from **Status:** through the line before the next ## heading."""
+    lines = readme.splitlines()
+    start = next((i for i, line in enumerate(lines) if line.startswith(STATUS_PREFIX)), None)
+    if start is None:
+        raise AssertionError("README.md missing **Status:** paragraph")
+    end = start + 1
+    while end < len(lines) and not lines[end].startswith("## "):
+        end += 1
+    return "\n".join(lines[start:end]).rstrip()
 
 
 def test_readme_mentions_every_cli_subcommand() -> None:
@@ -77,6 +82,9 @@ def test_readme_mentions_every_cli_subcommand() -> None:
     status = _readme_status_paragraph(readme)
     assert STALE_ENGINE_SENTENCE not in status
     assert STALE_ENGINE_SENTENCE not in readme
+    assert "shipped" in status
+    assert "partial" in status
+    assert "](" in status, "README status paragraph must include markdown links"
     for name in sorted(_cli_subcommand_names()):
         assert (
             name in status
