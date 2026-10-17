@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.419" timestamp="2026-10-17T08:40:31.530944-05:00" hostname="server.trs.private"><testcase classname="tests.test_cli" name="test_comparison_new_process_native_round_trip[file-id-only]" time="0.196"><error message="failed on setup with &quot;AssertionError: Traceback (most recent call last):&#10;    File &quot;&lt;frozen runpy&gt;&quot;, line 198, in _run_module_as_main&#10;    File &quot;&lt;frozen runpy&gt;&quot;, line 88, in _run_code&#10;    File &quot;/private/tmp/dl129-main2-causal/src/doc_lineage/cli.py&quot;, line 304, in &lt;module&gt;&#10;      raise SystemExit(main())&#10;                       ^^^^^^&#10;    File &quot;/private/tmp/dl129-main2-causal/src/doc_lineage/cli.py&quot;, line 275, in main&#10;      raise AssertionError(f&quot;unhandled command: {args.command}&quot;)&#10;  AssertionError: unhandled command: create-comparison&#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['/private/tmp/dl129-main2-venv/bin/python', '-m', 'doc_lineage.cli', 'create-comparison', '--or...   raise AssertionError(f&quot;unhandled command: {args.command}&quot;)\nAssertionError: unhandled command: create-comparison\n').returncode&quot;">tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2534/test_comparison_new_process_na0')
+
+    @pytest.fixture
+    def comparison_inputs(tmp_path):
+        original, modified = tmp_path / "original.docx", tmp_path / "modified.docx"
+        original.write_bytes(_docx("The fee is five dollars."))
+        modified.write_bytes(_docx("The fee is ten dollars."))
+        manifest = tmp_path / "artifact-manifest.json"
+        manifest.write_text('{"evidence": "retain unchanged"}\n', encoding="utf-8")
+        store = tmp_path / "records"
+        result = _comparison_cli(
+            "create-comparison",
+            "--original",
+            original.name,
+            "--modified",
+            modified.name,
+            "--comparison-store",
+            str(store),
+            cwd=tmp_path,
+        )
+&gt;       assert result.returncode == 0, result.stderr.decode()
+E       AssertionError: Traceback (most recent call last):
+E           File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+E           File "&lt;frozen runpy&gt;", line 88, in _run_code
+E           File "/private/tmp/dl129-main2-causal/src/doc_lineage/cli.py", line 304, in &lt;module&gt;
+E             raise SystemExit(main())
+E                              ^^^^^^
+E           File "/private/tmp/dl129-main2-causal/src/doc_lineage/cli.py", line 275, in main
+E             raise AssertionError(f"unhandled command: {args.command}")
+E         AssertionError: unhandled command: create-comparison
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/private/tmp/dl129-main2-venv/bin/python', '-m', 'doc_lineage.cli', 'create-comparison', '--or...   raise AssertionError(f"unhandled command: {args.command}")\nAssertionError: unhandled command: create-comparison\n').returncode
+
+tests/test_cli.py:61: AssertionError</error></testcase></testsuite></testsuites>

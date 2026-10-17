@@ -1,0 +1,14 @@
+[
+  "/opt/anaconda3/bin/python3",
+  "/Users/teacher/Library/CloudStorage/Dropbox/Learning/Code/Orchestrator/src/capability_advisor.py",
+  "--lane",
+  "opener",
+  "--surface",
+  "opener-lane",
+  "--repository",
+  "stranske/Doc-Lineage",
+  "--pr",
+  "129",
+  "--json",
+  "Second bounded main integration on existing PR129 source112. Merge current main preserve persisted DOCX comparison by ID native DOCX export and PDF section pairing legal extraction review privacy atomic durability. Resolve CLI blackline conflicts verify combined native golden PDF extraction filesystem causal disconnections and assess missing O_DIRECTORY fchmod capability handling."
+]

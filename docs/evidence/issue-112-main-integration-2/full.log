@@ -1,0 +1,117 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener
+configfile: pyproject.toml
+testpaths: tests
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 625 items
+
+tests/blackline/test_combined_comparison_modes.py .                      [  0%]
+tests/blackline/test_comparison_run_cli.py .......................       [  3%]
+tests/blackline/test_mutation_pairs.py .                                 [  4%]
+tests/blackline/test_section_id_pairing.py .......................       [  7%]
+tests/compare/test_segment_classification.py ........                    [  8%]
+tests/compare/test_silence_invariant.py ....                             [  9%]
+tests/emit/test_evidence_object.py .......................               [ 13%]
+tests/export/test_docx_redline.py .....                                  [ 14%]
+tests/export/test_docx_redline_golden.py .............                   [ 16%]
+tests/export/test_fact_key_map.py ......................                 [ 19%]
+tests/export/test_fact_key_map_cli.py ......                             [ 20%]
+tests/fixtures/test_public_corpus_manifest.py ......                     [ 21%]
+tests/harvest/test_edgar_ex10_offline.py ..........                      [ 23%]
+tests/ingest/test_docling_segmenter.py ................................. [ 28%]
+...                                                                      [ 28%]
+tests/ingest/test_ingest_synthetic_pdf.py .............................. [ 33%]
+....................                                                     [ 36%]
+tests/ingest/test_lazy_validation_import.py ..                           [ 37%]
+tests/ingest/test_persistence_capabilities.py ...                        [ 37%]
+tests/ingest/test_private_publication.py ..............                  [ 40%]
+tests/ingest/test_variables_provenance.py .............................. [ 44%]
+..                                                                       [ 45%]
+tests/lineage/test_supersession_chain.py ....                            [ 45%]
+tests/lineage/test_supersession_evidence.py ............................ [ 50%]
+...............................................                          [ 57%]
+tests/mutations/test_materialization_contract.py .                       [ 57%]
+tests/mutations/test_mutation_pair_known_diff.py .....                   [ 58%]
+tests/render/test_triple_link_resolver.py .............................. [ 63%]
+.......                                                                  [ 64%]
+tests/synthetic_corpus/test_corpus_generator.py ..                       [ 64%]
+tests/synthetic_corpus/test_ground_truth_replay.py .                     [ 65%]
+tests/test_cli.py ...............................................        [ 72%]
+tests/test_dependency_version_alignment.py .                             [ 72%]
+tests/test_extract_coverage.py ..................                        [ 75%]
+tests/test_extract_lines.py ..........                                   [ 77%]
+tests/test_extract_office.py ........                                    [ 78%]
+tests/test_gate_commit_status_fork_tolerance.py ....................     [ 81%]
+tests/test_identity.py ..............                                    [ 84%]
+tests/test_identity_manifest.py ........................................ [ 90%]
+.............                                                            [ 92%]
+tests/test_issue110_review.py ....                                       [ 93%]
+tests/test_main.py ...                                                   [ 93%]
+tests/test_package_identity.py ....                                      [ 94%]
+tests/test_repo_hygiene.py .                                             [ 94%]
+tests/test_schema_wire_names.py ..................                       [ 97%]
+tests/vocab/test_legal_clauses.py .................                      [100%]
+
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/full.xml -
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.12.2-final-0 _______________
+
+Name                                            Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------
+src/doc_lineage/__init__.py                         5      0      0      0   100%
+src/doc_lineage/adapters/__init__.py                2      0      0      0   100%
+src/doc_lineage/adapters/docling_segmenter.py     330     27    156     27    89%   129->132, 148->150, 180-182, 189-191, 202->204, 205->207, 211, 220, 225-227, 252-253, 272, 275, 278, 290, 293, 296->294, 348-349, 354->356, 364-365, 367->369, 396, 408->410, 411, 420->422, 430, 436-437, 445, 460
+src/doc_lineage/blackline.py                      308     47     88     28    81%   76, 232, 234-235, 249, 252-253, 267-268, 270, 273, 276, 282, 285, 290, 293, 295, 297, 304, 307, 313-314, 327, 342, 404, 408, 411-412, 423, 426, 429, 431, 436, 450, 452, 454, 480, 482-486, 513, 517-520
+src/doc_lineage/cli.py                            156     14     36      4    91%   161, 168, 187, 246-248, 252-261
+src/doc_lineage/compare/__init__.py                 3      0      0      0   100%
+src/doc_lineage/compare/classify.py               104      3     28      3    95%   57, 87, 140
+src/doc_lineage/compare/silence.py                  8      0      4      0   100%
+src/doc_lineage/emit/__init__.py                    2      0      0      0   100%
+src/doc_lineage/emit/evidence.py                   57      3     22      7    87%   47->exit, 50->exit, 53->exit, 56->exit, 62, 147, 149
+src/doc_lineage/export/__init__.py                  2      0      0      0   100%
+src/doc_lineage/export/docx_redline.py              7      0      2      0   100%
+src/doc_lineage/export/fact_key_map.py             51      0     22      0   100%
+src/doc_lineage/extract/__init__.py                40      9     12      1    73%   32-35, 40-42, 89-90
+src/doc_lineage/extract/cache.py                   86      7     28      3    91%   89-90, 92, 96, 135-137
+src/doc_lineage/extract/models.py                  21      0      0      0   100%
+src/doc_lineage/extract/ocr.py                     41     15      6      1    62%   15->exit, 30-45, 72-73, 78
+src/doc_lineage/extract/office.py                  50      3     22      5    89%   53, 55->51, 57->49, 72, 78
+src/doc_lineage/extract/pdf.py                    104     11     24      2    90%   104-106, 113, 116, 195-196, 208-209, 212-213
+src/doc_lineage/extract/variables.py              155      8     64      6    94%   60, 83, 99, 148-149, 177, 183, 197
+src/doc_lineage/harvest/__init__.py                 2      0      0      0   100%
+src/doc_lineage/harvest/edgar_ex10.py             214     40     68      8    77%   56, 74, 86-90, 97, 104, 119, 137-142, 146-174, 189, 215, 217, 308-313
+src/doc_lineage/identity.py                        57      0     10      0   100%
+src/doc_lineage/ingest.py                         184      2     50      3    98%   321, 329->328, 342
+src/doc_lineage/lineage/__init__.py                 2      0      0      0   100%
+src/doc_lineage/lineage/families.py                50      1      6      0    98%   33
+src/doc_lineage/manifest.py                       181      6     76      5    96%   78, 82, 90, 103, 233, 294
+src/doc_lineage/mutations/__init__.py               3      0      0      0   100%
+src/doc_lineage/mutations/catalog.py               10      0      0      0   100%
+src/doc_lineage/mutations/detect.py                25      1      8      2    91%   42, 45->40
+src/doc_lineage/persistence.py                     37      0      6      0   100%
+src/doc_lineage/render/__init__.py                  2      0      0      0   100%
+src/doc_lineage/render/links.py                    69      2     30      2    96%   18, 46
+src/doc_lineage/schema/__init__.py                  4      0      0      0   100%
+src/doc_lineage/schema/_finite.py                  24      4     12      4    78%   12, 30, 33, 35
+src/doc_lineage/schema/change_ledger.py           143     16      4      0    89%   96-98, 121, 183, 210, 231-237, 240, 244, 256-257, 260, 264, 305
+src/doc_lineage/schema/enums.py                    15      0      0      0   100%
+src/doc_lineage/schema/validation.py               50      4     10      0    93%   32-34, 47
+src/doc_lineage/supersession.py                    41      0     26      0   100%
+src/doc_lineage/vocab.py                           22      0      6      0   100%
+-------------------------------------------------------------------------------------------
+TOTAL                                            2667    223    826    111    90%
+Coverage XML written to file /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/coverage.xml
+Required test coverage of 80.0% reached. Total coverage: 89.75%
+================== 625 passed, 2 warnings in 86.75s (0:01:26) ==================

@@ -1,0 +1,12 @@
+{
+  "evidence_id": "8d592d771162c45a5c6558cef38216aa",
+  "excerpt": "4. TAXES The fee is three percent.",
+  "fact_ref": "segment:a78021f2f3b3aaa9-p0003-s0003",
+  "locator": {
+    "order": 3,
+    "page": 2
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "a78021f2f3b3aaa98f95d13885e87ce619b961d74518d581e426d0387e48103c"
+}

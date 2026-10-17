@@ -1,0 +1,29 @@
+{
+  "focused": {
+    "tests": 282,
+    "failure": 0,
+    "error": 0,
+    "skipped": 0
+  },
+  "full": {
+    "tests": 625,
+    "failure": 0,
+    "error": 0,
+    "skipped": 0
+  },
+  "implementation_revision": "795de8a4e74860e212f974f33073fc077adcb0ca",
+  "native": {
+    "actual_executions_entire_integration_session": 34,
+    "all_exit_zero": true,
+    "helper_sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+    "archive": "/opt/anaconda3/lib/python3.12/site-packages/python_redlines_docxodus/_binaries/osx-arm64.tar.gz",
+    "archive_sha256": "c231bd1aefa7af56932cf0aebbd7a0fbe8cf1143eb3baff6abf42dc426c04571",
+    "publisher": "UNKNOWN; ad-hoc; no TeamID",
+    "no_os_prompt_observed": true,
+    "scope": "focused/full/causal/standalone replay including retained initial harness diagnostic; not attributed wholly to full suite"
+  },
+  "coverage": {
+    "combined_percent": 89.75,
+    "unchanged_floor_percent": 80
+  }
+}

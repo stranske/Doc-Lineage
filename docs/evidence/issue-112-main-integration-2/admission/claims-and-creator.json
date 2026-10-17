@@ -1,0 +1,31 @@
+{
+  "claims": {
+    "112": {
+      "target": "stranske/Doc-Lineage#112",
+      "agent": "opener1155-source112-main2-guardian",
+      "pid": 80396,
+      "ts": 1792244166.7755241
+    },
+    "129": {
+      "target": "stranske/Doc-Lineage#129",
+      "agent": "codex",
+      "pid": 80826,
+      "ts": 1792244174.456425,
+      "log": "/Users/teacher/.codex/handoff/dispatch-logs/stranske__Doc-Lineage_129.codex.log",
+      "worktree": "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener",
+      "lane": "opener",
+      "task_type": "implement",
+      "mode": "full",
+      "run_id": "stranske__Doc-Lineage_129-codex-1792244174435183000",
+      "started_ts": 1792244174,
+      "updated_ts": 1792244174.456425
+    }
+  },
+  "creator": {
+    "run_id": "stranske__Doc-Lineage_112-codex-1792238404672546000",
+    "rc": 0,
+    "rc_of": "agent",
+    "ts": 1792239308,
+    "release_rc": 0
+  }
+}

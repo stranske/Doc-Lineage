@@ -1,0 +1,9 @@
+{
+  "exit_code": 1,
+  "surface": "opener-lane",
+  "lane": "opener",
+  "offers": [],
+  "declines": [],
+  "error": "PermissionError capabilities.json.lock",
+  "disposition": "fail-open; no trigger or usefulness claim"
+}

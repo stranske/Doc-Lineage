@@ -1,0 +1,22 @@
+{
+  "executable": "/private/tmp/dl129-main2-venv/bin/python",
+  "base": "/opt/anaconda3/bin/python3",
+  "packages": {
+    "black": "26.5.1",
+    "mypy": "2.3.1",
+    "pandas": "3.0.3",
+    "python-docx": "1.1.2",
+    "pytest-cov": "7.1.0",
+    "ruff": "0.16.7",
+    "python-redlines": "0.3.0",
+    "pytest": "9.1.1",
+    "numexpr": "2.8.7",
+    "python-redlines-docxodus": "1.0.0",
+    "setuptools": "83.0.0",
+    "Bottleneck": "1.3.7",
+    "jsonschema": "4.22.0",
+    "pypdfium2": "5.13.0",
+    "reportlab": "5.0.1",
+    "pypdf": "6.0.0"
+  }
+}

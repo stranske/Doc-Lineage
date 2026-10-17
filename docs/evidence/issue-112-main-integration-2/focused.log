@@ -1,0 +1,40 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 282 items
+
+tests/test_cli.py ...............................................        [ 16%]
+tests/ingest/test_docling_segmenter.py ................................. [ 28%]
+...                                                                      [ 29%]
+tests/ingest/test_ingest_synthetic_pdf.py .............................. [ 40%]
+....................                                                     [ 47%]
+tests/ingest/test_lazy_validation_import.py ..                           [ 47%]
+tests/ingest/test_persistence_capabilities.py ...                        [ 48%]
+tests/ingest/test_private_publication.py ..............                  [ 53%]
+tests/ingest/test_variables_provenance.py .............................. [ 64%]
+..                                                                       [ 65%]
+tests/blackline/test_combined_comparison_modes.py .                      [ 65%]
+tests/blackline/test_comparison_run_cli.py .......................       [ 73%]
+tests/blackline/test_mutation_pairs.py .                                 [ 74%]
+tests/blackline/test_section_id_pairing.py .......................       [ 82%]
+tests/export/test_docx_redline.py .....                                  [ 84%]
+tests/export/test_docx_redline_golden.py .............                   [ 88%]
+tests/export/test_fact_key_map.py ......................                 [ 96%]
+tests/export/test_fact_key_map_cli.py ......                             [ 98%]
+tests/test_package_identity.py ....                                      [100%]
+
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__129__opener/docs/evidence/issue-112-main-integration-2/focused.xml -
+================== 282 passed, 2 warnings in 70.20s (0:01:10) ==================

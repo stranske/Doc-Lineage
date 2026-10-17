@@ -1,0 +1,56 @@
+[
+  {
+    "artifact_id": "b709931830bf2185-segments",
+    "document_id": "document:b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f",
+    "entity_ref": "fund:alpha_opportunities_iv",
+    "evidence": {
+      "evidence_id": "48060ba6590f638153af45133c50ca43",
+      "excerpt": "SYNTHETIC LIMITED PARTNERSHIP AGREEMENT Alpha Opportunities Fund IV, L.P. 1. MANAGEMENT FEE The Partnership shall pay the General Partner an annual management fee equal to 1.75% of aggregate Capital Commitments during the Commitment Period, and 1.25% of invested capital thereafter. 2. CARRIED INTEREST Carried interest is 20% of Distributable Proceeds, subject to a preferred return of 8% compounded annually.",
+      "fact_ref": "segment:b709931830bf2185-p0001-s0001",
+      "locator": {
+        "order": 1,
+        "page": 0
+      },
+      "method": "text",
+      "schema_version": "evidence-object/v1",
+      "source_id": "b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f"
+    },
+    "evidence_ref": "evidence/48060ba6590f638153af45133c50ca43.json",
+    "extractor_run_id": "extract-d665982f8666bc9edfea3663",
+    "ontology_family": "clause",
+    "ontology_key": "legal.fees.management_rate",
+    "provenance": {
+      "document": {
+        "locator": {
+          "order": 1,
+          "page": 0
+        },
+        "source_id": "b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f"
+      },
+      "mirror": {
+        "blob_path": "source/before.pdf",
+        "mirror_root": ".",
+        "page_anchor": "#page=1"
+      }
+    },
+    "schema_version": "tracked-variable/v1",
+    "status": "asserted",
+    "value_structured": {
+      "schedule": [
+        {
+          "basis": "aggregate Capital Commitments",
+          "period": "Commitment Period",
+          "rate": 1.75
+        },
+        {
+          "basis": "invested capital",
+          "period": "thereafter",
+          "rate": 1.25
+        }
+      ],
+      "unit": "percent_per_annum"
+    },
+    "value_text": "1. MANAGEMENT FEE The Partnership shall pay the General Partner an annual management fee equal to 1.75% of aggregate Capital Commitments during the Commitment Period, and 1.25% of invested capital thereafter.",
+    "variable_id": "var:b0fa3f612a2ec56bea7a16ac3be566d003a8a60f39f56ddade07e2f500b8725b"
+  }
+]

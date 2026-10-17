@@ -1,0 +1,15 @@
+{
+  "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2543/test_golden_rejects_partial_ma0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+  "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "argv": [
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2543/test_golden_rejects_partial_ma0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmpgbr2b72s",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmp6e9ne05m",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmp784a720r",
+    "--author=Counsel"
+  ],
+  "pid": 85860,
+  "before_ns": 1792244465812374000,
+  "original_sha256": "fc727260ca557ac53d6386a1e13a8ceee2cfe27c7a090c6a1407b23dc21f86dc",
+  "modified_sha256": "1f3d1a4aac6d218e51f2a457cf0743c9d11735c76c68cda226f6f48227848915"
+}

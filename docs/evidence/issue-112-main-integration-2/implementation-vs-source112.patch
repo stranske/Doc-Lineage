@@ -1,0 +1,1007 @@
+diff --git a/README.md b/README.md
+index 5f0b25d..2456423 100644
+--- a/README.md
++++ b/README.md
+@@ -17,15 +17,42 @@ The command writes native Word insertion/deletion markup. Without `--output`, it
+ writes DOCX bytes to standard output. Input files remain unchanged: destinations
+ that alias either input, including symbolic and hard links, are rejected.
+ 
+-Here `--blackline` is a boolean flag for a file-pair comparison. The planned
+-`--blackline <id>` interface in [issue #15](https://github.com/stranske/Doc-Lineage/issues/15)
+-is not implemented: it needs a persisted comparison-ID lookup contract connecting
+-[ingest #8](https://github.com/stranske/Doc-Lineage/issues/8) and
+-[blackline #10](https://github.com/stranske/Doc-Lineage/issues/10). Ingest excludes
+-blackline/diff. The extracted-PDF section-pairing lookup described below is a
+-separate mode and does not complete native DOCX-by-ID replay acceptance.
+-A path is not treated as a substitute comparison ID. File-pair export therefore
+-does not complete the ID-based scope of #15.
++## Comparison records
++
++Create a local record, then export by ID in another process (even from another
++working directory):
++
++```bash
++doc-lineage create-comparison --original original.docx --modified revised.docx
++# prints cmp_<32 lowercase hexadecimal characters>
++doc-lineage export-docx --blackline cmp_<printed value> --output redline.docx
++```
++
++Each JSON record has `schema_version: "docx-comparison/v1"`, a random UUID4-based
++`comparison_id` (`cmp_` followed by 32 lowercase hex characters), ordered
++`original_path` / `modified_path` absolute DOCX locations, and
++`original_sha256` / `modified_sha256` digests of the complete original packages.
++Records are created exclusively as `<ID>.json` in `~/.doc-lineage/comparisons`.
++Use `--comparison-store /absolute/local/directory` on both commands to select a
++different store. The ID is separate from ingest run IDs and content identities;
++a filesystem path is never a comparison ID. Unknown IDs, malformed records and
++unsupported schema versions fail explicitly.
++
++At every ID export, both files are reopened and their bytes checked against the
++stored SHA-256 digests before those same buffers reach the native redline renderer.
++Missing/deleted sources or changed bytes fail without publishing output, including
++stdout. An ID cannot be combined with replacement input paths. The bare boolean
++`--blackline` file-pair form above remains available. Output aliases of either
++source or the selected comparison record are rejected.
++
++Retain the original DOCX files and any ingest manifests locally as immutable
++evidence; these commands neither edit them nor copy them into a managed archive.
++Records preserve source locations and hashes, not backup bytes: moving or deleting
++an input prevents replay, and the CLI never silently substitutes another source.
++This is a DOCX/package comparison through the existing tracked-changes renderer,
++with its existing fidelity limits. Extracted-PDF text/section comparison remains a
++distinct mode: it does not preserve DOCX layout, generate a Word package, or imply
++PDF-to-DOCX conversion. No hosted service or database is required.
+ 
+ Source distributions include the export tests under `tests/export/` and their
+ `tests/fixtures/fact_key_map/tracked_variables.json` fixture so the native
+diff --git a/docs/section-pairing.md b/docs/section-pairing.md
+index 14bb34d..3f7789b 100644
+--- a/docs/section-pairing.md
++++ b/docs/section-pairing.md
+@@ -54,8 +54,8 @@ PR #127's separate schema is `docx-comparison/v1`, with ordered
+ `original_sha256` / `modified_sha256` package digests. The common conventions are
+ an opaque ID, a versioned record, original-byte identity and explicit order.
+ The section schema nests these digests beside extraction bindings and carries an
+-explicit mode. Neither loader accepts the other schema. This implementation is
+-based on main; it does not import or stack #127's unmerged implementation.
++explicit mode. Neither loader accepts the other schema. Both implementations coexist after merging main at
++`c274b866e695d92a083c182c19f3119cab01e0b0` (including merged PR #127).
+ Native DOCX-by-ID acceptance and README issue #15 completion remain pending that
+ separate scope. No shared workflow, identity convention or fleet schema changes.
+ 
+@@ -106,3 +106,14 @@ Checksums detect corruption and accidental modification, not a malicious actor
+ rewriting every local record and checksum. These are trusted local records, not
+ signed attestations. A future engine change needs explicit version/migration
+ policy; a replay decision mismatch fails rather than silently rewriting history.
++
++### Local filesystem capability boundary
++
++On the tested POSIX runtime, private artifacts use descriptor chmod0600 and
++publication syncs file bytes followed by the containing directory. Real sync
++errors propagate. Where `O_DIRECTORY` is absent, publication emits a RuntimeWarning
++and directory durability is unsupported. Where `fchmod` is absent, path chmod
++runs before payload writes and emits a RuntimeWarning: owner-only privacy is
++unverified on that platform. Chmod errors propagate. This compatibility path
++does not establish Windows ACL, Office, or hardware power-loss guarantees; it
++requires no installer, helper, security approval, or privacy-setting changes.
+diff --git a/src/doc_lineage/blackline.py b/src/doc_lineage/blackline.py
+index 0cea1c3..fb67a1d 100644
+--- a/src/doc_lineage/blackline.py
++++ b/src/doc_lineage/blackline.py
+@@ -2,15 +2,19 @@
+ 
+ from __future__ import annotations
+ 
++import hashlib
+ import json
+ import math
+ import os
+ import re
++import zlib
+ from collections.abc import Iterable, Sequence
+ from dataclasses import dataclass
++from io import BytesIO
+ from pathlib import Path, PurePosixPath
+ from typing import Any, Literal
+ from uuid import uuid4
++from zipfile import BadZipFile, ZipFile
+ 
+ from jsonschema import ValidationError
+ 
+@@ -449,3 +453,88 @@ def load_section_comparison(
+     except (KeyError, TypeError, AttributeError) as exc:
+         raise ValueError("invalid comparison artifact structure") from exc
+     return record
++
++
++COMPARISON_SCHEMA_VERSION = "docx-comparison/v1"
++COMPARISON_ID_RE = re.compile(r"cmp_[0-9a-f]{32}")
++
++
++@dataclass(frozen=True)
++class ComparisonRecord:
++    comparison_id: str
++    original_path: Path
++    modified_path: Path
++    original_sha256: str
++    modified_sha256: str
++
++
++def comparison_store_path(store: Path | None = None) -> Path:
++    """Local records are independent of the invoking process's working directory."""
++    return store if store is not None else Path.home() / ".doc-lineage" / "comparisons"
++
++
++def _validate_docx(content: bytes, path: Path) -> None:
++    try:
++        with ZipFile(BytesIO(content)) as package:
++            if not {"[Content_Types].xml", "word/document.xml"} <= set(package.namelist()):
++                raise ValueError(f"Not a DOCX package: {path}")
++            if package.testzip() is not None:
++                raise ValueError(f"Corrupt DOCX package: {path}")
++    except BadZipFile as exc:
++        raise ValueError(f"Not a DOCX package: {path}") from exc
++    except (zlib.error, EOFError, NotImplementedError, RuntimeError) as exc:
++        raise ValueError(f"Corrupt DOCX package: {path}") from exc
++
++
++def write_comparison_record(original: Path, modified: Path, *, store: Path | None = None) -> str:
++    """Bind ordered DOCX inputs to their exact bytes without modifying sources."""
++    record = {"schema_version": COMPARISON_SCHEMA_VERSION, "comparison_id": f"cmp_{uuid4().hex}"}
++    for role, source in (("original", original), ("modified", modified)):
++        path = source.resolve(strict=True)
++        content = path.read_bytes()
++        _validate_docx(content, path)
++        record[f"{role}_path"] = str(path)
++        record[f"{role}_sha256"] = hashlib.sha256(content).hexdigest()
++    directory = comparison_store_path(store)
++    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
++    # Exclusive creation never replaces an earlier record, even on an ID collision.
++    target = directory / f"{record['comparison_id']}.json"
++    descriptor = os.open(
++        target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o600
++    )
++    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
++        output.write(json.dumps(record, indent=2, sort_keys=True) + "\n")
++    return record["comparison_id"]
++
++
++def load_comparison_record(comparison_id: str, *, store: Path | None = None) -> ComparisonRecord:
++    """Resolve an opaque ID only; a path is never interpreted as a record location."""
++    if COMPARISON_ID_RE.fullmatch(comparison_id) is None:
++        raise ValueError(f"Not a comparison ID: {comparison_id!r}; expected cmp_<32 lowercase hex>")
++    path = comparison_store_path(store) / f"{comparison_id}.json"
++    try:
++        record = json.loads(path.read_text(encoding="utf-8"))
++    except FileNotFoundError as exc:
++        raise ValueError(f"Unknown comparison ID: {comparison_id}") from exc
++    except (ValueError, UnicodeError) as exc:
++        raise ValueError(f"Invalid comparison record: {comparison_id}") from exc
++    if (
++        not isinstance(record, dict)
++        or record.get("schema_version") != COMPARISON_SCHEMA_VERSION
++        or record.get("comparison_id") != comparison_id
++        or any(
++            not isinstance(record.get(f"{role}_path"), str)
++            or not Path(record[f"{role}_path"]).is_absolute()
++            or not isinstance(record.get(f"{role}_sha256"), str)
++            or re.fullmatch(r"[0-9a-f]{64}", record[f"{role}_sha256"]) is None
++            for role in ("original", "modified")
++        )
++    ):
++        raise ValueError(f"Invalid comparison record: {comparison_id}")
++    return ComparisonRecord(
++        comparison_id=comparison_id,
++        original_path=Path(record["original_path"]),
++        modified_path=Path(record["modified_path"]),
++        original_sha256=record["original_sha256"],
++        modified_sha256=record["modified_sha256"],
++    )
+diff --git a/src/doc_lineage/cli.py b/src/doc_lineage/cli.py
+index 149041a..cdbac11 100644
+--- a/src/doc_lineage/cli.py
++++ b/src/doc_lineage/cli.py
+@@ -3,13 +3,20 @@
+ from __future__ import annotations
+ 
+ import argparse
++import hashlib
+ import json
+ import os
+ import sys
+ from collections.abc import Sequence
+ from pathlib import Path
+ 
+-from doc_lineage.blackline import create_section_comparison, load_section_comparison
++from doc_lineage.blackline import (
++    comparison_store_path,
++    create_section_comparison,
++    load_comparison_record,
++    load_section_comparison,
++    write_comparison_record,
++)
+ from doc_lineage.export import export_docx_redline
+ from doc_lineage.export.fact_key_map import export_fact_key_map
+ from doc_lineage.extract.variables import publish_variables
+@@ -70,8 +77,9 @@ def build_parser() -> argparse.ArgumentParser:
+         "export-docx",
+         help="Write a DOCX containing native Word tracked changes between two documents.",
+     )
+-    export.add_argument("--original", type=Path, required=True, help="Baseline DOCX.")
+-    export.add_argument("--modified", type=Path, required=True, help="Revised DOCX.")
++    export.add_argument("--original", type=Path, help="Baseline DOCX for file-pair form.")
++    export.add_argument("--modified", type=Path, help="Revised DOCX for file-pair form.")
++    export.add_argument("--comparison-store", type=Path, help="Local comparison record directory.")
+     export.add_argument(
+         "--output",
+         type=Path,
+@@ -85,9 +93,19 @@ def build_parser() -> argparse.ArgumentParser:
+     )
+     export.add_argument(
+         "--blackline",
+-        action="store_true",
+-        help="Required acknowledgement that a tracked-changes comparison is being produced.",
++        nargs="?",
++        const=True,
++        default=False,
++        metavar="ID",
++        help="Comparison ID, or bare acknowledgement for the file-pair form.",
++    )
++
++    comparison = subparsers.add_parser(
++        "create-comparison", help="Persist ordered DOCX paths and byte hashes; print an opaque ID."
+     )
++    comparison.add_argument("--original", type=Path, required=True)
++    comparison.add_argument("--modified", type=Path, required=True)
++    comparison.add_argument("--comparison-store", type=Path)
+ 
+     fact_map = subparsers.add_parser(
+         "export-fact-key-map",
+@@ -136,21 +154,41 @@ def _run_export_docx(args: argparse.Namespace) -> int:
+         print("doc-lineage export-docx: --blackline is required", file=sys.stderr)
+         return 1
+     try:
++        protected: list[Path] = []
++        record = None
++        if isinstance(args.blackline, str):
++            if args.original is not None or args.modified is not None:
++                raise ValueError("Comparison ID cannot be combined with --original or --modified")
++            record = load_comparison_record(args.blackline, store=args.comparison_store)
++            args.original, args.modified = record.original_path, record.modified_path
++            protected.append(
++                comparison_store_path(args.comparison_store) / f"{args.blackline}.json"
++            )
++        elif args.original is None or args.modified is None:
++            raise ValueError("File-pair --blackline requires --original and --modified")
+         if args.output is not None:
+             destination = args.output.resolve()
+-            for source in (args.original, args.modified):
++            for source in (args.original, args.modified, *protected):
+                 if destination == source.resolve() or (
+                     args.output.exists() and os.path.samefile(args.output, source)
+                 ):
+                     raise ValueError(
+                         "--output must not be the same file as --original or --modified"
+                     )
+-        redline = export_docx_redline(
+-            args.original.read_bytes(),
+-            args.modified.read_bytes(),
+-            author=args.author,
+-        )
+-    except (FileNotFoundError, ValueError) as exc:
++        original = args.original.read_bytes()
++        modified = args.modified.read_bytes()
++        # Verify the same byte buffers passed to the renderer, avoiding a second file read.
++        if record is not None:
++            for role, content, expected in (
++                ("original", original, record.original_sha256),
++                ("modified", modified, record.modified_sha256),
++            ):
++                if hashlib.sha256(content).hexdigest() != expected:
++                    raise ValueError(
++                        f"SHA-256 mismatch for {role} in comparison {record.comparison_id}"
++                    )
++        redline = export_docx_redline(original, modified, author=args.author)
++    except (OSError, ValueError) as exc:
+         print(f"doc-lineage export-docx: {exc}", file=sys.stderr)
+         return 1
+     if args.output is None:
+@@ -200,6 +238,16 @@ def main(argv: Sequence[str] | None = None) -> int:
+             print(f"doc-lineage {args.command}: {exc}", file=sys.stderr)
+             return 1
+         return 0
++    if args.command == "create-comparison":
++        try:
++            comparison_id = write_comparison_record(
++                args.original, args.modified, store=args.comparison_store
++            )
++        except (OSError, ValueError) as exc:
++            print(f"doc-lineage create-comparison: {exc}", file=sys.stderr)
++            return 1
++        print(comparison_id)
++        return 0
+     if args.command == "extract-variables":
+         try:
+             manifest = publish_variables(
+diff --git a/src/doc_lineage/persistence.py b/src/doc_lineage/persistence.py
+index 7e9078d..9e449b7 100644
+--- a/src/doc_lineage/persistence.py
++++ b/src/doc_lineage/persistence.py
+@@ -4,11 +4,19 @@ from __future__ import annotations
+ 
+ import os
+ import tempfile
++import warnings
+ from pathlib import Path
+ 
+ 
+ def sync_directory(directory: Path) -> None:
+     """Persist directory entry changes before reporting successful publication."""
++    if not hasattr(os, "O_DIRECTORY"):
++        warnings.warn(
++            "O_DIRECTORY unavailable: directory durability is unsupported on this platform",
++            RuntimeWarning,
++            stacklevel=2,
++        )
++        return
+     descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+     try:
+         os.fsync(descriptor)
+@@ -25,7 +33,10 @@ def publish_exclusive(path: Path, payload: bytes, *, prefix: str) -> None:
+     descriptor, temporary = tempfile.mkstemp(prefix=prefix, dir=path.parent)
+     try:
+         with os.fdopen(descriptor, "wb") as output:
+-            os.fchmod(output.fileno(), 0o600)
++            if hasattr(os, "fchmod"):
++                os.fchmod(output.fileno(), 0o600)
++            else:
++                _chmod_fallback(Path(temporary))
+             output.write(payload)
+             output.flush()
+             os.fsync(output.fileno())
+@@ -39,6 +50,19 @@ def write_private(path: Path, payload: bytes) -> None:
+     """Restrict new and existing artifacts before writing sensitive bytes."""
+     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT, 0o600)
+     with os.fdopen(descriptor, "wb") as output:
+-        os.fchmod(output.fileno(), 0o600)
++        if hasattr(os, "fchmod"):
++            os.fchmod(output.fileno(), 0o600)
++        else:
++            _chmod_fallback(path)
+         output.truncate(0)
+         output.write(payload)
++
++
++def _chmod_fallback(path: Path) -> None:
++    """Use the available path API without promising unverified platform ACLs."""
++    warnings.warn(
++        "fchmod unavailable: using path chmod; owner-only privacy is unverified on this platform",
++        RuntimeWarning,
++        stacklevel=3,
++    )
++    os.chmod(path, 0o600)
+diff --git a/tests/blackline/test_combined_comparison_modes.py b/tests/blackline/test_combined_comparison_modes.py
+new file mode 100644
+index 0000000..011cdcf
+--- /dev/null
++++ b/tests/blackline/test_combined_comparison_modes.py
+@@ -0,0 +1,71 @@
++"""The integrated CLI retains distinct PDF and native DOCX ID contracts."""
++
++import json
++from pathlib import Path
++
++from tests.export.test_docx_redline_golden import _docx
++
++from doc_lineage import blackline
++from doc_lineage.cli import main
++from doc_lineage.ingest import ingest_document
++
++
++def test_combined_cli_keeps_both_comparison_schemas(tmp_path, capsys):
++    original, modified = tmp_path / "a.docx", tmp_path / "b.docx"
++    original.write_bytes(_docx("The fee is five dollars."))
++    modified.write_bytes(_docx("The fee is ten dollars."))
++    store = tmp_path / "comparisons"
++    assert (
++        main(
++            [
++                "create-comparison",
++                "--original",
++                str(original),
++                "--modified",
++                str(modified),
++                "--comparison-store",
++                str(store),
++            ]
++        )
++        == 0
++    ), "DOCX_CREATION_DISPATCH_SURVIVES_INTEGRATION"
++    docx_id = capsys.readouterr().out.strip()
++    pdf = Path(__file__).resolve().parents[1] / "fixtures/synthetic_lpa.pdf"
++    changed = tmp_path / "changed.pdf"
++    changed.write_bytes(pdf.read_bytes().replace(b"MANAGEMENT FEE", b"DIFFERENT FEE!"))
++    left, right = tmp_path / "left", tmp_path / "right"
++    for source, run in [(pdf, left), (changed, right)]:
++        ingest_document(source, output_dir=run, allow_docling=False)
++    assert (
++        main(["pair-sections", str(left), str(right), "--store", str(store)]) == 0
++    ), "PDF_PAIRING_DISPATCH_SURVIVES_INTEGRATION"
++    pdf_id = capsys.readouterr().out.strip()
++    before = {path: path.read_bytes() for path in store.iterdir()}
++    assert docx_id != pdf_id
++    assert blackline.load_comparison_record(docx_id, store=store).original_path == original
++    assert main(["lookup-section-pairing", pdf_id, "--store", str(store)]) == 0
++    replay = json.loads(capsys.readouterr().out)
++    assert replay["schema_version"] == "section-pairing-comparison/v1"
++    assert replay["decisions"], "PDF_PAIRING_DECISIONS_SURVIVE_INTEGRATION"
++    assert (
++        main(["lookup-section-pairing", docx_id, "--store", str(store)]) == 1
++    ), "SECTION_LOADER_REJECTS_DOCX_SCHEMA"
++    assert capsys.readouterr().out == ""
++    output = tmp_path / "not-pdf.docx"
++    assert (
++        main(
++            [
++                "export-docx",
++                "--blackline",
++                pdf_id,
++                "--comparison-store",
++                str(store),
++                "--output",
++                str(output),
++            ]
++        )
++        == 1
++    ), "DOCX_LOADER_REJECTS_SECTION_SCHEMA"
++    assert capsys.readouterr().out == ""
++    assert not output.exists()
++    assert all(path.read_bytes() == payload for path, payload in before.items())
+diff --git a/tests/export/test_docx_redline_golden.py b/tests/export/test_docx_redline_golden.py
+index 36170db..9c10790 100644
+--- a/tests/export/test_docx_redline_golden.py
++++ b/tests/export/test_docx_redline_golden.py
+@@ -9,6 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
+ 
+ import pytest
+ 
++from doc_lineage.cli import main
+ from doc_lineage.export import export_docx_redline
+ 
+ W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+@@ -158,6 +159,7 @@ def test_golden_rejects_partial_markup(engine_cache, monkeypatch, removed_tag, e
+         test_tracked_changes_present(engine_cache)
+ 
+ 
++@pytest.mark.parametrize("by_id", [False, True], ids=["direct", "comparison-id"])
+ @pytest.mark.parametrize(
+     ("original_text", "modified_text", "has_insertions", "has_deletions"),
+     [
+@@ -169,9 +171,53 @@ def test_golden_rejects_partial_markup(engine_cache, monkeypatch, removed_tag, e
+     ids=["insertion-only", "deletion-only", "unchanged", "unicode-and-xml-characters"],
+ )
+ def test_revision_round_trip(
+-    engine_cache, original_text, modified_text, has_insertions, has_deletions
++    engine_cache,
++    tmp_path,
++    capsys,
++    by_id,
++    original_text,
++    modified_text,
++    has_insertions,
++    has_deletions,
+ ):
+-    redline = export_docx_redline(_docx(original_text), _docx(modified_text))
++    if by_id:
++        original, modified = tmp_path / "original.docx", tmp_path / "modified.docx"
++        original.write_bytes(_docx(original_text))
++        modified.write_bytes(_docx(modified_text))
++        store = tmp_path / "comparisons"
++        assert (
++            main(
++                [
++                    "create-comparison",
++                    "--original",
++                    str(original),
++                    "--modified",
++                    str(modified),
++                    "--comparison-store",
++                    str(store),
++                ]
++            )
++            == 0
++        )
++        comparison_id = capsys.readouterr().out.strip()
++        output = tmp_path / "redline.docx"
++        assert (
++            main(
++                [
++                    "export-docx",
++                    "--blackline",
++                    comparison_id,
++                    "--comparison-store",
++                    str(store),
++                    "--output",
++                    str(output),
++                ]
++            )
++            == 0
++        )
++        redline = output.read_bytes()
++    else:
++        redline = export_docx_redline(_docx(original_text), _docx(modified_text))
+ 
+     with ZipFile(BytesIO(redline)) as package:
+         assert package.testzip() is None
+diff --git a/tests/ingest/test_persistence_capabilities.py b/tests/ingest/test_persistence_capabilities.py
+new file mode 100644
+index 0000000..716110a
+--- /dev/null
++++ b/tests/ingest/test_persistence_capabilities.py
+@@ -0,0 +1,62 @@
++"""Bounded fallback controls; these do not simulate Windows ACL guarantees."""
++
++import os
++import stat
++from pathlib import Path
++
++import pytest
++
++from doc_lineage import persistence
++from doc_lineage.ingest import ingest_document
++
++
++def test_missing_posix_capabilities_warn_and_retain_complete_ingest(tmp_path, monkeypatch):
++    source = Path(__file__).resolve().parents[1] / "fixtures/synthetic_lpa.pdf"
++    monkeypatch.delattr(persistence.os, "O_DIRECTORY")
++    monkeypatch.delattr(persistence.os, "fchmod")
++    with pytest.warns(RuntimeWarning) as observed:
++        result = ingest_document(source, output_dir=tmp_path / "run", allow_docling=False)
++    messages = [str(w.message) for w in observed]
++    assert any(
++        "directory durability is unsupported" in w for w in messages
++    ), "MISSING_DIRECTORY_CAPABILITY_IS_EXPLICIT"
++    assert any(
++        "owner-only privacy is unverified" in w for w in messages
++    ), "MISSING_PRIVACY_CAPABILITY_IS_EXPLICIT"
++    assert (
++        result.manifest_path.parent / f"source-{result.source_sha256}.bin"
++    ).read_bytes() == source.read_bytes()
++    # The fallback actually chmods on this POSIX host; this is not a Windows claim.
++    assert stat.S_IMODE(result.segments_path.stat().st_mode) == 0o600
++
++
++def test_missing_fchmod_restricts_existing_file_before_write(tmp_path, monkeypatch):
++    path = tmp_path / "sensitive.json"
++    path.write_bytes(b"old bytes")
++    path.chmod(0o666)
++    monkeypatch.delattr(persistence.os, "fchmod")
++    chmod = os.chmod
++
++    def check_before_write(target, mode):
++        assert path.read_bytes() == b"old bytes", "FALLBACK_CHMOD_PRECEDES_WRITE"
++        chmod(target, mode)
++
++    monkeypatch.setattr(persistence.os, "chmod", check_before_write)
++    with pytest.warns(RuntimeWarning, match="privacy is unverified"):
++        persistence.write_private(path, b"new bytes")
++    assert path.read_bytes() == b"new bytes"
++    assert stat.S_IMODE(path.stat().st_mode) == 0o600
++
++
++def test_fallback_chmod_failure_preserves_existing_bytes(tmp_path, monkeypatch):
++    path = tmp_path / "sensitive.json"
++    path.write_bytes(b"retained")
++    monkeypatch.delattr(persistence.os, "fchmod")
++
++    def fail(*args):
++        raise OSError("chmod denied")
++
++    monkeypatch.setattr(persistence.os, "chmod", fail)
++    with pytest.warns(RuntimeWarning), pytest.raises(OSError, match="chmod denied"):
++        persistence.write_private(path, b"must not write")
++    assert path.read_bytes() == b"retained"
+diff --git a/tests/test_cli.py b/tests/test_cli.py
+index d7a8c1f..f44a36e 100644
+--- a/tests/test_cli.py
++++ b/tests/test_cli.py
+@@ -11,12 +11,269 @@ import hashlib
+ import http.client
+ import json
+ import os
++import re
++import subprocess
++import sys
++from io import BytesIO
+ from pathlib import Path
+ from unittest.mock import MagicMock, Mock
++from xml.etree import ElementTree as ET
++from zipfile import ZipFile
+ 
+ import pytest
+ 
+ from doc_lineage.cli import main
++from tests.export.test_docx_redline_golden import NS, W, _docx, _visible_text
++
++
++def _comparison_cli(*args: str, cwd: Path) -> subprocess.CompletedProcess[bytes]:
++    env = os.environ.copy()
++    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
++    env["XDG_CACHE_HOME"] = str(cwd / "engine-cache")
++    return subprocess.run(
++        [sys.executable, "-m", "doc_lineage.cli", *args],
++        cwd=cwd,
++        env=env,
++        capture_output=True,
++        timeout=120,
++        check=False,
++    )
++
++
++@pytest.fixture
++def comparison_inputs(tmp_path):
++    original, modified = tmp_path / "original.docx", tmp_path / "modified.docx"
++    original.write_bytes(_docx("The fee is five dollars."))
++    modified.write_bytes(_docx("The fee is ten dollars."))
++    manifest = tmp_path / "artifact-manifest.json"
++    manifest.write_text('{"evidence": "retain unchanged"}\n', encoding="utf-8")
++    store = tmp_path / "records"
++    result = _comparison_cli(
++        "create-comparison",
++        "--original",
++        original.name,
++        "--modified",
++        modified.name,
++        "--comparison-store",
++        str(store),
++        cwd=tmp_path,
++    )
++    assert result.returncode == 0, result.stderr.decode()
++    comparison_id = result.stdout.decode().strip()
++    assert re.fullmatch(r"cmp_[0-9a-f]{32}", comparison_id)
++    return original, modified, manifest, store, comparison_id
++
++
++@pytest.mark.parametrize("by_id", [True, False], ids=["id-only", "file-pair"])
++@pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
++def test_comparison_new_process_native_round_trip(comparison_inputs, tmp_path, by_id, to_file):
++    original, modified, manifest, store, comparison_id = comparison_inputs
++    record_path = store / f"{comparison_id}.json"
++    preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
++    record = json.loads(record_path.read_text())
++    assert record == {
++        "schema_version": "docx-comparison/v1",
++        "comparison_id": comparison_id,
++        "original_path": str(original),
++        "modified_path": str(modified),
++        "original_sha256": hashlib.sha256(original.read_bytes()).hexdigest(),
++        "modified_sha256": hashlib.sha256(modified.read_bytes()).hexdigest(),
++    }
++    elsewhere = tmp_path / "fresh-process-cwd"
++    elsewhere.mkdir()
++    output = elsewhere / "redline.docx"
++    selection = (
++        ["--blackline", comparison_id, "--comparison-store", str(store)]
++        if by_id
++        else ["--blackline", "--original", str(original), "--modified", str(modified)]
++    )
++    result = _comparison_cli(
++        "export-docx",
++        *selection,
++        *(["--output", str(output)] if to_file else []),
++        "--author",
++        "Counsel",
++        cwd=elsewhere,
++    )
++    assert result.returncode == 0, result.stderr.decode()
++    assert result.stderr == b""
++    if to_file:
++        assert result.stdout.decode().splitlines() == [f"blackline: {output}"]
++        redline = output.read_bytes()
++    else:
++        assert not output.exists()
++        # Parse the raw stream, so a status line or text-mode corruption fails.
++        assert result.stdout.startswith(b"PK\x03\x04")
++        redline = result.stdout
++    with ZipFile(BytesIO(redline)) as package:
++        assert package.testzip() is None
++        document = ET.fromstring(package.read("word/document.xml"))
++    revisions = document.findall(".//w:ins", NS) + document.findall(".//w:del", NS)
++    assert document.findall(".//w:ins", NS), "Expected native Word insertion markup"
++    assert document.findall(".//w:del", NS), "Expected native Word deletion markup"
++    assert all(node.get(f"{{{W}}}author") == "Counsel" for node in revisions)
++    assert all(node.get(f"{{{W}}}id") is not None for node in revisions)
++    assert _visible_text(document, "ins") == "The fee is five dollars."
++    assert _visible_text(document, "del") == "The fee is ten dollars."
++    assert all(path.read_bytes() == content for path, content in preserved.items())
++
++
++@pytest.mark.parametrize("role", ["original", "modified"])
++@pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
++def test_comparison_sha256_check_disconnection(comparison_inputs, tmp_path, role, to_file):
++    """Named mutation gate: valid changed DOCX bytes MUST fail before publication."""
++    original, modified, manifest, store, comparison_id = comparison_inputs
++    source = original if role == "original" else modified
++    source.write_bytes(_docx("Changed but still a valid DOCX package."))
++    record_path = store / f"{comparison_id}.json"
++    preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
++    output = tmp_path / "unchanged-output.docx"
++    output.write_bytes(b"existing output must survive")
++    result = _comparison_cli(
++        "export-docx",
++        "--blackline",
++        comparison_id,
++        "--comparison-store",
++        str(store),
++        *(["--output", str(output)] if to_file else []),
++        cwd=tmp_path,
++    )
++    assert result.returncode != 0, "SHA256_CHECK_DISCONNECTION: changed bytes were exported"
++    assert b"SHA-256 mismatch" in result.stderr
++    assert result.stdout == b""
++    assert output.read_bytes() == b"existing output must survive"
++    assert all(path.read_bytes() == content for path, content in preserved.items())
++
++
++@pytest.mark.parametrize(
++    "problem", ["unknown", "malformed", "path", "missing-original", "missing-modified"]
++)
++def test_comparison_invalid_or_missing_inputs(comparison_inputs, tmp_path, problem):
++    original, modified, _, store, comparison_id = comparison_inputs
++    selection = comparison_id
++    expected = b"No such file"
++    if problem == "unknown":
++        selection, expected = "cmp_" + "0" * 32, b"Unknown comparison ID"
++    elif problem == "malformed":
++        selection, expected = "ingest-run-123", b"Not a comparison ID"
++    elif problem == "path":
++        selection, expected = str(store / f"{comparison_id}.json"), b"Not a comparison ID"
++    else:
++        (original if problem == "missing-original" else modified).unlink()
++    output = tmp_path / "must-not-exist.docx"
++    result = _comparison_cli(
++        "export-docx",
++        "--blackline",
++        selection,
++        "--comparison-store",
++        str(store),
++        "--output",
++        str(output),
++        cwd=tmp_path,
++    )
++    assert result.returncode != 0
++    assert expected in result.stderr
++    assert result.stdout == b""
++    assert not output.exists()
++
++
++@pytest.mark.parametrize("problem", ["schema", "id", "hash", "relative-path", "json", "list"])
++def test_comparison_rejects_invalid_record(comparison_inputs, tmp_path, problem):
++    _, _, _, store, comparison_id = comparison_inputs
++    path = store / f"{comparison_id}.json"
++    record = json.loads(path.read_text())
++    key, value = {
++        "schema": ("schema_version", "docx-comparison/v99"),
++        "id": ("comparison_id", "cmp_" + "f" * 32),
++        "hash": ("original_sha256", None),
++        "relative-path": ("modified_path", "relative.docx"),
++        "json": ("unused", None),
++        "list": ("unused", None),
++    }[problem]
++    record[key] = value
++    path.write_text("{" if problem == "json" else "[]" if problem == "list" else json.dumps(record))
++    output = tmp_path / "no-output.docx"
++    result = _comparison_cli(
++        "export-docx",
++        "--blackline",
++        comparison_id,
++        "--comparison-store",
++        str(store),
++        "--output",
++        str(output),
++        cwd=tmp_path,
++    )
++    assert result.returncode != 0
++    assert b"Invalid comparison record" in result.stderr
++    assert not output.exists()
++
++
++@pytest.mark.parametrize("target", ["original", "modified", "record", "record-hardlink"])
++def test_comparison_preserves_sources_and_record(comparison_inputs, tmp_path, target):
++    original, modified, manifest, store, comparison_id = comparison_inputs
++    record_path = store / f"{comparison_id}.json"
++    preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
++    output = {"original": original, "modified": modified}.get(target, record_path)
++    if target == "record-hardlink":
++        output = tmp_path / "record-alias"
++        os.link(record_path, output)
++    result = _comparison_cli(
++        "export-docx",
++        "--blackline",
++        comparison_id,
++        "--comparison-store",
++        str(store),
++        "--output",
++        str(output),
++        cwd=tmp_path,
++    )
++    assert result.returncode != 0
++    assert b"--output must not be the same file" in result.stderr
++    assert all(path.read_bytes() == content for path, content in preserved.items())
++
++
++@pytest.mark.parametrize("problem", ["missing", "not-docx"])
++def test_comparison_create_rejects_unusable_input(tmp_path, problem):
++    source = tmp_path / "input.docx"
++    if problem == "not-docx":
++        source.write_bytes(b"not a DOCX")
++    store = tmp_path / "records"
++    result = _comparison_cli(
++        "create-comparison",
++        "--original",
++        str(source),
++        "--modified",
++        str(source),
++        "--comparison-store",
++        str(store),
++        cwd=tmp_path,
++    )
++    assert result.returncode != 0
++    assert result.stdout == b""
++    assert not store.exists()
++
++
++def test_comparison_id_cannot_override_sources(comparison_inputs, tmp_path):
++    original, _, _, store, comparison_id = comparison_inputs
++    result = _comparison_cli(
++        "export-docx",
++        "--blackline",
++        comparison_id,
++        "--original",
++        str(original),
++        "--comparison-store",
++        str(store),
++        cwd=tmp_path,
++    )
++    assert result.returncode != 0
++    assert b"cannot be combined" in result.stderr
++    assert result.stdout == b""
++
++
++def test_comparison_boolean_requires_file_pair(tmp_path):
++    result = _comparison_cli("export-docx", "--blackline", cwd=tmp_path)
++    assert result.returncode != 0
++    assert b"requires --original and --modified" in result.stderr
+ 
+ 
+ @pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
+diff --git a/tests/test_issue110_review.py b/tests/test_issue110_review.py
+new file mode 100644
+index 0000000..577991a
+--- /dev/null
++++ b/tests/test_issue110_review.py
+@@ -0,0 +1,124 @@
++"""Regression controls for comparison-record privacy, corrupt ZIPs and replay."""
++
++import hashlib
++import json
++import os
++import re
++import stat
++import struct
++import subprocess
++import sys
++from io import BytesIO
++from pathlib import Path
++from types import SimpleNamespace
++from zipfile import ZIP_DEFLATED, ZipFile
++
++import pytest
++
++from doc_lineage import blackline
++from tests.export.test_docx_redline_golden import _docx
++
++ROOT = Path(__file__).resolve().parents[1]
++EVIDENCE = ROOT / "docs/evidence/issue-110"
++
++
++def test_corrupt_deflate_has_clean_cli_error_without_record(tmp_path):
++    archive = BytesIO()
++    with (
++        ZipFile(BytesIO(_docx("A legal source."))) as source,
++        ZipFile(archive, "w", compression=ZIP_DEFLATED) as target,
++    ):
++        for member in source.infolist():
++            target.writestr(member.filename, source.read(member.filename))
++    payload = bytearray(archive.getvalue())
++    with ZipFile(BytesIO(payload)) as package:
++        member = package.getinfo("word/document.xml")
++    name, extra = struct.unpack_from("<HH", payload, member.header_offset + 26)
++    payload[member.header_offset + 30 + name + extra] = 0xFF
++    broken, valid = tmp_path / "broken.docx", tmp_path / "valid.docx"
++    broken.write_bytes(payload)
++    valid.write_bytes(_docx("Other source."))
++    store = tmp_path / "records"
++    result = subprocess.run(
++        [
++            sys.executable,
++            "-m",
++            "doc_lineage.cli",
++            "create-comparison",
++            "--original",
++            str(broken),
++            "--modified",
++            str(valid),
++            "--comparison-store",
++            str(store),
++        ],
++        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
++        capture_output=True,
++        check=False,
++        timeout=60,
++    )
++    assert result.returncode == 1
++    assert b"Corrupt DOCX package" in result.stderr, "CORRUPT_ZIP_ERROR_CONTRACT"
++    assert b"Traceback" not in result.stderr
++    assert not store.exists()
++    assert broken.read_bytes() == payload
++
++
++def test_new_records_are_private_and_exclusive_under_permissive_umask(tmp_path, monkeypatch):
++    original, modified = tmp_path / "a.docx", tmp_path / "b.docx"
++    original.write_bytes(_docx("Original."))
++    modified.write_bytes(_docx("Modified."))
++    store = tmp_path / "records"
++    previous = os.umask(0)
++    try:
++        identity = blackline.write_comparison_record(original, modified, store=store)
++    finally:
++        os.umask(previous)
++    record = store / f"{identity}.json"
++    assert stat.S_IMODE(store.stat().st_mode) == 0o700, "PRIVATE_COMPARISON_STORE"
++    assert stat.S_IMODE(record.stat().st_mode) == 0o600, "PRIVATE_COMPARISON_RECORD"
++    before = record.read_bytes()
++    monkeypatch.setattr(blackline, "uuid4", lambda: SimpleNamespace(hex=identity[4:]))
++    with pytest.raises(FileExistsError):
++        blackline.write_comparison_record(original, modified, store=store)
++    assert record.read_bytes() == before
++
++
++def _optimized(program, argument):
++    return subprocess.run(
++        [sys.executable, "-O", "-c", program, str(argument)],
++        capture_output=True,
++        check=False,
++        timeout=60,
++        env={**os.environ, "PYTHONPATH": str(ROOT / "src") + os.pathsep + str(ROOT)},
++    )
++
++
++def test_replay_hash_validation_survives_optimized_python(tmp_path):
++    programs = re.findall(r"<<'PY'\n(.*?)\nPY", (EVIDENCE / "replay.sh").read_text(), re.S)
++    artifacts = tmp_path / "artifacts"
++    artifacts.mkdir()
++    record = {}
++    for role in ("original", "modified"):
++        content = _docx(role)
++        (artifacts / f"{role}.docx").write_bytes(content)
++        record[f"{role}_sha256"] = hashlib.sha256(content).hexdigest()
++    (artifacts / "comparison-record.json").write_text(json.dumps(record))
++    assert _optimized(programs[0], tmp_path).returncode == 0
++    (artifacts / "original.docx").write_bytes(_docx("Changed valid document."))
++    assert _optimized(programs[0], tmp_path).returncode != 0, "OPTIMIZED_REPLAY_HASH_CHECK"
++
++
++def test_replay_revision_validation_survives_optimized_python(tmp_path):
++    programs = re.findall(r"<<'PY'\n(.*?)\nPY", (EVIDENCE / "replay.sh").read_text(), re.S)
++    original = EVIDENCE / "artifacts/redline.docx"
++    assert _optimized(programs[1], original).returncode == 0
++    changed = tmp_path / "wrong-revisions.docx"
++    with ZipFile(original) as source, ZipFile(changed, "w") as target:
++        for member in source.infolist():
++            content = source.read(member.filename)
++            if member.filename == "word/document.xml":
++                assert b"five" in content
++                content = content.replace(b"five", b"eleven")
++            target.writestr(member, content)
++    assert _optimized(programs[1], changed).returncode != 0, "OPTIMIZED_REPLAY_REVISION_CHECK"
