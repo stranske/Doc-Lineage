@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 import types
 import zlib
@@ -182,6 +183,120 @@ def test_pdf_string_escapes_are_resolved() -> None:
     assert _decode_pdf_string(rb"\q") == "q"
     assert _decode_pdf_string(rb"\8") == "8"
     assert _decode_pdf_string(rb"trailing\\") == "trailing\\"
+
+
+@pytest.mark.parametrize("raw", [b"\x80", rb"\200"])
+def test_fontless_pdf_strings_reject_unmapped_high_bytes(raw: bytes) -> None:
+    with pytest.raises(UnicodeDecodeError):
+        _decode_pdf_string(raw)
+
+
+def _font_encoded_pdf(path: Path, encoding: object) -> None:
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+            NameObject("/Encoding"): encoding,
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})}
+    )
+    stream = DecodedStreamObject()
+    stream.set_data(b"BT /F1 12 Tf 72 720 Td (A) Tj ET")
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    with path.open("wb") as handle:
+        writer.write(handle)
+
+
+def test_offline_text_respects_font_differences(tmp_path: Path) -> None:
+    from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NumberObject
+
+    source = tmp_path / "font-differences.pdf"
+    _font_encoded_pdf(
+        source,
+        DictionaryObject(
+            {
+                NameObject("/BaseEncoding"): NameObject("/WinAnsiEncoding"),
+                NameObject("/Differences"): ArrayObject([NumberObject(65), NameObject("/alpha")]),
+            }
+        ),
+    )
+
+    result = segment_document(source, allow_docling=False)
+    assert result.pages[0].text == "α"
+    assert result.pages[0].has_text_layer
+
+
+@pytest.mark.parametrize("recovery", ["disabled", "empty", "unavailable", "recognized"])
+def test_unsupported_font_encoding_is_unreadable_without_text_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recovery: str
+) -> None:
+    from PIL import Image
+    from pypdf import PdfWriter
+    from pypdf.generic import NameObject
+
+    from doc_lineage.extract import pdf as pdf_module
+    from doc_lineage.extract.ocr import CallableOCRBackend
+    from doc_lineage.ingest import ingest_document
+
+    source = tmp_path / "unsupported-font.pdf"
+    _font_encoded_pdf(source, NameObject("/UnsupportedEncoding"))
+    writer = PdfWriter()
+    writer.append(source)
+    writer.append(FIXTURE)
+    with source.open("wb") as handle:
+        writer.write(handle)
+
+    calls = []
+
+    def recognize(image, *, rotation=0):
+        calls.append(image.size)
+        return "Recognized clause" if recovery == "recognized" else ""
+
+    # Control the renderer boundary to exercise this path even without an
+    # optional PDF renderer; the existing ingest tests verify real rendering.
+    monkeypatch.setattr(
+        pdf_module,
+        "_render_page_image",
+        lambda page: None if recovery == "unavailable" else Image.new("RGB", (20, 20)),
+    )
+    result = ingest_document(
+        source,
+        output_dir=tmp_path / "out",
+        allow_docling=False,
+        ocr_enabled=recovery != "disabled",
+        ocr_backend=CallableOCRBackend(recognize),
+    )
+    assert bool(calls) == (recovery in {"empty", "recognized"})
+    payload = json.loads(result.segments_path.read_text(encoding="utf-8"))
+    assert payload["unreadable_pages"] == list(result.unreadable_pages)
+    assert payload["coverage"]["status"] == result.coverage_status
+    assert payload["coverage"]["pages_unreadable"] == len(result.unreadable_pages)
+    assert payload["coverage"]["pages_recognized"] == (1 if recovery == "recognized" else 0)
+    assert not any(
+        evidence["locator"]["page"] == 0 and evidence["method"] == "text"
+        for evidence in result.evidence
+    )
+    if recovery == "recognized":
+        assert result.unreadable_pages == ()
+        assert result.coverage_status == "complete"
+        (evidence,) = [e for e in result.evidence if e["locator"]["page"] == 0]
+        assert evidence["method"] == "ocr"
+        assert evidence["excerpt"] == "Recognized clause"
+    else:
+        assert result.unreadable_pages == (1,)
+        assert result.coverage_status == "partial"
+        assert all(segment.page != 1 for segment in result.segments)
+        assert all(evidence["locator"]["page"] != 0 for evidence in result.evidence)
+    assert result.segments
+    assert result.evidence
 
 
 def test_docling_is_used_when_importable(monkeypatch: pytest.MonkeyPatch) -> None:

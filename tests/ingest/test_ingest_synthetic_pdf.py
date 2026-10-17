@@ -12,6 +12,7 @@ import json
 import shutil
 import subprocess
 import sys
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -59,6 +60,31 @@ def test_ingest_writes_valid_manifest(tmp_path: Path) -> None:
 
     assert manifest["source"]["sha256"] == result.source_sha256
     assert manifest["source"]["filename"] == FIXTURE.name
+
+
+def test_offline_ingest_preserves_euro_amount_in_segments_and_evidence(tmp_path: Path) -> None:
+    from reportlab.pdfgen import canvas
+
+    source = tmp_path / "euro.pdf"
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer)
+    pdf.drawString(72, 720, "The fee is €50.")
+    pdf.save()
+    source.write_bytes(buffer.getvalue())
+
+    result = ingest_document(source, output_dir=tmp_path / "out", allow_docling=False)
+
+    assert [segment.text for segment in result.segments] == ["The fee is €50."]
+    written = json.loads(result.segments_path.read_text(encoding="utf-8"))
+    assert [segment["text"] for segment in written["segments"]] == ["The fee is €50."]
+    assert len(result.evidence) == 1
+    assert result.evidence[0]["excerpt"] == "The fee is €50."
+    assert result.evidence[0]["locator"]["page"] == 0
+    assert result.evidence[0]["method"] == "text"
+    assert result.evidence_dir is not None
+    (evidence_path,) = result.evidence_dir.glob("*.json")
+    assert json.loads(evidence_path.read_text(encoding="utf-8")) == result.evidence[0]
+    assert result.coverage_status == "complete"
 
 
 def test_segments_carry_page_pointers_and_stable_ids(tmp_path: Path) -> None:

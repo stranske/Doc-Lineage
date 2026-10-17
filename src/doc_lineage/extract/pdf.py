@@ -67,13 +67,19 @@ def extract_pdf(
 
 
 def recover_pdf_pages(
-    data: bytes, page_numbers: Sequence[int], *, ocr_backend: OCRBackend
+    data: bytes,
+    page_numbers: Sequence[int],
+    *,
+    ocr_backend: OCRBackend,
+    use_text_layer: bool = True,
 ) -> tuple[Span, ...]:
     """Recover selected one-based pages from the caller's immutable snapshot.
 
     Reuse the extraction API's real rendering/recognition boundary without
     changing or populating its cache. Malformed PDFs and unavailable page
     recovery leave the caller's original unreadable-page finding intact.
+    Set ``use_text_layer=False`` when the caller has already rejected native
+    text, so an unchecked decoding retry cannot replace that finding.
     """
     from pypdf import PdfReader
     from pypdf.errors import PdfReadError
@@ -89,7 +95,11 @@ def recover_pdf_pages(
             if not 1 <= page_number <= len(reader.pages):
                 continue
             recovered, _outcome = _extract_pdf_page(
-                reader.pages[page_number - 1], page_number, ocr_backend, True
+                reader.pages[page_number - 1],
+                page_number,
+                ocr_backend,
+                True,
+                use_text_layer=use_text_layer,
             )
         except (PdfReadError, OSError, ValueError, RuntimeError) as exc:
             _logger.warning("PDF recovery failed for page %s (%s)", page_number, type(exc).__name__)
@@ -111,11 +121,13 @@ def _extract_pdf_page(
     page_number: int,
     ocr_backend: OCRBackend | None,
     ocr_enabled: bool,
+    *,
+    use_text_layer: bool = True,
 ) -> tuple[list[Span], str]:
     from pypdf import PageObject
 
     assert isinstance(page, PageObject)
-    raw_text = page.extract_text() or ""
+    raw_text = (page.extract_text() or "") if use_text_layer else ""
     text = raw_text.strip()
     rotation = int(page.get("/Rotate", 0) or 0)
 
