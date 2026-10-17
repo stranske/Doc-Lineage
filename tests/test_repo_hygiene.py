@@ -1,7 +1,10 @@
 """Repository-level checks for generated and deliberately vendored trees."""
 
+import argparse
 import subprocess
 from pathlib import Path
+
+from doc_lineage.cli import build_parser
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,3 +43,18 @@ def test_generated_dirs_untracked_and_vendored_preserved() -> None:
         ".github/scripts/node_modules/minimatch/package.json",
     )
     assert vendored_ignore.returncode == 1, "vendored minimatch tree must not be ignored"
+
+
+def _cli_subcommand_names() -> set[str]:
+    parser = build_parser()
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            return set(action.choices)
+    raise AssertionError("build_parser() has no subcommands")
+
+
+def test_readme_mentions_every_cli_subcommand() -> None:
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "remains to be implemented" not in readme
+    for name in sorted(_cli_subcommand_names()):
+        assert name in readme, f"README.md must mention doc-lineage subcommand `{name}`"
