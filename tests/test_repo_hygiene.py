@@ -4,9 +4,21 @@ import argparse
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from doc_lineage.cli import build_parser
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+STALE_ENGINE_SENTENCE = "remains to be implemented"
+STATUS_PREFIX = "**Status:**"
+# Pre-#115 status claim used by the deliberate-break gate.
+STALE_STATUS_PARAGRAPH = (
+    "**Status:** created 2026-09-04 as part of the Research Program 2026-09 "
+    "(see `stranske/Ready` → `research-program/`). Scope, architecture and first "
+    "issues arrive from research briefs R1 (legal-document decomposition) and R2 "
+    "(consultant-report diffing). The initial legal clause vocabulary and Python "
+    "loader are available; the document processing engine remains to be implemented."
+)
 
 
 def _git(*args: str) -> subprocess.CompletedProcess[str]:
@@ -53,8 +65,37 @@ def _cli_subcommand_names() -> set[str]:
     raise AssertionError("build_parser() has no subcommands")
 
 
+def _readme_status_paragraph(readme: str) -> str:
+    for line in readme.splitlines():
+        if line.startswith(STATUS_PREFIX):
+            return line
+    raise AssertionError("README.md missing **Status:** paragraph")
+
+
 def test_readme_mentions_every_cli_subcommand() -> None:
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-    assert "remains to be implemented" not in readme
+    status = _readme_status_paragraph(readme)
+    assert STALE_ENGINE_SENTENCE not in status
+    assert STALE_ENGINE_SENTENCE not in readme
     for name in sorted(_cli_subcommand_names()):
-        assert name in readme, f"README.md must mention doc-lineage subcommand `{name}`"
+        assert (
+            name in status
+        ), f"README status paragraph must mention doc-lineage subcommand `{name}`"
+
+
+def test_deliberate_break_stale_readme_status_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Keep the deliberate-break acceptance gate reproducible without editing README.md."""
+    original = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    status = _readme_status_paragraph(original)
+    broken = original.replace(status, STALE_STATUS_PARAGRAPH, 1)
+    assert broken != original
+    assert STALE_ENGINE_SENTENCE in broken
+
+    candidate = tmp_path / "README.md"
+    candidate.write_text(broken, encoding="utf-8")
+    monkeypatch.setattr(f"{__name__}.REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError):
+        test_readme_mentions_every_cli_subcommand()

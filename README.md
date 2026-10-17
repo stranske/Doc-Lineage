@@ -2,7 +2,7 @@
 
 Document lineage and blackline engine for recurring investment documents.
 
-**Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope and architecture follow research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). The shipped offline engine under `src/doc_lineage/` covers ingest (with optional OCR), persisted run manifests, DOCX tracked-changes export and comparison records (`export-docx`, `create-comparison`), PDF section pairing (`pair-sections`, `lookup-section-pairing`), bounded legal fee extraction (`extract-variables`), fact-map export (`export-fact-key-map`), and EDGAR EX-10 harvest (`harvest-edgar`). Gaps and fidelity limits are called out in the sections below (for example PDF text compare vs DOCX blackline, and extraction coverage in `docs/contracts/tracked-variable-v1.md`).
+**Status:** created 2026-09-04 as part of the Research Program 2026-09 (see `stranske/Ready` → `research-program/`). Scope and architecture follow research briefs R1 (legal-document decomposition) and R2 (consultant-report diffing). The shipped offline engine under `src/doc_lineage/` covers `ingest` (with optional OCR), persisted run manifests, DOCX tracked-changes export and comparison records (`export-docx`, `create-comparison`), PDF section pairing (`pair-sections`, `lookup-section-pairing`), bounded legal fee extraction (`extract-variables`), fact-map export (`export-fact-key-map`), and EDGAR EX-10 harvest (`harvest-edgar`). Gaps and fidelity limits are called out in the sections below (for example PDF text compare vs DOCX blackline, and extraction coverage in `docs/contracts/tracked-variable-v1.md`).
 
 ## DOCX tracked-changes export
 
