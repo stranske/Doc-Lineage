@@ -23,7 +23,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from doc_lineage.adapters import DOCLING_BACKEND, SegmenterResult, segment_document
+from doc_lineage.adapters import DOCLING_BACKEND, OFFLINE_BACKEND, SegmenterResult, segment_document
 from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
 from doc_lineage.emit import EVIDENCE_DIRNAME, emit_evidence_object
 from doc_lineage.extract.ocr import OCRBackend, default_ocr_backend
@@ -201,7 +201,14 @@ def ingest_document(
         if backend is not None:
             recovered = {
                 span.page: span
-                for span in recover_pdf_pages(raw, pages_without_text_layer, ocr_backend=backend)
+                for span in recover_pdf_pages(
+                    raw,
+                    pages_without_text_layer,
+                    ocr_backend=backend,
+                    # The offline parser already tried font-aware extraction.
+                    # Rejected text must only be recovered through recognition.
+                    use_text_layer=segmented.backend != OFFLINE_BACKEND,
+                )
             }
             segmented = replace(
                 segmented,
