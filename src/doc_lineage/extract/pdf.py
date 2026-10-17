@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from io import BytesIO
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from doc_lineage.extract.models import CoverageStats, Document, Span
@@ -21,7 +20,7 @@ _logger = logging.getLogger(__name__)
 
 
 def extract_pdf(
-    path: Path,
+    content: bytes,
     stable_id: str,
     *,
     cache: ExtractCache,
@@ -30,7 +29,7 @@ def extract_pdf(
 ) -> Document:
     from pypdf import PdfReader
 
-    reader = PdfReader(str(path))
+    reader = PdfReader(BytesIO(content))
     spans: list[Span] = []
     pages_with_text_layer = 0
     pages_recognized = 0

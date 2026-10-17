@@ -55,7 +55,11 @@ def extract(
     ocr_backend: OCRBackend | None = None,
     cache: ExtractCache | None = None,
 ) -> Document:
-    """Extract text spans with page pointers from a supported document."""
+    """Extract text spans with page pointers from a supported document.
+
+    Hashing, parsing and cache keys use one immutable byte snapshot, even if
+    the input path is replaced while extraction is running.
+    """
     file_path = Path(path)
     content = file_path.read_bytes()
     stable_id = stable_id_for_bytes(content)
@@ -65,16 +69,16 @@ def extract(
     if suffix == ".pdf":
         backend = ocr_backend if ocr_backend is not None else default_ocr_backend()
         return extract_pdf(
-            file_path,
+            content,
             stable_id,
             cache=active_cache,
             ocr_backend=backend,
             ocr_enabled=ocr_enabled,
         )
     if suffix == ".docx":
-        return extract_docx(file_path, stable_id, cache=active_cache)
+        return extract_docx(content, stable_id, cache=active_cache)
     if suffix == ".pptx":
-        return extract_pptx(file_path, stable_id, cache=active_cache)
+        return extract_pptx(content, stable_id, cache=active_cache)
     if suffix in _LEGACY_BINARY_SUFFIXES:
         msg = (
             f"unsupported document type: {suffix} is the legacy binary format; "

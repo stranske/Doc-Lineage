@@ -1,0 +1,162 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/doc107-20261017T0601
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 23 items / 20 deselected / 3 selected
+
+tests/test_extract_coverage.py F                                         [ 33%]
+tests/test_extract_office.py FF                                          [100%]
+
+=================================== FAILURES ===================================
+_________ test_pdf_replacement_keeps_snapshot_identity_and_cached_text _________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4566/test_pdf_replacement_keeps_sna0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cb43c50>
+
+    def test_pdf_replacement_keeps_snapshot_identity_and_cached_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from doc_lineage.extract import pdf as pdf_module
+    
+        path = tmp_path / "snapshot.pdf"
+        _write_text_pdf(path, ["Original snapshot"])
+        original = path.read_bytes()
+        _write_text_pdf(path, ["Revised on disk"])
+        revised = path.read_bytes()
+        path.write_bytes(original)
+        read_bytes = Path.read_bytes
+    
+        def replace_after_read(candidate: Path) -> bytes:
+            content = read_bytes(candidate)
+            if candidate == path:
+                candidate.write_bytes(revised)
+            return content
+    
+        cache_root = tmp_path / "snapshot-cache"
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", replace_after_read)
+            first = extract(path, ocr_enabled=False, cache=ExtractCache(cache_root))
+    
+        assert path.read_bytes() == revised
+        assert first.stable_id == hashlib.sha256(original).hexdigest()
+>       assert [span.text for span in first.spans] == ["Original snapshot"]
+E       AssertionError: assert ['Revised on disk'] == ['Original snapshot']
+E         
+E         At index 0 diff: 'Revised on disk' != 'Original snapshot'
+E         Use -v to get more diff
+
+tests/test_extract_coverage.py:298: AssertionError
+____ test_office_replacement_keeps_snapshot_identity_and_cached_text[.docx] ____
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4566/test_office_replacement_keeps_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12f292870>
+suffix = '.docx'
+
+    @pytest.mark.parametrize("suffix", [".docx", ".pptx"])
+    def test_office_replacement_keeps_snapshot_identity_and_cached_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str
+    ) -> None:
+        path = tmp_path / f"snapshot{suffix}"
+    
+        def write_document(text: str) -> None:
+            if suffix == ".docx":
+                _write_docx(path, [text])
+            else:
+                presentation = Presentation()
+                slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+                slide.shapes.title.text = text
+                presentation.save(str(path))
+    
+        write_document("Original snapshot")
+        original = path.read_bytes()
+        write_document("Revised on disk")
+        revised = path.read_bytes()
+        path.write_bytes(original)
+        read_bytes = Path.read_bytes
+    
+        def replace_after_read(candidate: Path) -> bytes:
+            content = read_bytes(candidate)
+            if candidate == path:
+                candidate.write_bytes(revised)
+            return content
+    
+        cache_root = tmp_path / "snapshot-cache"
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", replace_after_read)
+            first = extract(path, cache=ExtractCache(cache_root))
+    
+        assert path.read_bytes() == revised
+        assert first.stable_id == hashlib.sha256(original).hexdigest()
+>       assert [span.text for span in first.spans] == ["Original snapshot"]
+E       AssertionError: assert ['Revised on disk'] == ['Original snapshot']
+E         
+E         At index 0 diff: 'Revised on disk' != 'Original snapshot'
+E         Use -v to get more diff
+
+tests/test_extract_office.py:127: AssertionError
+____ test_office_replacement_keeps_snapshot_identity_and_cached_text[.pptx] ____
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4566/test_office_replacement_keeps_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1289c1cd0>
+suffix = '.pptx'
+
+    @pytest.mark.parametrize("suffix", [".docx", ".pptx"])
+    def test_office_replacement_keeps_snapshot_identity_and_cached_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str
+    ) -> None:
+        path = tmp_path / f"snapshot{suffix}"
+    
+        def write_document(text: str) -> None:
+            if suffix == ".docx":
+                _write_docx(path, [text])
+            else:
+                presentation = Presentation()
+                slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+                slide.shapes.title.text = text
+                presentation.save(str(path))
+    
+        write_document("Original snapshot")
+        original = path.read_bytes()
+        write_document("Revised on disk")
+        revised = path.read_bytes()
+        path.write_bytes(original)
+        read_bytes = Path.read_bytes
+    
+        def replace_after_read(candidate: Path) -> bytes:
+            content = read_bytes(candidate)
+            if candidate == path:
+                candidate.write_bytes(revised)
+            return content
+    
+        cache_root = tmp_path / "snapshot-cache"
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", replace_after_read)
+            first = extract(path, cache=ExtractCache(cache_root))
+    
+        assert path.read_bytes() == revised
+        assert first.stable_id == hashlib.sha256(original).hexdigest()
+>       assert [span.text for span in first.spans] == ["Original snapshot"]
+E       AssertionError: assert ['Revised on disk'] == ['Original snapshot']
+E         
+E         At index 0 diff: 'Revised on disk' != 'Original snapshot'
+E         Use -v to get more diff
+
+tests/test_extract_office.py:127: AssertionError
+=============================== warnings summary ===============================
+tests/test_extract_coverage.py::test_pdf_replacement_keeps_snapshot_identity_and_cached_text
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/test_extract_coverage.py::test_pdf_replacement_keeps_snapshot_identity_and_cached_text
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/teacher/.codex/automations/pd-workloop-resume/run-20261017T0601/107-red.xml -
+=========================== short test summary info ============================
+FAILED tests/test_extract_coverage.py::test_pdf_replacement_keeps_snapshot_identity_and_cached_text
+FAILED tests/test_extract_office.py::test_office_replacement_keeps_snapshot_identity_and_cached_text[.docx]
+FAILED tests/test_extract_office.py::test_office_replacement_keeps_snapshot_identity_and_cached_text[.pptx]
+================= 3 failed, 20 deselected, 2 warnings in 1.19s =================

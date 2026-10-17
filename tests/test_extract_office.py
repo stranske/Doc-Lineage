@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -86,3 +87,51 @@ def test_legacy_binary_office_formats_are_rejected(tmp_path: Path) -> None:
         extract(legacy_ppt, cache=ExtractCache(tmp_path / "cache4"))
     with pytest.raises(ValueError, match=r"\.docx"):
         extract(legacy_doc, cache=ExtractCache(tmp_path / "cache5"))
+
+
+@pytest.mark.parametrize("suffix", [".docx", ".pptx"])
+def test_office_replacement_keeps_snapshot_identity_and_cached_text(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str
+) -> None:
+    path = tmp_path / f"snapshot{suffix}"
+
+    def write_document(text: str) -> None:
+        if suffix == ".docx":
+            _write_docx(path, [text])
+        else:
+            presentation = Presentation()
+            slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+            slide.shapes.title.text = text
+            presentation.save(str(path))
+
+    write_document("Original snapshot")
+    original = path.read_bytes()
+    write_document("Revised on disk")
+    revised = path.read_bytes()
+    path.write_bytes(original)
+    read_bytes = Path.read_bytes
+
+    def replace_after_read(candidate: Path) -> bytes:
+        content = read_bytes(candidate)
+        if candidate == path:
+            candidate.write_bytes(revised)
+        return content
+
+    cache_root = tmp_path / "snapshot-cache"
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "read_bytes", replace_after_read)
+        first = extract(path, cache=ExtractCache(cache_root))
+
+    assert path.read_bytes() == revised
+    assert first.stable_id == hashlib.sha256(original).hexdigest()
+    assert [span.text for span in first.spans] == ["Original snapshot"]
+    path.write_bytes(original)
+
+    def fail_reparse(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("original snapshot must be served from its disk cache")
+
+    monkeypatch.setattr("docx.Document" if suffix == ".docx" else "pptx.Presentation", fail_reparse)
+    replay = extract(path, cache=ExtractCache(cache_root))
+    assert replay.stable_id == first.stable_id
+    assert replay.spans == first.spans
+    assert [span.text for span in replay.spans] == ["Original snapshot"]

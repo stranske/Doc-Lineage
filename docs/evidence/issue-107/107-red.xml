@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="1.076" timestamp="2026-10-17T01:06:04.726923-05:00" hostname="server.trs.private"><testcase classname="tests.test_extract_coverage" name="test_pdf_replacement_keeps_snapshot_identity_and_cached_text" time="0.596"><failure message="AssertionError: assert ['Revised on disk'] == ['Original snapshot']&#10;  &#10;  At index 0 diff: 'Revised on disk' != 'Original snapshot'&#10;  Use -v to get more diff">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4566/test_pdf_replacement_keeps_sna0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x10cb43c50&gt;
+
+    def test_pdf_replacement_keeps_snapshot_identity_and_cached_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        from doc_lineage.extract import pdf as pdf_module
+    
+        path = tmp_path / "snapshot.pdf"
+        _write_text_pdf(path, ["Original snapshot"])
+        original = path.read_bytes()
+        _write_text_pdf(path, ["Revised on disk"])
+        revised = path.read_bytes()
+        path.write_bytes(original)
+        read_bytes = Path.read_bytes
+    
+        def replace_after_read(candidate: Path) -&gt; bytes:
+            content = read_bytes(candidate)
+            if candidate == path:
+                candidate.write_bytes(revised)
+            return content
+    
+        cache_root = tmp_path / "snapshot-cache"
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", replace_after_read)
+            first = extract(path, ocr_enabled=False, cache=ExtractCache(cache_root))
+    
+        assert path.read_bytes() == revised
+        assert first.stable_id == hashlib.sha256(original).hexdigest()
+&gt;       assert [span.text for span in first.spans] == ["Original snapshot"]
+E       AssertionError: assert ['Revised on disk'] == ['Original snapshot']
+E         
+E         At index 0 diff: 'Revised on disk' != 'Original snapshot'
+E         Use -v to get more diff
+
+tests/test_extract_coverage.py:298: AssertionError</failure></testcase><testcase classname="tests.test_extract_office" name="test_office_replacement_keeps_snapshot_identity_and_cached_text[.docx]" time="0.036"><failure message="AssertionError: assert ['Revised on disk'] == ['Original snapshot']&#10;  &#10;  At index 0 diff: 'Revised on disk' != 'Original snapshot'&#10;  Use -v to get more diff">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4566/test_office_replacement_keeps_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x12f292870&gt;
+suffix = '.docx'
+
+    @pytest.mark.parametrize("suffix", [".docx", ".pptx"])
+    def test_office_replacement_keeps_snapshot_identity_and_cached_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str
+    ) -&gt; None:
+        path = tmp_path / f"snapshot{suffix}"
+    
+        def write_document(text: str) -&gt; None:
+            if suffix == ".docx":
+                _write_docx(path, [text])
+            else:
+                presentation = Presentation()
+                slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+                slide.shapes.title.text = text
+                presentation.save(str(path))
+    
+        write_document("Original snapshot")
+        original = path.read_bytes()
+        write_document("Revised on disk")
+        revised = path.read_bytes()
+        path.write_bytes(original)
+        read_bytes = Path.read_bytes
+    
+        def replace_after_read(candidate: Path) -&gt; bytes:
+            content = read_bytes(candidate)
+            if candidate == path:
+                candidate.write_bytes(revised)
+            return content
+    
+        cache_root = tmp_path / "snapshot-cache"
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", replace_after_read)
+            first = extract(path, cache=ExtractCache(cache_root))
+    
+        assert path.read_bytes() == revised
+        assert first.stable_id == hashlib.sha256(original).hexdigest()
+&gt;       assert [span.text for span in first.spans] == ["Original snapshot"]
+E       AssertionError: assert ['Revised on disk'] == ['Original snapshot']
+E         
+E         At index 0 diff: 'Revised on disk' != 'Original snapshot'
+E         Use -v to get more diff
+
+tests/test_extract_office.py:127: AssertionError</failure></testcase><testcase classname="tests.test_extract_office" name="test_office_replacement_keeps_snapshot_identity_and_cached_text[.pptx]" time="0.021"><failure message="AssertionError: assert ['Revised on disk'] == ['Original snapshot']&#10;  &#10;  At index 0 diff: 'Revised on disk' != 'Original snapshot'&#10;  Use -v to get more diff">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4566/test_office_replacement_keeps_1')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x1289c1cd0&gt;
+suffix = '.pptx'
+
+    @pytest.mark.parametrize("suffix", [".docx", ".pptx"])
+    def test_office_replacement_keeps_snapshot_identity_and_cached_text(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, suffix: str
+    ) -&gt; None:
+        path = tmp_path / f"snapshot{suffix}"
+    
+        def write_document(text: str) -&gt; None:
+            if suffix == ".docx":
+                _write_docx(path, [text])
+            else:
+                presentation = Presentation()
+                slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+                slide.shapes.title.text = text
+                presentation.save(str(path))
+    
+        write_document("Original snapshot")
+        original = path.read_bytes()
+        write_document("Revised on disk")
+        revised = path.read_bytes()
+        path.write_bytes(original)
+        read_bytes = Path.read_bytes
+    
+        def replace_after_read(candidate: Path) -&gt; bytes:
+            content = read_bytes(candidate)
+            if candidate == path:
+                candidate.write_bytes(revised)
+            return content
+    
+        cache_root = tmp_path / "snapshot-cache"
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", replace_after_read)
+            first = extract(path, cache=ExtractCache(cache_root))
+    
+        assert path.read_bytes() == revised
+        assert first.stable_id == hashlib.sha256(original).hexdigest()
+&gt;       assert [span.text for span in first.spans] == ["Original snapshot"]
+E       AssertionError: assert ['Revised on disk'] == ['Original snapshot']
+E         
+E         At index 0 diff: 'Revised on disk' != 'Original snapshot'
+E         Use -v to get more diff
+
+tests/test_extract_office.py:127: AssertionError</failure></testcase></testsuite></testsuites>

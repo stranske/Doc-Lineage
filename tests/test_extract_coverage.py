@@ -269,6 +269,45 @@ def test_malformed_cache_entry_is_a_miss_not_a_crash(cache_dir: Path, tmp_path: 
     assert json.loads(entry.read_text(encoding="utf-8"))["spans"]
 
 
+def test_pdf_replacement_keeps_snapshot_identity_and_cached_text(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from doc_lineage.extract import pdf as pdf_module
+
+    path = tmp_path / "snapshot.pdf"
+    _write_text_pdf(path, ["Original snapshot"])
+    original = path.read_bytes()
+    _write_text_pdf(path, ["Revised on disk"])
+    revised = path.read_bytes()
+    path.write_bytes(original)
+    read_bytes = Path.read_bytes
+
+    def replace_after_read(candidate: Path) -> bytes:
+        content = read_bytes(candidate)
+        if candidate == path:
+            candidate.write_bytes(revised)
+        return content
+
+    cache_root = tmp_path / "snapshot-cache"
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "read_bytes", replace_after_read)
+        first = extract(path, ocr_enabled=False, cache=ExtractCache(cache_root))
+
+    assert path.read_bytes() == revised
+    assert first.stable_id == hashlib.sha256(original).hexdigest()
+    assert [span.text for span in first.spans] == ["Original snapshot"]
+    path.write_bytes(original)
+
+    def fail_reextraction(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("original snapshot must be served from its disk cache")
+
+    monkeypatch.setattr(pdf_module, "_extract_pdf_page", fail_reextraction)
+    replay = extract(path, ocr_enabled=False, cache=ExtractCache(cache_root))
+    assert replay.stable_id == first.stable_id
+    assert replay.spans == first.spans
+    assert [span.text for span in replay.spans] == ["Original snapshot"]
+
+
 def test_cache_writes_are_atomic(cache_dir: Path, tmp_path: Path) -> None:
     """No partially written JSON is ever visible at the final cache path."""
     pdf_path = tmp_path / "atomic.pdf"
