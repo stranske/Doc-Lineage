@@ -1,0 +1,12 @@
+{
+  "evidence_id": "338961680d78024fd1f48b1052b62d8c",
+  "excerpt": "2. TERM The term is annual.",
+  "fact_ref": "segment:511c0e6859158162-p0002-s0002",
+  "locator": {
+    "order": 2,
+    "page": 1
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "511c0e68591581626404fc522d9558fdc8a0f1badec223a7f40198ac9ca65e09"
+}

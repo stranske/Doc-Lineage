@@ -1,0 +1,42 @@
+{
+  "replace_once": {
+    "old": "        parsed = _parse_section_header(segment.text)",
+    "new": "        parsed = None  # ISSUE113_TEMPORARY_PRODUCTION_DISCONNECTION"
+  },
+  "production_original_sha256": "c339f553462d1437ee512e07ef5a20a401779dedf703c904534b3003f907afd7",
+  "production_mutated_sha256": "1174e49079b382b57ecd19499778eece27a42e763d455d3c8028bf8ee05435af",
+  "production_restored_sha256": "c339f553462d1437ee512e07ef5a20a401779dedf703c904534b3003f907afd7",
+  "test_sha256": "d096a7810d1b5435effe5bd0469b79c66ce9ae22ebeea3d67399425078d3b3c2",
+  "runs": [
+    {
+      "label": "disconnected",
+      "argv": [
+        "$VENV/bin/python",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py::test_persisted_pdf_ingest_replays_existing_production_pairing",
+        "-q",
+        "--junitxml=$RAW/final-mutation/disconnected.xml"
+      ],
+      "exit_code": 1,
+      "production_sha256": "1174e49079b382b57ecd19499778eece27a42e763d455d3c8028bf8ee05435af",
+      "test_sha256": "d096a7810d1b5435effe5bd0469b79c66ce9ae22ebeea3d67399425078d3b3c2"
+    },
+    {
+      "label": "restored",
+      "argv": [
+        "$VENV/bin/python",
+        "-m",
+        "pytest",
+        "tests/blackline/test_section_id_pairing.py::test_persisted_pdf_ingest_replays_existing_production_pairing",
+        "-q",
+        "--junitxml=$RAW/final-mutation/restored.xml"
+      ],
+      "exit_code": 0,
+      "production_sha256": "c339f553462d1437ee512e07ef5a20a401779dedf703c904534b3003f907afd7",
+      "test_sha256": "d096a7810d1b5435effe5bd0469b79c66ce9ae22ebeea3d67399425078d3b3c2"
+    }
+  ],
+  "named_assertion": "PERSISTED_INGEST_PAIRING_DISCONNECTED",
+  "tests_unchanged": true
+}

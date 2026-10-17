@@ -218,3 +218,51 @@ it to an ingestable manifest; an omitted document is not an ingest success.
 The small [static provenance link helper](docs/triple-link-resolver.md) resolves
 document-page, mirror, and source-system links for consumers of tracked variables.
 It does not implement the output renderer.
+
+## Persisted ingest consumer audit
+
+The bounded [source #113 audit](docs/reports/persisted-ingest-consumer-audit.md)
+records the current persisted segment/evidence consumers, working restart
+controls, identity boundaries and explicit sibling unknowns. Legal claim
+production is owned by [#111 / PR #128](https://github.com/stranske/Doc-Lineage/pull/128),
+and validated persisted section pairing by [#112 / PR #129](https://github.com/stranske/Doc-Lineage/pull/129).
+The audit adds no production handoff and returns additional questions for human
+decision. Native DOCX replay remains separate under [#110 / PR #127](https://github.com/stranske/Doc-Lineage/pull/127).
+
+The inventory starts at `segments.json`, its segment evidence and artifact
+manifest, follows section comparison and tracked-variable production, and includes
+only the sibling handoffs directly documented above. The table summarizes all
+eleven audit entries; the [full inventory](docs/reports/persisted-ingest-consumer-audit.md#complete-bounded-inventory)
+records their contracts, production callers, source/test evidence, identity checks
+and restart results. Dispositions describe the audit's reviewed base `aa2351f`,
+not live sibling deployments or the current status of linked pull requests.
+
+| Entries / contract | Producer → consumer | Reviewed disposition |
+| --- | --- | --- |
+| I1: segments, `evidence-object/v1`, `artifact-manifest/v1` | `ingest_document` → persisted segments/evidence | Confirmed publisher; manifested bytes, source digest and zero-based evidence pages checked. |
+| I2/I4: numbered sections, `lineage-edges/v1`, synthetic mutation labels | persisted segment JSON → `mutations.detect` → `build_section_tree` / `align_sections` | Confirmed library/restart control; synthetic caller intentionally trusts supplied identity. Edges are pairing decisions, not authenticated provenance. |
+| I3: validated persisted section comparison/reopen | ingest artifacts → supported comparison consumer | Confirmed missing validated transition on the reviewed base; owned by [#112](https://github.com/stranske/Doc-Lineage/issues/112) / [PR #129](https://github.com/stranske/Doc-Lineage/pull/129). |
+| I5: legal `tracked-variable/v1` | ingest + original source → `publish_variables` → fact-map export | Confirmed for documented management-fee forms; owned implementation [#111](https://github.com/stranske/Doc-Lineage/issues/111) / [PR #128](https://github.com/stranske/Doc-Lineage/pull/128). Other clauses remain unresolved. |
+| I6: `report_section` tracked variables | report segments → Doc-Lineage / Inv-Man-Intake claim producer | Unknown concrete production/restart handoff; contract ownership alone does not establish a gap. |
+| I7: fact-key identity map | tracked-variable records → `export_fact_key_map` → Mosaic join | Confirmed local projection; extraction intentionally upstream, sibling consumption unknown. |
+| I8: Mosaic claim/evidence closure | fact-map + claims/evidence → Mosaic bundle consumer | Intentional consumer responsibility; sibling runtime/restart unknown. |
+| I9: static provenance links | tracked-variable provenance → `resolve_triple_link` | Confirmed authored-record control; actual legal output exposes the reported `mirror_root: "."` mismatch (H2). |
+| I10: shared legal ontology keys | packaged vocabulary → sibling adopters | Confirmed vocabulary publication; claim extraction and sibling adoption unknown. |
+| I11: adopted comparison ledger wire models | caller-authored section/year/page/text → ledger row constructors | Confirmed schema round trips; persisted-ingest production handoff unknown. |
+
+The [additional findings](docs/reports/persisted-ingest-consumer-audit.md#additional-observations-returned-only-for-human-decision)
+return the flattened-PDF heading limitation (H1), legal-output navigation mismatch
+(H2) and sibling adoption questions (H3) for human review. They create no issues
+and bundle no repairs. Original-document extraction/cache and corpus supersession
+do not consume these persisted ingest artifacts and remain outside this inventory,
+as do native DOCX-package replay and a general CLI or architecture refactor. The
+original meta-proposal remains unilateral, not mutually accepted.
+
+The real-PDF control in
+[`tests/blackline/test_section_id_pairing.py`](tests/blackline/test_section_id_pairing.py)
+reopens disk artifacts in a fresh process. It checks stable section pairing with
+both matching and reversed page order, a changed fee, an unchanged term, segment
+membership and source/page-bound evidence. See the
+[delivery evidence](docs/evidence/issue-113/README.md) for historical checks and
+the [continuation receipt](docs/evidence/persisted-ingest-continuation/README.md)
+for the new regression and deliberate-break run.

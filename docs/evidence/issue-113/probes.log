@@ -1,0 +1,43 @@
+usage: doc-lineage [-h]
+                   {ingest,export-docx,export-fact-key-map,harvest-edgar} ...
+doc-lineage: error: argument command: invalid choice: 'pair-sections' (choose from 'ingest', 'export-docx', 'export-fact-key-map', 'harvest-edgar')
+usage: doc-lineage [-h]
+                   {ingest,export-docx,export-fact-key-map,harvest-edgar} ...
+doc-lineage: error: argument command: invalid choice: 'extract-variables' (choose from 'ingest', 'export-docx', 'export-fact-key-map', 'harvest-edgar')
+[
+  {
+    "probe": "persisted path directly into documented section builder",
+    "exception": "TypeError",
+    "message": "'PosixPath' object is not iterable"
+  },
+  {
+    "probe": "public persisted pairing",
+    "exception": "SystemExit",
+    "message": "2"
+  },
+  {
+    "probe": "public source-to-claims",
+    "exception": "SystemExit",
+    "message": "2"
+  },
+  {
+    "probe": "actual published segments into existing tracked-variable consumer",
+    "exception": "ValueError",
+    "message": "tracked-variable input must be a JSON array"
+  },
+  {
+    "probe": "actual published evidence into existing navigation consumer",
+    "exception": "ValueError",
+    "message": "provenance must be an object"
+  },
+  {
+    "probe": "original PDF inline numbered clauses into actual mutation caller",
+    "returned": []
+  },
+  {
+    "probe": "forged source and segment identity in actual production caller",
+    "returned": [
+      "gate_provision_change"
+    ]
+  }
+]

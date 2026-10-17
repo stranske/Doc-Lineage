@@ -358,3 +358,119 @@ def test_persisted_section_pairing_binds_ordered_inputs_and_replays(tmp_path: Pa
     )
     with pytest.raises(ValueError, match="source order mismatch"):
         load_section_comparison(cid, store=store, original_run=right, modified_run=left)
+
+
+@pytest.mark.parametrize("reorder_after", [False, True], ids=["same-order", "reordered-sections"])
+def test_persisted_pdf_ingest_replays_existing_production_pairing(
+    tmp_path: Path, reorder_after: bool
+) -> None:
+    """Issue 113 control: real PDF bytes survive restart into the existing caller.
+
+    The fresh process uses mutations.detect's production JSON loader/composition.
+    It does not implement the validated public comparison handoff owned by #112.
+    """
+    import hashlib
+    import subprocess
+    import sys
+
+    from reportlab.pdfgen.canvas import Canvas
+
+    for name, rate in (("before", "1.75"), ("after", "2.00")):
+        source = tmp_path / f"{name}.pdf"
+        canvas = Canvas(str(source), invariant=True)
+        sections = [
+            ("1. MANAGEMENT FEE", f"The annual management fee is {rate}%."),
+            ("2. TERM", "The term is annual."),
+        ]
+        if name == "after" and reorder_after:
+            sections.reverse()
+        for header, body in sections:
+            canvas.drawString(72, 720, header)
+            canvas.drawString(72, 700, body)
+            canvas.showPage()
+        canvas.save()
+        result = ingest_document(
+            source, output_dir=tmp_path / name, allow_docling=False, ocr_enabled=False
+        )
+        assert result.backend == "offline-pdf-text"
+        assert result.source_sha256 == hashlib.sha256(source.read_bytes()).hexdigest()
+        for artifact in result.manifest["artifacts"]:
+            data = (result.output_dir / artifact["path"]).read_bytes()
+            assert hashlib.sha256(data).hexdigest() == artifact["sha256"]
+            assert len(data) == artifact["bytes"]
+        payload = json.loads(result.segments_path.read_text())
+        for evidence in result.evidence:
+            segment = next(
+                s
+                for s in payload["segments"]
+                if evidence["fact_ref"] == f"segment:{s['segment_id']}"
+            )
+            assert evidence["source_id"] == payload["source_sha256"]
+            assert evidence["locator"]["page"] == segment["page"] - 1
+            assert evidence["excerpt"] == segment["text"]
+
+    # No IngestResult crosses this boundary. The child only receives disk paths.
+    code = """
+import json, sys
+from pathlib import Path
+from doc_lineage.mutations import load_segment_tree, detect_change_classes
+from doc_lineage.blackline import build_section_tree, align_sections, emit_lineage_edges_ndjson
+from doc_lineage.ingest import Segment
+before, after = [load_segment_tree(Path(p)) for p in sys.argv[1:]]
+def tree(payload):
+    return build_section_tree(tuple(Segment(**s) for s in payload['segments']),
+                              source_sha256=payload['source_sha256'])
+a, b = tree(before), tree(after)
+pairs = align_sections(a, b)
+print(json.dumps({'classes': detect_change_classes(before, after),
+                  'ids': [p.section_id for p in pairs],
+                  'methods': [p.pairing_method for p in pairs],
+                  'changed': [p.left.text != p.right.text for p in pairs],
+                  'left_segments': [list(p.left.segment_ids) for p in pairs],
+                  'right_segments': [list(p.right.segment_ids) for p in pairs],
+                  'edges': [json.loads(line) for line in emit_lineage_edges_ndjson(pairs).splitlines()],
+                  'sources': [a.source_sha256, b.source_sha256]}))
+"""
+    child = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            code,
+            str(tmp_path / "before" / "segments.json"),
+            str(tmp_path / "after" / "segments.json"),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    replay = json.loads(child.stdout)
+    assert replay["ids"] == ["1", "2"], "PERSISTED_INGEST_PAIRING_DISCONNECTED"
+    assert replay["classes"] == ["gate_provision_change"], "PERSISTED_INGEST_CALLER_DISCONNECTED"
+    assert replay["methods"] == ["section_id", "section_id"]
+    assert replay["changed"] == [True, False]
+    assert replay["sources"][0] != replay["sources"][1]
+    persisted = json.loads((tmp_path / "before" / "segments.json").read_text())
+    assert replay["left_segments"] == [[s["segment_id"]] for s in persisted["segments"]]
+    revised = json.loads((tmp_path / "after" / "segments.json").read_text())
+    right_segments = revised["segments"][::-1] if reorder_after else revised["segments"]
+    assert replay["right_segments"] == [
+        [s["segment_id"]] for s in right_segments
+    ], "PERSISTED_INGEST_SECTION_MEMBERSHIP_DISCONNECTED"
+    # Reordering changes the fee's page locator, not its section identity. Check
+    # the actual published evidence rather than treating an edge as provenance.
+    for name, payload, membership, fee_page in (
+        ("before", persisted, replay["left_segments"], 0),
+        ("after", revised, replay["right_segments"], int(reorder_after)),
+    ):
+        evidence_by_ref = {
+            evidence["fact_ref"]: evidence
+            for path in (tmp_path / name / "evidence").glob("*.json")
+            for evidence in [json.loads(path.read_text())]
+        }
+        (fee_segment_id,) = membership[0]
+        fee_evidence = evidence_by_ref[f"segment:{fee_segment_id}"]
+        assert fee_evidence["source_id"] == payload["source_sha256"]
+        assert fee_evidence["locator"]["page"] == fee_page
+        assert "MANAGEMENT FEE" in fee_evidence["excerpt"]
+    assert [e["section_id"] for e in replay["edges"]] == ["1", "2"]
+    assert all(e["schema_version"] == "lineage-edges/v1" for e in replay["edges"])

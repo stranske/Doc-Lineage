@@ -1,0 +1,992 @@
+{
+  "coverage_exempt": [],
+  "coverage_exempt_count": 0,
+  "drainable_count": 1,
+  "generated_at": "2026-10-17T12:26:36Z",
+  "human_held_exempt": [],
+  "human_held_exempt_count": 0,
+  "items": [
+    {
+      "branch": "codex/issue-110-persisted-comparison",
+      "cap_counts_as_drainable": true,
+      "expected_agent": "codex",
+      "isDraft": false,
+      "labels": [
+        "agent:auto",
+        "agent:codex",
+        "agents:keepalive",
+        "autofix"
+      ],
+      "mergeStateStatus": "DIRTY",
+      "number": 127,
+      "reasons": [
+        "keepalive summary reports an agent currently running"
+      ],
+      "repository": "stranske/Doc-Lineage",
+      "state": "draining",
+      "title": "Persist DOCX comparison IDs and verify source bytes on export",
+      "url": "https://github.com/stranske/Doc-Lineage/pull/127",
+      "workflowEvidence": {
+        "jobs": [
+          {
+            "jobs": [
+              {
+                "completedAt": "2026-10-17T11:59:24Z",
+                "conclusion": "success",
+                "databaseId": 117390550172,
+                "name": "Merge automerge-labelled agent PRs",
+                "startedAt": "2026-10-17T11:59:17Z",
+                "status": "completed",
+                "steps": [
+                  {
+                    "completedAt": "2026-10-17T11:59:19Z",
+                    "conclusion": "success",
+                    "name": "Set up job",
+                    "number": 1,
+                    "startedAt": "2026-10-17T11:59:18Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:59:21Z",
+                    "conclusion": "success",
+                    "name": "Checkout (for retry helpers)",
+                    "number": 2,
+                    "startedAt": "2026-10-17T11:59:19Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:59:21Z",
+                    "conclusion": "success",
+                    "name": "Merge labelled agent PRs (guarded)",
+                    "number": 3,
+                    "startedAt": "2026-10-17T11:59:21Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:59:22Z",
+                    "conclusion": "success",
+                    "name": "Post Checkout (for retry helpers)",
+                    "number": 6,
+                    "startedAt": "2026-10-17T11:59:21Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:59:22Z",
+                    "conclusion": "success",
+                    "name": "Complete job",
+                    "number": 7,
+                    "startedAt": "2026-10-17T11:59:22Z",
+                    "status": "completed"
+                  }
+                ],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550172"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390550844,
+                "name": "Run Codex autofix",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550844"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390550876,
+                "name": "Run Muse autofix",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550876"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390550905,
+                "name": "Prepare autofix context",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550905"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390550920,
+                "name": "Wake generated delivery reconciler",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550920"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390550952,
+                "name": "Flag for human follow-up",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550952"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390550979,
+                "name": "Test job creation",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390550979"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551086,
+                "name": "Run Claude autofix",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551086"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551114,
+                "name": "Evaluate keepalive loop",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551114"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:14Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551220,
+                "name": "Verify secrets available",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551220"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551309,
+                "name": "Mark agent running",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551309"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551459,
+                "name": "Keepalive next task (Cursor)",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551459"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551492,
+                "name": "Keepalive next task (Claude)",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551492"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551522,
+                "name": "Record autofix metrics",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551522"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551534,
+                "name": "Keepalive next task (Muse)",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551534"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551616,
+                "name": "Keepalive next task (Codex)",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551616"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551633,
+                "name": "Keepalive next task (Gemini)",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551633"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390551991,
+                "name": "Update keepalive summary",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390551991"
+              },
+              {
+                "completedAt": "2026-10-17T11:59:15Z",
+                "conclusion": "skipped",
+                "databaseId": 117390552072,
+                "name": "Record keepalive dispatch completion",
+                "startedAt": "2026-10-17T11:59:15Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830/job/117390552072"
+              }
+            ],
+            "runId": 39030753830,
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "jobs": [
+              {
+                "completedAt": "2026-10-17T11:51:38Z",
+                "conclusion": "success",
+                "databaseId": 117389196462,
+                "name": "Resolve Context",
+                "startedAt": "2026-10-17T11:51:32Z",
+                "status": "completed",
+                "steps": [
+                  {
+                    "completedAt": "2026-10-17T11:51:34Z",
+                    "conclusion": "success",
+                    "name": "Set up job",
+                    "number": 1,
+                    "startedAt": "2026-10-17T11:51:33Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:35Z",
+                    "conclusion": "success",
+                    "name": "Checkout eligibility action",
+                    "number": 2,
+                    "startedAt": "2026-10-17T11:51:34Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:35Z",
+                    "conclusion": "success",
+                    "name": "Check event eligibility",
+                    "number": 3,
+                    "startedAt": "2026-10-17T11:51:35Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:35Z",
+                    "conclusion": "skipped",
+                    "name": "Checkout for API helpers",
+                    "number": 4,
+                    "startedAt": "2026-10-17T11:51:35Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:35Z",
+                    "conclusion": "skipped",
+                    "name": "Setup API client",
+                    "number": 5,
+                    "startedAt": "2026-10-17T11:51:35Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:35Z",
+                    "conclusion": "skipped",
+                    "name": "Resolve PR context",
+                    "number": 6,
+                    "startedAt": "2026-10-17T11:51:35Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:35Z",
+                    "conclusion": "skipped",
+                    "name": "Check runner dispatch debounce",
+                    "number": 7,
+                    "startedAt": "2026-10-17T11:51:35Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:36Z",
+                    "conclusion": "success",
+                    "name": "Post Checkout eligibility action",
+                    "number": 14,
+                    "startedAt": "2026-10-17T11:51:35Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T11:51:36Z",
+                    "conclusion": "success",
+                    "name": "Complete job",
+                    "number": 15,
+                    "startedAt": "2026-10-17T11:51:36Z",
+                    "status": "completed"
+                  }
+                ],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030285068/job/117389196462"
+              },
+              {
+                "completedAt": "2026-10-17T11:51:38Z",
+                "conclusion": "skipped",
+                "databaseId": 117389219948,
+                "name": "autofix",
+                "startedAt": "2026-10-17T11:51:38Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030285068/job/117389219948"
+              },
+              {
+                "completedAt": "2026-10-17T11:51:38Z",
+                "conclusion": "skipped",
+                "databaseId": 117389220019,
+                "name": "Record autofix dispatch completion",
+                "startedAt": "2026-10-17T11:51:38Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030285068/job/117389220019"
+              }
+            ],
+            "runId": 39030285068,
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030285068",
+            "workflowName": "Autofix"
+          }
+        ],
+        "runs": [
+          {
+            "conclusion": "success",
+            "createdAt": "2026-10-17T11:59:15Z",
+            "databaseId": 39030755842,
+            "displayTitle": "Persist DOCX comparison IDs and verify source bytes on export",
+            "event": "pull_request",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030755842",
+            "workflowName": "Gate"
+          },
+          {
+            "conclusion": "success",
+            "createdAt": "2026-10-17T11:59:13Z",
+            "databaseId": 39030753830,
+            "displayTitle": "Agents Gate Followups",
+            "event": "pull_request_target",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030753830",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "conclusion": "success",
+            "createdAt": "2026-10-17T11:51:29Z",
+            "databaseId": 39030285068,
+            "displayTitle": "Persist DOCX comparison IDs and verify source bytes on export",
+            "event": "pull_request_target",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030285068",
+            "workflowName": "Autofix"
+          },
+          {
+            "conclusion": "success",
+            "createdAt": "2026-10-17T11:51:29Z",
+            "databaseId": 39030284814,
+            "displayTitle": "Persist DOCX comparison IDs and verify source bytes on export",
+            "event": "pull_request",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39030284814",
+            "workflowName": "Gate"
+          }
+        ]
+      }
+    },
+    {
+      "branch": "codex/issue-112-content-bound-section-pairing",
+      "cap_counts_as_drainable": false,
+      "expected_agent": "codex",
+      "isDraft": false,
+      "labels": [
+        "agent:auto",
+        "agent:codex",
+        "agents:keepalive",
+        "autofix"
+      ],
+      "mergeStateStatus": "DIRTY",
+      "number": 129,
+      "reasons": [
+        "keepalive runner dispatched; latest Gate/check failure remains"
+      ],
+      "repository": "stranske/Doc-Lineage",
+      "state": "runner-failed",
+      "title": "Persist content-bound PDF section pairing and validated replay",
+      "url": "https://github.com/stranske/Doc-Lineage/pull/129",
+      "workflowEvidence": {
+        "jobs": [
+          {
+            "jobs": [
+              {
+                "completedAt": "2026-10-17T12:25:44Z",
+                "conclusion": "success",
+                "databaseId": 117395541513,
+                "name": "Merge automerge-labelled agent PRs",
+                "startedAt": "2026-10-17T12:25:36Z",
+                "status": "completed",
+                "steps": [
+                  {
+                    "completedAt": "2026-10-17T12:25:39Z",
+                    "conclusion": "success",
+                    "name": "Set up job",
+                    "number": 1,
+                    "startedAt": "2026-10-17T12:25:37Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:25:40Z",
+                    "conclusion": "success",
+                    "name": "Checkout (for retry helpers)",
+                    "number": 2,
+                    "startedAt": "2026-10-17T12:25:39Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:25:41Z",
+                    "conclusion": "success",
+                    "name": "Merge labelled agent PRs (guarded)",
+                    "number": 3,
+                    "startedAt": "2026-10-17T12:25:40Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:25:41Z",
+                    "conclusion": "success",
+                    "name": "Post Checkout (for retry helpers)",
+                    "number": 6,
+                    "startedAt": "2026-10-17T12:25:41Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:25:41Z",
+                    "conclusion": "success",
+                    "name": "Complete job",
+                    "number": 7,
+                    "startedAt": "2026-10-17T12:25:41Z",
+                    "status": "completed"
+                  }
+                ],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395541513"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542151,
+                "name": "Evaluate keepalive loop",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542151"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542377,
+                "name": "Flag for human follow-up",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542377"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542406,
+                "name": "Run Muse autofix",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542406"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542457,
+                "name": "Verify secrets available",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542457"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542606,
+                "name": "Test job creation",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542606"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542672,
+                "name": "Run Claude autofix",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542672"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542730,
+                "name": "Keepalive next task (Muse)",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542730"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542783,
+                "name": "Record autofix metrics",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542783"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542832,
+                "name": "Keepalive next task (Gemini)",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542832"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542844,
+                "name": "Mark agent running",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542844"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542906,
+                "name": "Run Codex autofix",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542906"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542974,
+                "name": "Keepalive next task (Claude)",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542974"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542986,
+                "name": "Update keepalive summary",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542986"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395542996,
+                "name": "Keepalive next task (Codex)",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395542996"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395543019,
+                "name": "Keepalive next task (Cursor)",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395543019"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:33Z",
+                "conclusion": "skipped",
+                "databaseId": 117395543584,
+                "name": "Record keepalive dispatch completion",
+                "startedAt": "2026-10-17T12:25:33Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395543584"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395561039,
+                "name": "Prepare autofix context",
+                "startedAt": "2026-10-17T12:25:38Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395561039"
+              },
+              {
+                "completedAt": "2026-10-17T12:25:32Z",
+                "conclusion": "skipped",
+                "databaseId": 117395563503,
+                "name": "Wake generated delivery reconciler",
+                "startedAt": "2026-10-17T12:25:39Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711/job/117395563503"
+              }
+            ],
+            "runId": 39032448711,
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "jobs": [
+              {
+                "completedAt": "2026-10-17T12:21:39Z",
+                "conclusion": "success",
+                "databaseId": 117394768688,
+                "name": "Merge automerge-labelled agent PRs",
+                "startedAt": "2026-10-17T12:21:32Z",
+                "status": "completed",
+                "steps": [
+                  {
+                    "completedAt": "2026-10-17T12:21:34Z",
+                    "conclusion": "success",
+                    "name": "Set up job",
+                    "number": 1,
+                    "startedAt": "2026-10-17T12:21:33Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:21:36Z",
+                    "conclusion": "success",
+                    "name": "Checkout (for retry helpers)",
+                    "number": 2,
+                    "startedAt": "2026-10-17T12:21:34Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:21:36Z",
+                    "conclusion": "success",
+                    "name": "Merge labelled agent PRs (guarded)",
+                    "number": 3,
+                    "startedAt": "2026-10-17T12:21:36Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:21:37Z",
+                    "conclusion": "success",
+                    "name": "Post Checkout (for retry helpers)",
+                    "number": 6,
+                    "startedAt": "2026-10-17T12:21:36Z",
+                    "status": "completed"
+                  },
+                  {
+                    "completedAt": "2026-10-17T12:21:37Z",
+                    "conclusion": "success",
+                    "name": "Complete job",
+                    "number": 7,
+                    "startedAt": "2026-10-17T12:21:37Z",
+                    "status": "completed"
+                  }
+                ],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394768688"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769289,
+                "name": "Evaluate keepalive loop",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769289"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769502,
+                "name": "Run Claude autofix",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769502"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769553,
+                "name": "Run Codex autofix",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769553"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769569,
+                "name": "Test job creation",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769569"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769603,
+                "name": "Prepare autofix context",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769603"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769612,
+                "name": "Verify secrets available",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769612"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769646,
+                "name": "Flag for human follow-up",
+                "startedAt": "2026-10-17T12:21:30Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769646"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769894,
+                "name": "Record autofix metrics",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769894"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394769969,
+                "name": "Mark agent running",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394769969"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770045,
+                "name": "Keepalive next task (Muse)",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770045"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770140,
+                "name": "Keepalive next task (Gemini)",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770140"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770267,
+                "name": "Keepalive next task (Cursor)",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770267"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770269,
+                "name": "Update keepalive summary",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770269"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770336,
+                "name": "Keepalive next task (Claude)",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770336"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770534,
+                "name": "Keepalive next task (Codex)",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770534"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394770557,
+                "name": "Record keepalive dispatch completion",
+                "startedAt": "2026-10-17T12:21:31Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394770557"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394788392,
+                "name": "Run Muse autofix",
+                "startedAt": "2026-10-17T12:21:37Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394788392"
+              },
+              {
+                "completedAt": "2026-10-17T12:21:30Z",
+                "conclusion": "skipped",
+                "databaseId": 117394789614,
+                "name": "Wake generated delivery reconciler",
+                "startedAt": "2026-10-17T12:21:37Z",
+                "status": "completed",
+                "steps": [],
+                "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242/job/117394789614"
+              }
+            ],
+            "runId": 39032156242,
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "jobs": [],
+            "runId": 39031715842,
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39031715842",
+            "workflowName": "Agents Gate Followups"
+          }
+        ],
+        "runs": [
+          {
+            "conclusion": "success",
+            "createdAt": "2026-10-17T12:25:17Z",
+            "databaseId": 39032448711,
+            "displayTitle": "Agents Gate Followups",
+            "event": "pull_request_target",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032448711",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "conclusion": "failure",
+            "createdAt": "2026-10-17T12:20:52Z",
+            "databaseId": 39032157742,
+            "displayTitle": "Persist content-bound PDF section pairing and validated replay",
+            "event": "pull_request",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032157742",
+            "workflowName": "Gate"
+          },
+          {
+            "conclusion": "success",
+            "createdAt": "2026-10-17T12:20:51Z",
+            "databaseId": 39032156242,
+            "displayTitle": "Agents Gate Followups",
+            "event": "pull_request_target",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39032156242",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "conclusion": "cancelled",
+            "createdAt": "2026-10-17T12:14:03Z",
+            "databaseId": 39031715842,
+            "displayTitle": "Agents Gate Followups",
+            "event": "pull_request_target",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39031715842",
+            "workflowName": "Agents Gate Followups"
+          },
+          {
+            "conclusion": "cancelled",
+            "createdAt": "2026-10-17T12:14:03Z",
+            "databaseId": 39031715003,
+            "displayTitle": "Persist content-bound PDF section pairing and validated replay",
+            "event": "pull_request",
+            "status": "completed",
+            "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39031715003",
+            "workflowName": "Gate"
+          }
+        ]
+      }
+    }
+  ],
+  "non_drainable_cap_blocker": false,
+  "non_drainable_count": 1,
+  "normal_cap_reached": false,
+  "raw_cap_reached": false,
+  "supported_repos": [
+    "stranske/Doc-Lineage"
+  ],
+  "total_opener_owned": 2
+}

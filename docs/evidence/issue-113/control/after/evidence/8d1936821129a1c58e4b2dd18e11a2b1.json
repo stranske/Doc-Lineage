@@ -1,0 +1,12 @@
+{
+  "evidence_id": "8d1936821129a1c58e4b2dd18e11a2b1",
+  "excerpt": "1. MANAGEMENT FEE The annual management fee is 2.00%.",
+  "fact_ref": "segment:511c0e6859158162-p0001-s0001",
+  "locator": {
+    "order": 1,
+    "page": 0
+  },
+  "method": "text",
+  "schema_version": "evidence-object/v1",
+  "source_id": "511c0e68591581626404fc522d9558fdc8a0f1badec223a7f40198ac9ca65e09"
+}

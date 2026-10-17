@@ -1,0 +1,12 @@
+{
+  "var:alpha": {
+    "entity_ref": "manager:alpha",
+    "ontology_key": "legal.withdrawal.notice_days",
+    "period": "2026-Q1"
+  },
+  "var:beta": {
+    "entity_ref": "manager:beta",
+    "ontology_key": "legal.withdrawal.notice_days",
+    "period": "2026-Q2"
+  }
+}

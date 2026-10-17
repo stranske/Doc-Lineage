@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/private/tmp/doc-lineage-130-main-integration-venv/bin/python",
+    "-m",
+    "pip",
+    "install",
+    "-e",
+    "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener",
+    "-q"
+  ],
+  "exit_code": 1,
+  "PIP_NO_INDEX": "1",
+  "PIP_NO_DEPS": "1",
+  "PIP_NO_BUILD_ISOLATION": null
+}
