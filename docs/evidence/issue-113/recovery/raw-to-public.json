@@ -1,0 +1,401 @@
+{
+  "full.xml": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/full-final.xml",
+    "sha256": "de092803d78626767b75fc9aa576a75a111165ed9dbe975c9de506d4d7635839",
+    "normalized": false
+  },
+  "full.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/full-final.log",
+    "sha256": "a07304b28776dafc247949b24911dc5ba904e7c103729558fc5640ed7e1e183c",
+    "normalized": false
+  },
+  "full-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/full-final.json",
+    "sha256": "fbfb2431c3fbdefc9d469831c5e5f1039b7f25461b466461310f341a3d92cae1",
+    "normalized": false
+  },
+  "coverage.xml": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/coverage-final.xml",
+    "sha256": "7793b10535cd12febfa24ada98e586cb71d0cc7b62436746bac1fe3a7459ca47",
+    "normalized": false
+  },
+  "controls.xml": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/controls-final.xml",
+    "sha256": "8da086dbf8deede9e21ed7073b5795984aa69bb77d27675bb15c3448af8883e9",
+    "normalized": false
+  },
+  "controls.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/controls-final.log",
+    "sha256": "643073208c84d875aca41bd27ca4b15bfc07cfd584f9b58ffa703e712b77a547",
+    "normalized": false
+  },
+  "controls-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/controls-final.json",
+    "sha256": "680282d790b8eee990c7bdbd7edcfde8a7de11aac2a4a8ab91604ab63f9d442b",
+    "normalized": false
+  },
+  "exact.xml": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/exact.xml",
+    "sha256": "fee7baefd2f00ca321c60ed43159d9b8680fcfe5256325a1e6bc659f40e31eec",
+    "normalized": false
+  },
+  "exact.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/exact.log",
+    "sha256": "549890110c024237850509fbd34229a793536245e9e058b6ddd2fc3eef97d1f9",
+    "normalized": false
+  },
+  "exact-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/exact.json",
+    "sha256": "5a06b40d2de406322ceb57f41978eb7d1ecee1e713e877a72da3ed95ff4205cb",
+    "normalized": false
+  },
+  "control/before.pdf": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/before.pdf",
+    "sha256": "a55ba03b18b1c7dc8acd3549581a1b050f307a7fe7ed52d5f81936892376771f",
+    "normalized": false
+  },
+  "control/after.pdf": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/after.pdf",
+    "sha256": "41e5fdf4d3918aad0ef6618b63589ee3af9ccf3790e39e2598c81f9989aaa5da",
+    "normalized": false
+  },
+  "control/replay.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/replay.json",
+    "sha256": "2313e2f51c8d43c8ca40dc0fbf10992c5418128ce3199c5bfc71ad24740bf5df",
+    "normalized": false
+  },
+  "control/lineage-edges.ndjson": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/lineage-edges.ndjson",
+    "sha256": "b5e43a2e1fd73b47760408b2df7f719cdab8bd614103630e47f8725d4776384b",
+    "normalized": false
+  },
+  "control/before/segments.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/before/segments.json",
+    "sha256": "29f9d314c661ad2a2cf396fca0a86de880d7536333a33f99917b715235019365",
+    "normalized": false
+  },
+  "control/before/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/before/artifact-manifest.json",
+    "sha256": "d2421af085908e17dcd4cdc48ab86e921a4439f2068cea88908d0fb212e4bf82",
+    "normalized": false
+  },
+  "control/after/segments.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/after/segments.json",
+    "sha256": "a53711e023efbad8ca77b0808dd038a4e5c9011da2065e3005d168a1d696c310",
+    "normalized": false
+  },
+  "control/after/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/after/artifact-manifest.json",
+    "sha256": "3619bda738f0cacb690d7a4cdb8fc92319c1784d51ba5c77b6c962540e9cc176",
+    "normalized": false
+  },
+  "control/before/evidence/e2acf3422bba4ff9893ccc1f0484b4d3.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/before/evidence/e2acf3422bba4ff9893ccc1f0484b4d3.json",
+    "sha256": "ee0d948e367b1f5d53642a59acff9e6bed1e4e8e516524209406b0fa53da8223",
+    "normalized": false
+  },
+  "control/before/evidence/dbcc0689364ce3777da5a1633e7e7296.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/before/evidence/dbcc0689364ce3777da5a1633e7e7296.json",
+    "sha256": "70adf113b0cdcc0b84baf23b4aa043ecc9816ba18b1c813b6a301efc57853043",
+    "normalized": false
+  },
+  "control/after/evidence/b33902a9d7ae85bc2273479f4b0dfce1.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/after/evidence/b33902a9d7ae85bc2273479f4b0dfce1.json",
+    "sha256": "ae4a1cbd6b2abeaa95cce50f47e580b6f1ef8da1fd76ae4a677cb6eee676ef85",
+    "normalized": false
+  },
+  "control/after/evidence/c00c1937b7a079707b4dbefe093c2caa.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final/after/evidence/c00c1937b7a079707b4dbefe093c2caa.json",
+    "sha256": "1935ffbc40ee22c7beea08fad98375afc0040fb85b81b845cbae4ac6b7f26673",
+    "normalized": false
+  },
+  "control.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final.log",
+    "sha256": "2313e2f51c8d43c8ca40dc0fbf10992c5418128ce3199c5bfc71ad24740bf5df",
+    "normalized": false
+  },
+  "control-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control-final.json",
+    "sha256": "b8aef74d8661094f4bec3814205a574964e2fbbb9d82ec606b23c6d161e46bd9",
+    "normalized": false
+  },
+  "failed-control.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control.log",
+    "sha256": "67897c82805df916de1af50bad638e0ea803f8e4a9ee27f60f13834877b5fee2",
+    "normalized": false
+  },
+  "failed-control-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/control.json",
+    "sha256": "8cca9ba91dfd7a42080bd31773c22d840ed585d4ec217aa36b55e4e0faa1c36f",
+    "normalized": false
+  },
+  "mutation/restored.xml": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final/restored.xml",
+    "sha256": "002ce9ef0322846c3c9d66777de5a7241286c11ecb0d0f53e72a6286ccdb4a10",
+    "normalized": false
+  },
+  "mutation/disconnected.xml": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final/disconnected.xml",
+    "normalized": true,
+    "raw_sha256": "c1924c39784941a2e5e3104aadf35b0bad30d2a7b07abd424a90a05af86a18cc",
+    "public_sha256": "a28d3f1f6a1d031dfff4b52a00380ec82f53e4b2fff81e05b10c677ccde039c1",
+    "normalization": "trailing horizontal whitespace only; actual cases/outcomes/timings unchanged"
+  },
+  "mutation/disconnected.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final/disconnected.log",
+    "normalized": true,
+    "raw_sha256": "86cda1aeb6b542dceddb80a154b54e352355f60969ab3b296324958c709a209c",
+    "public_sha256": "0fa313912c8d03bb9a3f55f2fca51666d9fe9baf73017d2cd083ced4c372b74c",
+    "normalization": "trailing horizontal whitespace only; actual cases/outcomes/timings unchanged"
+  },
+  "mutation/restored.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final/restored.log",
+    "sha256": "afe468dd1d011515a8b4ffeef00438792d49b2797251254469f465d1f68d0018",
+    "normalized": false
+  },
+  "mutation/mutation.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final/mutation.json",
+    "sha256": "49668ca5d0672a3e25e06ad2e8dc523d1e0ee2827ef8aeecf7cb50943cf8a017",
+    "normalized": false
+  },
+  "mutation.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final.log",
+    "sha256": "49668ca5d0672a3e25e06ad2e8dc523d1e0ee2827ef8aeecf7cb50943cf8a017",
+    "normalized": false
+  },
+  "mutation-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/mutation-final.json",
+    "sha256": "0708ac3c9308ebe3b822f62607eed9d13b2bf7b8376fe4f1e6e623a221f6ba8e",
+    "normalized": false
+  },
+  "legal/commands.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/commands.json",
+    "sha256": "36fd7297cf4adbae0233633de99e8c48f2d6442a8de49e0c21f932713b097583",
+    "normalized": false
+  },
+  "legal/ingest/segments.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/ingest/segments.json",
+    "sha256": "202b902714a8893f1f573c5c9080ac9bd4bcd29d66eed71a7ffe8dcd0f95303f",
+    "normalized": false
+  },
+  "legal/ingest/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/ingest/artifact-manifest.json",
+    "sha256": "a4f1eb086b4874a5f046fc7d61fc7d4081ef65c2990844ddcd3f2710b2135acc",
+    "normalized": false
+  },
+  "legal/map/fact_key_map.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/map/fact_key_map.json",
+    "sha256": "cd85d4951152ec490519e1bde0ad9c574128540a09cb1b5d4246885d68fee688",
+    "normalized": false
+  },
+  "legal/map/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/map/artifact-manifest.json",
+    "sha256": "391525900a1d59866b77b8f713a6c76849ff37360737e77926a852e442234e44",
+    "normalized": false
+  },
+  "legal/claims/input-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/input-manifest.json",
+    "sha256": "a4f1eb086b4874a5f046fc7d61fc7d4081ef65c2990844ddcd3f2710b2135acc",
+    "normalized": false
+  },
+  "legal/claims/tracked-variables.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/tracked-variables.json",
+    "sha256": "dc983103907633c9b640cc529c42e79d44a048a250ccb206f7f22fa1f92f94e8",
+    "normalized": false
+  },
+  "legal/claims/segments.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/segments.json",
+    "sha256": "202b902714a8893f1f573c5c9080ac9bd4bcd29d66eed71a7ffe8dcd0f95303f",
+    "normalized": false
+  },
+  "legal/claims/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/artifact-manifest.json",
+    "sha256": "fe9c4f85d8cb36637ee93139fb32bd4773ae23ca0426c1d5713689ec6ed6504a",
+    "normalized": false
+  },
+  "legal/claims/unresolved.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/unresolved.json",
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "normalized": false
+  },
+  "legal/ingest/evidence/53206dc05ad8c27e8203ac41b0868c14.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/ingest/evidence/53206dc05ad8c27e8203ac41b0868c14.json",
+    "sha256": "9dd0ea0943abb7f403fcbc14daa6448242144c02116a9d5f59df26e56f02785b",
+    "normalized": false
+  },
+  "legal/ingest/evidence/48060ba6590f638153af45133c50ca43.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/ingest/evidence/48060ba6590f638153af45133c50ca43.json",
+    "sha256": "eb1dace149f285e63b02c71d65003b4de64d9c1392a6d0c9ade3bd5a74ba8a6a",
+    "normalized": false
+  },
+  "legal/claims/evidence/53206dc05ad8c27e8203ac41b0868c14.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/evidence/53206dc05ad8c27e8203ac41b0868c14.json",
+    "sha256": "9dd0ea0943abb7f403fcbc14daa6448242144c02116a9d5f59df26e56f02785b",
+    "normalized": false
+  },
+  "legal/claims/evidence/48060ba6590f638153af45133c50ca43.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/evidence/48060ba6590f638153af45133c50ca43.json",
+    "sha256": "eb1dace149f285e63b02c71d65003b4de64d9c1392a6d0c9ade3bd5a74ba8a6a",
+    "normalized": false
+  },
+  "legal/claims/source/synthetic_lpa.pdf": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal/claims/source/synthetic_lpa.pdf",
+    "sha256": "b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f",
+    "normalized": false
+  },
+  "legal.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal.log",
+    "sha256": "de3be1da337e726d0b85cb86fa0d2f38b12b236c544ce91682ff7c1f0d70f12e",
+    "normalized": false
+  },
+  "legal-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/legal.json",
+    "sha256": "5ade5f809b516b51a965a66128d0751261fb7bdbe0f55523b03df8a2a23d2514",
+    "normalized": false
+  },
+  "navigation.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/navigation.log",
+    "sha256": "018486f8bcffd9dc9d66fa913221d8e5923554414632609b2ad5fdd407107be1",
+    "normalized": false
+  },
+  "navigation-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/navigation.json",
+    "sha256": "0e93c743e7c87435463e4089f5205e1a5b3fa878a67e015933bde42fd330c59e",
+    "normalized": false
+  },
+  "historical-probe/observations.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/observations.json",
+    "sha256": "8692beb81b870dfedcf88fbbcf9aebba89e8fa0214a92eef86efdd2aba914d7d",
+    "normalized": false
+  },
+  "historical-probe/fact-map/fact_key_map.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/fact-map/fact_key_map.json",
+    "sha256": "72feffe41bd3d8afee1cb617982f5e32c9925c83b7691ed6260183d867af4f24",
+    "normalized": false
+  },
+  "historical-probe/fact-map/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/fact-map/artifact-manifest.json",
+    "sha256": "f25fb55ec7ba9a392bc7018723d76da84d5307af5ea6ccf8f659a51401d0ee9e",
+    "normalized": false
+  },
+  "historical-probe/ingest/segments.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/ingest/segments.json",
+    "sha256": "202b902714a8893f1f573c5c9080ac9bd4bcd29d66eed71a7ffe8dcd0f95303f",
+    "normalized": false
+  },
+  "historical-probe/ingest/artifact-manifest.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/ingest/artifact-manifest.json",
+    "sha256": "bffd37006da4343290185d469b40e8a1c2c8632ccfd271241d13244a2102057b",
+    "normalized": false
+  },
+  "historical-probe/ingest/evidence/53206dc05ad8c27e8203ac41b0868c14.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/ingest/evidence/53206dc05ad8c27e8203ac41b0868c14.json",
+    "sha256": "9dd0ea0943abb7f403fcbc14daa6448242144c02116a9d5f59df26e56f02785b",
+    "normalized": false
+  },
+  "historical-probe/ingest/evidence/48060ba6590f638153af45133c50ca43.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe/ingest/evidence/48060ba6590f638153af45133c50ca43.json",
+    "sha256": "eb1dace149f285e63b02c71d65003b4de64d9c1392a6d0c9ade3bd5a74ba8a6a",
+    "normalized": false
+  },
+  "historical-probe.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe.log",
+    "sha256": "74340a255b89561d2cdea383db816f3a58594d9429c20d04e5e5216f1b02d806",
+    "normalized": false
+  },
+  "historical-probe-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/historical-probe-command.json",
+    "sha256": "d3bf216ff0e1f06777cea8a8b8f5c6eeace51b9a92157c99b94752cd136e52ad",
+    "normalized": false
+  },
+  "lint.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/lint-final.log",
+    "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "normalized": false
+  },
+  "lint-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/lint-final.json",
+    "sha256": "0d9ef3b904f0d353f3fd71c46c6c04db775b351bfe1d7fb4c6c1a932bab4bece",
+    "normalized": false
+  },
+  "format.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/format-final.log",
+    "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+    "normalized": false
+  },
+  "format-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/format-final.json",
+    "sha256": "a71471ff4dacfcfc0868d92061129a99178aa89ad4d0e42722e39576f4f73350",
+    "normalized": false
+  },
+  "type-verifier.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/type-verifier-final.log",
+    "sha256": "24b47756b919f2d92edb1451cf8bfba8e19dc3538c142fd0d4bca41730c5880c",
+    "normalized": false
+  },
+  "type-verifier-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/type-verifier-final.json",
+    "sha256": "efac8a00bed7694349fcaae491e18a5229d90accfde9106ee17cc22574622f75",
+    "normalized": false
+  },
+  "type-production.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/type-production.log",
+    "sha256": "0e50f303795ed272bd8bbeb89cf8faf96c2f29106fc79ef271bb26293e37e3b6",
+    "normalized": false
+  },
+  "type-production-command.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/type-production.json",
+    "sha256": "2e2e73376b27cbc1ea860cca39cdcf94feeb2c9170940cf3ffa91c44c416e522",
+    "normalized": false
+  },
+  "capability-error.log": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/capability.err",
+    "sha256": "362ac87c22b6572a28c503ffad9b5d49ae37c43276548bad62fc497f63c84967",
+    "normalized": false
+  },
+  "environment.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/environment.json",
+    "sha256": "e79360b569c62c5456ff36c453e872aafe0ba19c7b0337b2666261437bd4682b",
+    "normalized": false
+  },
+  "native.jsonl": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/native.jsonl",
+    "sha256": "db499433bb94da48303acfae61eec743f6959cd7bbcea940793b5e16db2e3f8b",
+    "normalized": false
+  },
+  "ownership/all-head-records.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/all-head-records.json",
+    "sha256": "1fdf43c1d7f119aed614b60ae0fa48340e5b248f1abce9b35265c16bb9927811",
+    "normalized": false
+  },
+  "ownership/comments-113.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/comments-113.json",
+    "sha256": "d9f2f1e46e692e9ca789fdc86d6cf5cb03c60686fd10573768b3235ae3b74ad5",
+    "normalized": false
+  },
+  "ownership/comments-130.json": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/comments-130.json",
+    "sha256": "061c5e7a199f1c6af642529008fa59d8a1e635288387e2ceb4fefb583af1d16a",
+    "normalized": false
+  },
+  "run-final.py.txt": {
+    "raw_path": "/Users/teacher/.codex/orchestrator/measurement/doc-lineage-130-recovery/run-final.py",
+    "sha256": "08b7ad130f0b540a65eca3e049f43273393c7834f205476b999e171a79076cc1",
+    "normalized": false
+  },
+  "native-observer.py.txt": {
+    "raw_path": "/tmp/doc-lineage-130-venv/lib/python3.12/site-packages/sitecustomize.py",
+    "sha256": "42997c39e1edb2ce097d4f39e67be2bfc509b7a9961505fcedf1b95a02fe3bbe",
+    "normalized": false
+  },
+  "ownership/native1.json": {
+    "raw_path": "/tmp/doc130-native1.json",
+    "sha256": "8a3ed7095bad0b8be30f856d9002cf3231a651a43449f1ee7d1f6d1a70281f3f",
+    "normalized": false
+  },
+  "ownership/native2.json": {
+    "raw_path": "/tmp/doc130-native2.json",
+    "sha256": "663a0ec93fe05742256c4a1bc070858cb410c1a44cf74ce985d09448c3202d9c",
+    "normalized": false
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "unchanged_from_expected_head": true,
+  "sha256": "e57b894d9a29ab5419cc1c3badf2a0645ef87fc587da542de1650783352eac87",
+  "actual_result": "two unused-ignore errors lines 111-112; inherited source bytes; exact pinned-tool result UNKNOWN"
+}

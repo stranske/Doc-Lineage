@@ -10,6 +10,8 @@ from pathlib import Path
 
 from doc_lineage.extract.variables import validate
 
+TIMEOUT_SECONDS = 300
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -47,11 +49,33 @@ def run(destination: Path) -> None:
     receipts = []
     for args in commands:
         argv = [sys.executable, "-m", "doc_lineage.cli", *args]
-        completed = subprocess.run(argv, capture_output=True, text=True)
+        try:
+            completed = subprocess.run(
+                argv, capture_output=True, text=True, timeout=TIMEOUT_SECONDS
+            )
+        except subprocess.TimeoutExpired as exc:
+
+            def text(value: str | bytes | None) -> str:
+                return value.decode(errors="replace") if isinstance(value, bytes) else value or ""
+
+            receipts.append(
+                {
+                    "argv": argv,
+                    "exit_code": None,
+                    "status": "timeout",
+                    "timeout_seconds": TIMEOUT_SECONDS,
+                    "stdout": text(exc.stdout),
+                    "stderr": text(exc.stderr),
+                }
+            )
+            (destination / "commands.json").write_text(json.dumps(receipts, indent=2) + "\n")
+            raise RuntimeError(f"command timed out after {TIMEOUT_SECONDS}s: {argv}") from exc
         receipts.append(
             {
                 "argv": argv,
                 "exit_code": completed.returncode,
+                "status": "passed" if completed.returncode == 0 else "failed",
+                "timeout_seconds": TIMEOUT_SECONDS,
                 "stdout": completed.stdout,
                 "stderr": completed.stderr,
             }

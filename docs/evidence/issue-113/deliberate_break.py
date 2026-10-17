@@ -71,9 +71,15 @@ def run(destination: Path) -> None:
         "named_assertion": EXPECTED,
         "tests_unchanged": test.read_bytes() == test_bytes,
     }
-    (destination / "mutation.json").write_text(json.dumps(receipt, indent=2) + "\n")
-    if red.returncode != 1 or EXPECTED not in red.stdout or green.returncode != 0:
+    if (
+        red.returncode != 1
+        or EXPECTED not in red.stdout
+        or green.returncode != 0
+        or not receipt["tests_unchanged"]
+        or production.read_bytes() != original
+    ):
         raise RuntimeError("expected named AssertionError RED then restored GREEN")
+    (destination / "mutation.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print(json.dumps(receipt, indent=2))
 
 

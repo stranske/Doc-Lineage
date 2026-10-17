@@ -1,0 +1,29 @@
+import subprocess,sys,os,json,hashlib,pathlib,time
+ROOT=pathlib.Path('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__130__opener')
+OUT=pathlib.Path(__file__).parent
+PY='/tmp/doc-lineage-130-venv/bin/python'
+env={**os.environ,'PATH':'/tmp/doc-lineage-130-venv/bin:'+os.environ['PATH'],'PYTHONPATH':str(ROOT/'src'),'PYTHONDONTWRITEBYTECODE':'1','PIP_NO_BUILD_ISOLATION':'0','PIP_NO_DEPS':'1','PIP_NO_INDEX':'1','COVERAGE_FILE':str(OUT/'.coverage'),'DOC130_NATIVE_LOG':str(OUT/'native.jsonl'),'XDG_CACHE_HOME':str(OUT/'cache')}
+def run(label,argv,timeout=300,cwd=ROOT,extra=None):
+ bindings={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for base in ['src','tests','schemas','vocab','docs/contracts/schemas'] for p in (ROOT/base).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix not in ['.pyc']}
+ bindings.update({str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'docs/evidence/issue-113').glob('*.py')})
+ start=time.time()
+ with (OUT/f'{label}.log').open('w') as f:
+  result=subprocess.run(argv,cwd=cwd,env={**env,**(extra or {})},stdout=f,stderr=subprocess.STDOUT,timeout=timeout)
+ row={'argv':argv,'cwd':str(cwd),'exit_code':result.returncode,'elapsed_seconds':time.time()-start,'bindings':bindings,'log_sha256':hashlib.sha256((OUT/f'{label}.log').read_bytes()).hexdigest()}
+ (OUT/f'{label}.json').write_text(json.dumps(row,indent=2)+'\n')
+ print(label,result.returncode,flush=True)
+ return result.returncode
+
+commands=[
+ ('controls-final',[PY,'-m','pytest','tests/evidence/test_issue113_harness.py','-q',f'--junitxml={OUT}/controls-final.xml']),
+ ('control-final',[PY,'docs/evidence/issue-113/replay_control.py',str(OUT/'control-final')]),
+ ('mutation-final',[PY,'docs/evidence/issue-113/deliberate_break.py',str(OUT/'mutation-final')]),
+ ('full-final',[PY,'-m','pytest','--cov=src','--cov-report=term-missing',f'--cov-report=xml:{OUT}/coverage-final.xml',f'--junitxml={OUT}/full-final.xml']),
+ ('lint-final',[PY,'-m','ruff','check','docs/evidence/issue-113','tests/evidence/test_issue113_harness.py']),
+ ('format-final',[PY,'-m','black','--check','docs/evidence/issue-113','tests/evidence/test_issue113_harness.py']),
+ ('type-verifier-final',[PY,'-m','mypy','--follow-imports=silent','docs/evidence/issue-113/verify_evidence.py']),
+]
+failed=[]
+for label,argv in commands:
+ if run(label,argv):failed.append(label)
+print('FAILED',failed,flush=True)

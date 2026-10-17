@@ -120,3 +120,21 @@ production-repair work were declined as outside the authorized scope. No tool wa
 launched to provoke a computer-wide prompt. Additional findings are returned only
 in the audit report for human decision. No CI wait, merge, source closure or
 provider/sibling acceptance is included in this task.
+
+## PR130 evidence harness recovery (expected start e46a58c)
+
+The six review findings are addressed in the evidence harness only. See
+[recovery dispositions](recovery/README.md) for exact finding URLs and results.
+Original historical logs/XML, mutation receipts and `source-hashes.json` are
+unchanged. The original checksum index is retained as
+`recovery/original-SHA256SUMS`; the current index covers every evidence file
+except the root `SHA256SUMS` itself, including this recovery.
+
+The native continuation parameterized the regression after the original audit:
+its current hash is `bba39e27af9887646742a855e9cd1e4f7f5cc03f75db38cc73188b05ce3f018a`.
+The original 533/162/11 tests and one-case RED/restored-GREEN are historical
+proof at immutable original audit revision
+`a9e5ce23c4295a1948f6f7bd58ea50fcddd67521`, not current test counts. The verifier
+checks those original bindings using that Git object; a checkout must contain
+it. Current recovery inputs and genuine XML have separate bindings in
+`recovery/source-bindings.json`. No historical result was rewritten as passing.

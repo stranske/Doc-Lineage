@@ -31,7 +31,7 @@ def observe(label, call):
     try:
         value = call()
         return {"probe": label, "returned": value}
-    except (Exception, SystemExit) as exc:
+    except (TypeError, SystemExit, ValueError) as exc:
         return {"probe": label, "exception": type(exc).__name__, "message": str(exc)}
 
 
@@ -39,6 +39,22 @@ def run(destination: Path) -> None:
     if destination.resolve().is_relative_to(ROOT):
         raise ValueError("raw artifacts must be outside the checkout")
     # Compare every production byte, also detecting new/deleted modules.
+    try:
+        subprocess.check_output(
+            ["git", "cat-file", "-e", f"{BASE}^{{commit}}"], cwd=ROOT, stderr=subprocess.PIPE
+        )
+    except subprocess.CalledProcessError as exc:
+        # A failed diff is not necessarily a missing revision (e.g. repository I/O).
+        if exc.returncode in (1, 128) and any(
+            marker in (exc.stderr or b"")
+            for marker in (
+                b"Not a valid object name",
+                b"Not a valid object",
+                b"could not get object info",
+            )
+        ):
+            raise ValueError(f"reviewed base {BASE} is unavailable in this checkout") from exc
+        raise
     changed = subprocess.check_output(["git", "diff", BASE, "--", "src"], cwd=ROOT)
     if changed or subprocess.check_output(
         ["git", "ls-files", "--others", "--exclude-standard", "src"], cwd=ROOT

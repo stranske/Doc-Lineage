@@ -1,0 +1,125 @@
+[
+  {
+    "kind": "runner-reservation",
+    "comment": 6233915760,
+    "data": {
+      "head_sha": "a9e5ce23c4295a1948f6f7bd58ea50fcddd67521",
+      "key": "85069ac966a95069cdb774cb7e0ed5af722f070cdb1d7f687d18ea73fe61cc7b",
+      "pr_number": 130,
+      "provider": "codex",
+      "reservation_id": "6fa38c3d49c148febfd03b61ff67a1f5",
+      "started_at": "2026-10-17T12:32:30Z",
+      "status": "pending",
+      "task_progress_schema": 1,
+      "task_set_fingerprint_before": "71c60abf214cbbd5b2d262fccae2c4929d608b5e7ca19af7d07fb229c9dfc0fc",
+      "tasks_completed_before": 0,
+      "tasks_total_before": 9,
+      "workflow_attempt_id": "stranske/Doc-Lineage:39032882200:1"
+    }
+  },
+  {
+    "kind": "runner-completion",
+    "comment": 6234009771,
+    "data": {
+      "provider": "codex",
+      "record": {
+        "completed_at": "2026-10-17T12:42:31Z",
+        "completion_incomplete": false,
+        "continuation_completions": 0,
+        "head_sha": "a9e5ce23c4295a1948f6f7bd58ea50fcddd67521",
+        "key": "85069ac966a95069cdb774cb7e0ed5af722f070cdb1d7f687d18ea73fe61cc7b",
+        "observed_head_sha": "e46a58cbe00f01593310cdf66534fd4ce20dc079",
+        "pr_number": 130,
+        "productive": true,
+        "provider": "codex",
+        "reservation_id": "6fa38c3d49c148febfd03b61ff67a1f5",
+        "result": {
+          "error": "",
+          "final_message_chars": 500,
+          "final_message_sha256": "1708bd0ee78efc30d741622b735de006f4bb423eb22405cb06d90b83d322846e",
+          "provider": "codex",
+          "schema": "runner-result-summary/v1",
+          "success": true,
+          "summary": "Added the bounded README inventory and reordered-section restart regression. - Required tests: **12 passed**; related tests: **167 passed**. - Deliberate break: **2 failed \u2192 restored \u2192 2 passed**. - Black and Ruff pass. - Full suite: **520 passed, 14 failed** in OCR/install tests. Commit **9a229e0** exists in an isolated repository because workspace `.git` is read-only. [Commit bundle](/tmp/doc-lineage-ingest-audit.bundle) \u00b7 [Evidence receipt](/home/runner/work/Doc-Lineage/Doc-Lineage/docs/evide",
+          "truncated": false
+        },
+        "started_at": "2026-10-17T12:32:30Z",
+        "status": "completed",
+        "task_progress_reason": "head-changed",
+        "task_progress_schema": 1,
+        "task_set_fingerprint_after": "71c60abf214cbbd5b2d262fccae2c4929d608b5e7ca19af7d07fb229c9dfc0fc",
+        "task_set_fingerprint_before": "71c60abf214cbbd5b2d262fccae2c4929d608b5e7ca19af7d07fb229c9dfc0fc",
+        "tasks_completed_after": 9,
+        "tasks_completed_before": 0,
+        "tasks_total_after": 9,
+        "tasks_total_before": 9,
+        "unproductive_completions": 0,
+        "workflow_attempt_id": "stranske/Doc-Lineage:39032882200:1"
+      },
+      "reservation_id": "6fa38c3d49c148febfd03b61ff67a1f5",
+      "schema": "runner-completion-receipt/v1"
+    }
+  },
+  {
+    "kind": "runner-reservation",
+    "comment": 6234030232,
+    "data": {
+      "head_sha": "e46a58cbe00f01593310cdf66534fd4ce20dc079",
+      "key": "cd5ced272f9c002cae6e36607b7c3d5c050f02d08ee641f0bf6d76eb2487dbb5",
+      "pr_number": 130,
+      "provider": "claude",
+      "reservation_id": "b7f20812f15e48cdbd6df96e1eaeff20",
+      "started_at": "2026-10-17T12:44:35Z",
+      "status": "pending",
+      "task_progress_schema": 1,
+      "task_set_fingerprint_before": "71c60abf214cbbd5b2d262fccae2c4929d608b5e7ca19af7d07fb229c9dfc0fc",
+      "tasks_completed_before": 9,
+      "tasks_total_before": 9,
+      "workflow_attempt_id": "stranske/Doc-Lineage:39033715589:1"
+    }
+  },
+  {
+    "kind": "runner-completion",
+    "comment": 6234053496,
+    "data": {
+      "provider": "claude",
+      "record": {
+        "completed_at": "2026-10-17T12:46:45Z",
+        "completion_incomplete": false,
+        "continuation_completions": 0,
+        "head_sha": "e46a58cbe00f01593310cdf66534fd4ce20dc079",
+        "key": "cd5ced272f9c002cae6e36607b7c3d5c050f02d08ee641f0bf6d76eb2487dbb5",
+        "observed_head_sha": "e46a58cbe00f01593310cdf66534fd4ce20dc079",
+        "pr_number": 130,
+        "productive": false,
+        "provider": "claude",
+        "reservation_id": "b7f20812f15e48cdbd6df96e1eaeff20",
+        "result": {
+          "error": "",
+          "final_message_chars": 499,
+          "final_message_sha256": "2eb951cfbb80cf1cce7610b00bc94a23e6b3a4993e57a0e17e9afa04813d6da4",
+          "provider": "claude",
+          "schema": "runner-result-summary/v1",
+          "success": true,
+          "summary": "```json {\"verdict\":\"PASS\",\"reason\":\"Inventory, traced gaps/controls, linked ownership, retained pytest result, and deliberate-break RED/GREEN evidence all verified; blackline.py is byte-identical to its original hash\"} ``` ## Scope Check - Files in diff: not enumerable with `git diff <base>...HEAD`. The local `main` ref doesn't exist, so I used the last two commits instead. They touch `README.md`, `docs/reports/persisted-ingest-consumer-audit.md`, `docs/evidence/**`, `docs/fact-key-map.md`, and",
+          "truncated": false
+        },
+        "started_at": "2026-10-17T12:44:35Z",
+        "status": "completed",
+        "task_progress_reason": "measured",
+        "task_progress_schema": 1,
+        "task_set_fingerprint_after": "71c60abf214cbbd5b2d262fccae2c4929d608b5e7ca19af7d07fb229c9dfc0fc",
+        "task_set_fingerprint_before": "71c60abf214cbbd5b2d262fccae2c4929d608b5e7ca19af7d07fb229c9dfc0fc",
+        "tasks_completed_after": 9,
+        "tasks_completed_before": 9,
+        "tasks_completed_delta": 0,
+        "tasks_total_after": 9,
+        "tasks_total_before": 9,
+        "unproductive_completions": 1,
+        "workflow_attempt_id": "stranske/Doc-Lineage:39033715589:1"
+      },
+      "reservation_id": "b7f20812f15e48cdbd6df96e1eaeff20",
+      "schema": "runner-completion-receipt/v1"
+    }
+  }
+]

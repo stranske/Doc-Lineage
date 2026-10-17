@@ -20,7 +20,9 @@ def run(destination: Path) -> None:
         raise ValueError("raw artifacts must be outside the checkout")
     destination.mkdir(parents=True, exist_ok=False)
     namespace = runpy.run_path(str(ROOT / "tests/blackline/test_section_id_pairing.py"))
-    namespace["test_persisted_pdf_ingest_replays_existing_production_pairing"](destination)
+    namespace["test_persisted_pdf_ingest_replays_existing_production_pairing"](
+        destination, reorder_after=True
+    )
     before, after = [
         load_segment_tree(destination / name / "segments.json") for name in ("before", "after")
     ]
@@ -34,6 +36,7 @@ def run(destination: Path) -> None:
     pairs = align_sections(*trees)
     (destination / "lineage-edges.ndjson").write_text(emit_lineage_edges_ndjson(pairs) + "\n")
     result = {
+        "reorder_after": True,
         "sources": [p["source_sha256"] for p in (before, after)],
         "ids": [p.section_id for p in pairs],
         "methods": [p.pairing_method for p in pairs],

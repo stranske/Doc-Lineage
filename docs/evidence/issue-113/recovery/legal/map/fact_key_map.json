@@ -1,0 +1,6 @@
+{
+  "var:adb4c4fd4ae6da9af018e0d1daa8048197245cc765f847fb355fa1c43a305081": {
+    "entity_ref": "fund:synthetic_alpha",
+    "ontology_key": "legal.fees.management_rate"
+  }
+}
