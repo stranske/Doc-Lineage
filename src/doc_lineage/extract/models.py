@@ -28,6 +28,8 @@ class CoverageStats:
     pages_with_text_layer: int
     pages_recognized: int
     pages_unreadable: int
+    #: One-based page numbers for pages counted in ``pages_unreadable``.
+    unreadable_pages: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)

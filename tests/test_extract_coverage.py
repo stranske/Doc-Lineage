@@ -325,6 +325,115 @@ def test_cache_writes_are_atomic(cache_dir: Path, tmp_path: Path) -> None:
     assert list(entry.parent.glob("*.tmp")) == []
 
 
+def test_partly_unreadable_pdf_reports_unreadable_page_identities(
+    cache_dir: Path,
+    tmp_path: Path,
+) -> None:
+    """Cold and cache-hit extraction must agree on unreadable page identities.
+
+    Deliberate-break gate: removing ``CoverageStats.unreadable_pages`` from
+    ``src/doc_lineage/extract/models.py`` makes this regression fail (AttributeError
+    or unexpected kwarg) while ``pages_unreadable`` alone would still pass a
+    count-only check. Identities are recomputed from page outcomes; they are not
+    stored in the cache.
+    """
+    pdf_path = tmp_path / "partly-unreadable.pdf"
+    pdf = canvas.Canvas(str(pdf_path), pagesize=letter)
+    pdf.drawString(72, 720, "readable page one")
+    pdf.showPage()
+    pdf.save()
+    _write_image_only_pdf(tmp_path / "image-only.pdf")
+    reader = PdfReader(str(tmp_path / "image-only.pdf"))
+    writer = PdfWriter()
+    writer.add_page(PdfReader(str(pdf_path)).pages[0])
+    writer.add_page(reader.pages[0])
+    with pdf_path.open("wb") as stream:
+        writer.write(stream)
+
+    active_cache = ExtractCache(cache_dir)
+    cold = extract(pdf_path, ocr_enabled=False, cache=active_cache)
+    assert cold.coverage.pages_with_text_layer == 1
+    assert cold.coverage.pages_unreadable == 1
+    assert cold.coverage.unreadable_pages == (2,)
+    assert len(cold.coverage.unreadable_pages) == cold.coverage.pages_unreadable
+
+    cached = extract(pdf_path, ocr_enabled=False, cache=active_cache)
+    assert cached.coverage.unreadable_pages == cold.coverage.unreadable_pages
+    assert cached.coverage.pages_unreadable == cold.coverage.pages_unreadable
+    assert cached.coverage.pages_with_text_layer == cold.coverage.pages_with_text_layer
+
+    # Coverage is recomputed on every read; page cache entries store spans only.
+    for entry in (cache_dir / cold.stable_id).glob("page-*.json"):
+        payload = json.loads(entry.read_text(encoding="utf-8"))
+        assert "coverage" not in payload
+        assert "pages_unreadable" not in payload
+        assert "unreadable_pages" not in payload
+        assert "ocr_mode" in payload
+        assert "spans" in payload
+
+
+def test_retryable_ocr_runtime_error_reports_stable_unreadable_page_identities(
+    cache_dir: Path,
+    tmp_path: Path,
+) -> None:
+    """Cold and repeated reads must agree on retryable-page identities.
+
+    ``extract_pdf`` records identities for both ``\"unreadable\"`` and
+    ``\"retryable\"``. OCR ``RuntimeError`` is retryable and is never written to
+    the page cache, so each call re-extracts. A regression that only records
+    identities on the OCR-off ``unreadable`` path would still pass
+    ``test_partly_unreadable_pdf_reports_unreadable_page_identities``.
+
+    Deliberate-break gate: changing ``pdf.py`` so retryable outcomes increment
+    ``pages_unreadable`` without appending to ``unreadable_pages`` makes the
+    identity assertions fail while a count-only check would still pass.
+    """
+    pdf_path = tmp_path / "retryable-identities.pdf"
+    pdf = canvas.Canvas(str(pdf_path), pagesize=letter)
+    pdf.drawString(72, 720, "readable page one")
+    pdf.showPage()
+    pdf.save()
+    _write_image_only_pdf(tmp_path / "image-only.pdf")
+    reader = PdfReader(str(tmp_path / "image-only.pdf"))
+    writer = PdfWriter()
+    writer.add_page(PdfReader(str(pdf_path)).pages[0])
+    writer.add_page(reader.pages[0])
+    with pdf_path.open("wb") as stream:
+        writer.write(stream)
+
+    calls: list[tuple[int, int]] = []
+
+    def failing(_image: Image.Image, *, rotation: int = 0) -> str:
+        calls.append(_image.size)
+        raise RuntimeError("stub OCR backend unavailable")
+
+    active_cache = ExtractCache(cache_dir)
+    backend = CallableOCRBackend(failing)
+
+    cold = extract(pdf_path, ocr_backend=backend, cache=active_cache)
+    assert cold.coverage.pages_with_text_layer == 1
+    assert cold.coverage.pages_recognized == 0
+    assert cold.coverage.pages_unreadable == 1
+    assert cold.coverage.unreadable_pages == (2,)
+    assert len(cold.coverage.unreadable_pages) == cold.coverage.pages_unreadable
+    assert cold.spans and cold.spans[0].source == "text_layer"
+    assert calls, "stub OCR must run so the outcome is retryable, not OCR-off unreadable"
+
+    repeated = extract(pdf_path, ocr_backend=backend, cache=active_cache)
+    assert repeated.coverage.unreadable_pages == cold.coverage.unreadable_pages
+    assert repeated.coverage.pages_unreadable == cold.coverage.pages_unreadable
+    assert len(calls) >= 2, "retryable pages must be re-extracted, not served from cache"
+
+    # Retryable failures must not become completed cache entries.
+    page2 = cache_dir / cold.stable_id / "page-2.json"
+    assert not page2.exists()
+    for entry in (cache_dir / cold.stable_id).glob("page-*.json"):
+        payload = json.loads(entry.read_text(encoding="utf-8"))
+        assert "coverage" not in payload
+        assert "pages_unreadable" not in payload
+        assert "unreadable_pages" not in payload
+
+
 def test_coverage_always_reports_all_three_counts(cache_dir: Path, tmp_path: Path) -> None:
     pdf_path = tmp_path / "counts.pdf"
     _write_text_pdf(pdf_path, ["one"])
@@ -338,6 +447,7 @@ def test_coverage_always_reports_all_three_counts(cache_dir: Path, tmp_path: Pat
     assert (
         coverage.pages_with_text_layer + coverage.pages_recognized + coverage.pages_unreadable
     ) == 1
+    assert len(coverage.unreadable_pages) == coverage.pages_unreadable
 
 
 def test_deliberate_break_per_document_detection_violates_mixed_pdf_contract(

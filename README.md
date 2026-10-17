@@ -184,7 +184,9 @@ Disk caches retain the field. Older native-PDF cache entries without line data
 are refreshed from the source; old OCR entries can recover lines from their
 unflattened text. `ExtractCache()` uses memory only. OCR still requires the
 `ocr` extra and a working local Tesseract installation; unreadable pages remain
-visible in `document.coverage.pages_unreadable`.
+visible in `document.coverage.pages_unreadable` and as one-based page numbers in
+`document.coverage.unreadable_pages` (recomputed on every extraction, including
+cache hits, without storing coverage in the cache).
 
 Run `python -m pytest tests/test_extract_lines.py tests/test_extract_coverage.py -q`
 to verify preserved lines, page attribution, OCR routing, and cache reloads.
