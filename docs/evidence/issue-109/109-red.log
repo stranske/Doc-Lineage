@@ -1,0 +1,518 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/doc109-20261017T0601
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 16 items / 8 deselected / 8 selected
+
+tests/test_cli.py FFFFFFFF                                               [100%]
+
+=================================== FAILURES ===================================
+___ test_export_rejects_input_alias_without_changing_hashes[direct-original] ___
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112d743b0>
+capsys = <_pytest.capture.CaptureFixture object at 0x112d87350>
+input_name = 'original', alias = 'direct'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['f4b13b20e1e...80fbc71607f8'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 0 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '93661baf228df3c3f1514a731dcd708c6685d0334a992b0f72bc5511a6117692'
+E         Use -v to get more diff
+
+tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia0/original.docx
+___ test_export_rejects_input_alias_without_changing_hashes[direct-modified] ___
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112d87590>
+capsys = <_pytest.capture.CaptureFixture object at 0x112d877d0>
+input_name = 'modified', alias = 'direct'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['93661baf228...0a6053c63f7c'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 1 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '2dbd79eeaf0d6e2f0e0f863bc25989e384d5ee7932c04af0c8c380fbc71607f8'
+E         Use -v to get more diff
+
+tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia1/modified.docx
+__ test_export_rejects_input_alias_without_changing_hashes[relative-original] __
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112dee390>
+capsys = <_pytest.capture.CaptureFixture object at 0x112dee8a0>
+input_name = 'original', alias = 'relative'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['f4b13b20e1e...80fbc71607f8'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 0 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '93661baf228df3c3f1514a731dcd708c6685d0334a992b0f72bc5511a6117692'
+E         Use -v to get more diff
+
+/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/doc109-20261017T0601/tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: original.docx
+__ test_export_rejects_input_alias_without_changing_hashes[relative-modified] __
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112deee10>
+capsys = <_pytest.capture.CaptureFixture object at 0x112dee6f0>
+input_name = 'modified', alias = 'relative'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['93661baf228...0a6053c63f7c'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 1 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '2dbd79eeaf0d6e2f0e0f863bc25989e384d5ee7932c04af0c8c380fbc71607f8'
+E         Use -v to get more diff
+
+/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/doc109-20261017T0601/tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: modified.docx
+__ test_export_rejects_input_alias_without_changing_hashes[symlink-original] ___
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112d85ac0>
+capsys = <_pytest.capture.CaptureFixture object at 0x112d86e70>
+input_name = 'original', alias = 'symlink'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['f4b13b20e1e...80fbc71607f8'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 0 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '93661baf228df3c3f1514a731dcd708c6685d0334a992b0f72bc5511a6117692'
+E         Use -v to get more diff
+
+tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia4/alias.docx
+__ test_export_rejects_input_alias_without_changing_hashes[symlink-modified] ___
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112dec890>
+capsys = <_pytest.capture.CaptureFixture object at 0x112dee210>
+input_name = 'modified', alias = 'symlink'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['93661baf228...0a6053c63f7c'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 1 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '2dbd79eeaf0d6e2f0e0f863bc25989e384d5ee7932c04af0c8c380fbc71607f8'
+E         Use -v to get more diff
+
+tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia5/alias.docx
+__ test_export_rejects_input_alias_without_changing_hashes[hardlink-original] __
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112def170>
+capsys = <_pytest.capture.CaptureFixture object at 0x112dec8f0>
+input_name = 'original', alias = 'hardlink'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['f4b13b20e1e...80fbc71607f8'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 0 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '93661baf228df3c3f1514a731dcd708c6685d0334a992b0f72bc5511a6117692'
+E         Use -v to get more diff
+
+tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia6/alias.docx
+__ test_export_rejects_input_alias_without_changing_hashes[hardlink-modified] __
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112ded220>
+capsys = <_pytest.capture.CaptureFixture object at 0x112dee750>
+input_name = 'modified', alias = 'hardlink'
+
+    @pytest.mark.parametrize("input_name", ["original", "modified"])
+    @pytest.mark.parametrize("alias", ["direct", "relative", "symlink", "hardlink"])
+    def test_export_rejects_input_alias_without_changing_hashes(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        input_name: str,
+        alias: str,
+    ) -> None:
+        original = tmp_path / "original.docx"
+        modified = tmp_path / "modified.docx"
+        original.write_bytes(b"original package")
+        modified.write_bytes(b"modified package")
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)]
+        source = original if input_name == "original" else modified
+        output = source
+        if alias == "relative":
+            monkeypatch.chdir(tmp_path)
+            output = Path(source.name)
+        elif alias == "symlink":
+            output = tmp_path / "alias.docx"
+            output.symlink_to(source)
+        elif alias == "hardlink":
+            output = tmp_path / "alias.docx"
+            try:
+                output.hardlink_to(source)
+            except OSError as exc:
+                pytest.skip(f"filesystem does not support hard links: {exc}")
+        export = Mock(return_value=b"redline output must not replace an input")
+        monkeypatch.setattr("doc_lineage.cli.export_docx_redline", export)
+    
+        code = main(
+            [
+                "export-docx",
+                "--original",
+                str(original),
+                "--modified",
+                str(modified),
+                "--blackline",
+                "--output",
+                str(output),
+            ]
+        )
+    
+>       assert [
+            hashlib.sha256(path.read_bytes()).hexdigest() for path in (original, modified)
+        ] == before
+E       AssertionError: assert ['93661baf228...0a6053c63f7c'] == ['93661baf228...80fbc71607f8']
+E         
+E         At index 1 diff: 'f4b13b20e1e84f878f28cb81e4387aa7c6e44e479a7fa15aa8a00a6053c63f7c' != '2dbd79eeaf0d6e2f0e0f863bc25989e384d5ee7932c04af0c8c380fbc71607f8'
+E         Use -v to get more diff
+
+tests/test_cli.py:119: AssertionError
+----------------------------- Captured stdout call -----------------------------
+blackline: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4581/test_export_rejects_input_alia7/alias.docx
+- generated xml file: /Users/teacher/.codex/automations/pd-workloop-resume/run-20261017T0601/109-red.xml -
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[direct-original]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[direct-modified]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[relative-original]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[relative-modified]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[symlink-original]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[symlink-modified]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[hardlink-original]
+FAILED tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[hardlink-modified]
+======================= 8 failed, 8 deselected in 0.30s ========================

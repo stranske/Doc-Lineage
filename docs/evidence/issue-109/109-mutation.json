@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/opt/anaconda3/bin/python3",
+    "-m",
+    "pytest",
+    "tests/test_cli.py",
+    "-k",
+    "rejects_input_alias",
+    "-q"
+  ],
+  "original_sha256": "7a109fd42eef1873b7976ab3894540c136c022270237c71467626ce47473b096",
+  "fixed_before_sha256": "515418a3f79e24458fcc7adc5e196e59901e44a256b27116ea77bfa6dc36c72d",
+  "fixed_restored_sha256": "515418a3f79e24458fcc7adc5e196e59901e44a256b27116ea77bfa6dc36c72d",
+  "red_exit": 1,
+  "restored_exit": 0
+}
