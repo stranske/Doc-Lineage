@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/opt/anaconda3/bin/python3",
+    "-m",
+    "pytest",
+    "tests/ingest/test_ingest_synthetic_pdf.py",
+    "tests/ingest/test_docling_segmenter.py",
+    "-k",
+    "euro_amount or font_differences or unsupported_font",
+    "-q"
+  ],
+  "original_source_sha256": "db52d17434e68c5178fc22a087faa78b557d95d3a6da6914ea0dcda3de2413a4",
+  "fixed_before_sha256": "66faa2514b08170421f7d31e748c85cc5cb725d6564a4541e79351cf44c53bb5",
+  "fixed_restored_sha256": "66faa2514b08170421f7d31e748c85cc5cb725d6564a4541e79351cf44c53bb5",
+  "red_exit": 1,
+  "restored_exit": 0
+}

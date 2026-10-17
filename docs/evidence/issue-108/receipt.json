@@ -1,0 +1,17 @@
+{
+  "runtime": "/opt/anaconda3/bin/python3",
+  "suite": "python3 -m pytest tests/ingest/test_ingest_synthetic_pdf.py tests/ingest/test_docling_segmenter.py tests/blackline/test_section_id_pairing.py -q",
+  "result": "66 passed",
+  "typecheck": "mypy --follow-imports=silent src/doc_lineage/adapters/docling_segmenter.py --disable-error-code unused-ignore: PASS; baseline optional Docling unused-ignore diagnostics suppressed only for this local focused invocation; repository configuration unchanged",
+  "final_source_sha256": "e57b894d9a29ab5419cc1c3badf2a0645ef87fc587da542de1650783352eac87",
+  "post_validation_delta": "docstring and explanatory comments only",
+  "files": {
+    "108-mutation.json": "d8218cdea421e5f961f3721bb7ccddf9d0ae7b72abec7764c041d60fe846e1ab",
+    "108-green.log": "78ef5d355950a060c2485986a1dc1ff246546562aaeae7f5608df3b5cb8d8cdb",
+    "108-restored.xml": "5cb1cbb9548a696a84c6cf9a98bca91add025c9ac002c9b9ef34665832430eb7",
+    "108-red.xml": "8581f7debf753a3f8c500b2b531b79e495b5ccc88d016bb0528396278d662077",
+    "108-green.xml": "6435c56425cc0a5fa88b4a4433e5a8ad0ef9106139c579b95ea7b7fd0a5ef82c",
+    "108-restored.log": "d1fc7a04401ce4ff149ae65afbdc39233a315d71da5b3408961c4ce40c462adc",
+    "108-red.log": "c9fd9addf8f7c57bfd17cc0da9ea855996aa6ac0b7fb3fd8ef655877b7713172"
+  }
+}

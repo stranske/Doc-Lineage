@@ -184,6 +184,74 @@ def test_pdf_string_escapes_are_resolved() -> None:
     assert _decode_pdf_string(rb"trailing\\") == "trailing\\"
 
 
+def _font_encoded_pdf(path: Path, encoding: object) -> None:
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+            NameObject("/Encoding"): encoding,
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})}
+    )
+    stream = DecodedStreamObject()
+    stream.set_data(b"BT /F1 12 Tf 72 720 Td (A) Tj ET")
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    with path.open("wb") as handle:
+        writer.write(handle)
+
+
+def test_offline_text_respects_font_differences(tmp_path: Path) -> None:
+    from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NumberObject
+
+    source = tmp_path / "font-differences.pdf"
+    _font_encoded_pdf(
+        source,
+        DictionaryObject(
+            {
+                NameObject("/BaseEncoding"): NameObject("/WinAnsiEncoding"),
+                NameObject("/Differences"): ArrayObject([NumberObject(65), NameObject("/alpha")]),
+            }
+        ),
+    )
+
+    result = segment_document(source, allow_docling=False)
+    assert result.pages[0].text == "α"
+    assert result.pages[0].has_text_layer
+
+
+def test_unsupported_font_encoding_is_unreadable_without_text_evidence(tmp_path: Path) -> None:
+    from pypdf import PdfWriter
+    from pypdf.generic import NameObject
+
+    from doc_lineage.ingest import ingest_document
+
+    source = tmp_path / "unsupported-font.pdf"
+    _font_encoded_pdf(source, NameObject("/UnsupportedEncoding"))
+    writer = PdfWriter()
+    writer.append(source)
+    writer.append(FIXTURE)
+    with source.open("wb") as handle:
+        writer.write(handle)
+
+    result = ingest_document(
+        source, output_dir=tmp_path / "out", allow_docling=False, ocr_enabled=False
+    )
+    assert result.unreadable_pages == (1,)
+    assert result.coverage_status == "partial"
+    assert result.segments
+    assert all(segment.page != 1 for segment in result.segments)
+    assert result.evidence
+    assert all(evidence["locator"]["page"] != 0 for evidence in result.evidence)
+
+
 def test_docling_is_used_when_importable(monkeypatch: pytest.MonkeyPatch) -> None:
     """A stub Docling proves the adapter prefers it and labels the backend honestly."""
 

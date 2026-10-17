@@ -1,0 +1,177 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/doc108-20261017T0601
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 56 items / 53 deselected / 3 selected
+
+tests/ingest/test_ingest_synthetic_pdf.py F                              [ 33%]
+tests/ingest/test_docling_segmenter.py FF                                [100%]
+
+=================================== FAILURES ===================================
+______ test_offline_ingest_preserves_euro_amount_in_segments_and_evidence ______
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4575/test_offline_ingest_preserves_0')
+
+    def test_offline_ingest_preserves_euro_amount_in_segments_and_evidence(tmp_path: Path) -> None:
+        from reportlab.pdfgen import canvas
+    
+        source = tmp_path / "euro.pdf"
+        pdf = canvas.Canvas(str(source))
+        pdf.drawString(72, 720, "The fee is €50.")
+        pdf.save()
+    
+>       result = ingest_document(source, output_dir=tmp_path / "out", allow_docling=False)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ingest/test_ingest_synthetic_pdf.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4575/test_offline_ingest_preserves_0/euro.pdf')
+output_dir = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4575/test_offline_ingest_preserves_0/out')
+run_id = None, git_sha = None, created_at = None, allow_docling = False
+ocr_enabled = True, ocr_backend = None
+
+    def ingest_document(
+        path: Path,
+        *,
+        output_dir: Path,
+        run_id: str | None = None,
+        git_sha: str | None = None,
+        created_at: str | None = None,
+        allow_docling: bool = True,
+        ocr_enabled: bool = True,
+        ocr_backend: OCRBackend | None = None,
+    ) -> IngestResult:
+        """Parse, segment, and manifest one document into ``output_dir``.
+    
+        Raises ``FileNotFoundError`` when ``path`` is missing and ``ValueError``
+        when the document yields no segments, because an empty manifest cannot
+        satisfy the contract's ``minItems: 1`` and an empty result is a finding,
+        not a success.
+        """
+        source = path.expanduser().resolve()
+        if not source.is_file():
+            raise FileNotFoundError(f"document to ingest does not exist: {source}")
+    
+        raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
+        source_sha256 = sha256_bytes(raw)
+        effective_run_id = (run_id or f"ingest-{source_sha256[:12]}").strip()
+        if not effective_run_id:
+            raise ValueError("run_id must be a non-empty string")
+        segmented = segment_document(source, allow_docling=allow_docling, data=raw)
+        pages_without_text_layer = segmented.pages_without_text_layer
+        page_methods: dict[int, str] = {}
+        if pages_without_text_layer and ocr_enabled and raw.startswith(b"%PDF"):
+            backend = ocr_backend if ocr_backend is not None else default_ocr_backend()
+            if backend is not None:
+                recovered = {
+                    span.page: span
+                    for span in recover_pdf_pages(raw, pages_without_text_layer, ocr_backend=backend)
+                }
+                segmented = replace(
+                    segmented,
+                    pages=tuple(
+                        (
+                            replace(page, text=recovered[page.page].text)
+                            if page.page in recovered
+                            else page
+                        )
+                        for page in segmented.pages
+                    ),
+                )
+                page_methods = {
+                    page: "ocr" if span.source == "ocr" else "text" for page, span in recovered.items()
+                }
+        segments = segment_pages(segmented, source_sha256=source_sha256, page_methods=page_methods)
+        unreadable_pages = tuple(page.page for page in segmented.pages if not page.text.strip())
+        coverage_status = "partial" if unreadable_pages else "complete"
+        recognized_pages = {segment.page for segment in segments if segment.method == "ocr"}
+        coverage = {
+            "status": coverage_status,
+            "pages_total": len(segmented.pages),
+            "pages_with_text_layer": len(segmented.pages)
+            - len(unreadable_pages)
+            - len(recognized_pages),
+            "pages_recognized": len(recognized_pages),
+            "pages_unreadable": len(unreadable_pages),
+        }
+        if not segments:
+>           raise ValueError(
+                f"no text segments recovered from {source} via backend {segmented.backend}; "
+                "a recognition fallback is required before this document can be ingested"
+            )
+E           ValueError: no text segments recovered from /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4575/test_offline_ingest_preserves_0/euro.pdf via backend offline-pdf-text; a recognition fallback is required before this document can be ingested
+
+src/doc_lineage/ingest.py:234: ValueError
+_________________ test_offline_text_respects_font_differences __________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4575/test_offline_text_respects_fon0')
+
+    def test_offline_text_respects_font_differences(tmp_path: Path) -> None:
+        from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NumberObject
+    
+        source = tmp_path / "font-differences.pdf"
+        _font_encoded_pdf(
+            source,
+            DictionaryObject(
+                {
+                    NameObject("/BaseEncoding"): NameObject("/WinAnsiEncoding"),
+                    NameObject("/Differences"): ArrayObject([NumberObject(65), NameObject("/alpha")]),
+                }
+            ),
+        )
+    
+        result = segment_document(source, allow_docling=False)
+>       assert result.pages[0].text == "α"
+E       AssertionError: assert 'A' == 'α'
+E         
+E         - α
+E         + A
+
+tests/ingest/test_docling_segmenter.py:226: AssertionError
+______ test_unsupported_font_encoding_is_unreadable_without_text_evidence ______
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4575/test_unsupported_font_encoding0')
+
+    def test_unsupported_font_encoding_is_unreadable_without_text_evidence(tmp_path: Path) -> None:
+        from pypdf import PdfWriter
+        from pypdf.generic import NameObject
+    
+        from doc_lineage.ingest import ingest_document
+    
+        source = tmp_path / "unsupported-font.pdf"
+        _font_encoded_pdf(source, NameObject("/UnsupportedEncoding"))
+        writer = PdfWriter()
+        writer.append(source)
+        writer.append(FIXTURE)
+        with source.open("wb") as handle:
+            writer.write(handle)
+    
+        result = ingest_document(
+            source, output_dir=tmp_path / "out", allow_docling=False, ocr_enabled=False
+        )
+>       assert result.unreadable_pages == (1,)
+E       assert () == (1,)
+E         
+E         Right contains one more item: 1
+E         Use -v to get more diff
+
+tests/ingest/test_docling_segmenter.py:247: AssertionError
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_ingest_preserves_euro_amount_in_segments_and_evidence
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_ingest_preserves_euro_amount_in_segments_and_evidence
+  /opt/anaconda3/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/teacher/.codex/automations/pd-workloop-resume/run-20261017T0601/108-red.xml -
+=========================== short test summary info ============================
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_offline_ingest_preserves_euro_amount_in_segments_and_evidence
+FAILED tests/ingest/test_docling_segmenter.py::test_offline_text_respects_font_differences
+FAILED tests/ingest/test_docling_segmenter.py::test_unsupported_font_encoding_is_unreadable_without_text_evidence
+================= 3 failed, 53 deselected, 2 warnings in 0.78s =================

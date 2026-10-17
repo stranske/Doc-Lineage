@@ -61,6 +61,25 @@ def test_ingest_writes_valid_manifest(tmp_path: Path) -> None:
     assert manifest["source"]["filename"] == FIXTURE.name
 
 
+def test_offline_ingest_preserves_euro_amount_in_segments_and_evidence(tmp_path: Path) -> None:
+    from reportlab.pdfgen import canvas
+
+    source = tmp_path / "euro.pdf"
+    pdf = canvas.Canvas(str(source))
+    pdf.drawString(72, 720, "The fee is €50.")
+    pdf.save()
+
+    result = ingest_document(source, output_dir=tmp_path / "out", allow_docling=False)
+
+    assert [segment.text for segment in result.segments] == ["The fee is €50."]
+    written = json.loads(result.segments_path.read_text())
+    assert "€50" in json.dumps(written, ensure_ascii=False)
+    assert len(result.evidence) == 1
+    assert result.evidence[0]["excerpt"] == "The fee is €50."
+    assert result.evidence[0]["locator"]["page"] == 0
+    assert result.coverage_status == "complete"
+
+
 def test_segments_carry_page_pointers_and_stable_ids(tmp_path: Path) -> None:
     first = ingest_document(FIXTURE, output_dir=tmp_path / "a", allow_docling=False)
     second = ingest_document(FIXTURE, output_dir=tmp_path / "b", allow_docling=False)

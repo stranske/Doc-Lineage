@@ -4,7 +4,7 @@ Docling is the intended production segmenter, but it is a heavy optional
 dependency that cannot be installed in every CI leg. This adapter therefore
 resolves a backend at call time and always reports which one produced the text,
 so a caller can never mistake fallback output for a Docling parse. The fallback
-reads the PDF's own content streams; it does not fabricate text and it does not
+decodes the PDF's font mappings; it does not fabricate text and it does not
 perform recognition. Whether a page carried a text layer at all is reported
 separately, because "no extractable text" is a real finding that a recognition
 fallback (issue #3) has to act on, not a silence to paper over.
@@ -16,6 +16,7 @@ import re
 import tempfile
 import zlib
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 
 MAX_INGEST_BYTES = 100 * 1024 * 1024
@@ -158,12 +159,77 @@ def _try_docling(path: Path, data: bytes) -> tuple[PageText, ...] | None:
 
 
 def _offline_pages(data: bytes) -> tuple[PageText, ...]:
-    """Recover page text without third-party tooling."""
+    """Decode fonts over the immutable PDF snapshot; never guess an encoding."""
     if not data.startswith(PDF_MAGIC):
         raise ValueError(
             "non-PDF input requires Docling; the offline backend only reads PDF content streams"
         )
 
+    from pypdf import PdfReader
+    from pypdf.errors import PdfReadError
+
+    font_markers = (b"/Font", b"/Encoding", b"/ToUnicode")
+    if not any(marker in data for marker in font_markers):
+        # Historical fontless fragments have no xref/catalog. Their explicit
+        # ASCII-only path must never bypass a real font mapping.
+        return _fontless_ascii_pages(data)
+
+    try:
+        reader = PdfReader(BytesIO(data))
+        source_pages = list(reader.pages)
+    except (PdfReadError, ValueError, KeyError):
+        # Malformed font-bearing inputs cannot safely produce text evidence.
+        return (PageText(page=1, text="", has_text_layer=False),)
+
+    pages: list[PageText] = []
+    for index, page in enumerate(source_pages, start=1):
+        try:
+            text = page.extract_text().strip() if _supported_page_fonts(page) else ""
+            if "\ufffd" in text:
+                text = ""
+        except (PdfReadError, UnicodeError, ValueError, KeyError, TypeError, NotImplementedError):
+            text = ""
+        pages.append(PageText(page=index, text=text, has_text_layer=bool(text)))
+    return tuple(pages) or (PageText(page=1, text="", has_text_layer=False),)
+
+
+def _supported_page_fonts(page: object) -> bool:
+    from pypdf import PageObject
+    from pypdf._codecs import adobe_glyphs, charset_encoding
+
+    assert isinstance(page, PageObject)
+    resources = page.get("/Resources", {})
+    if hasattr(resources, "get_object"):
+        resources = resources.get_object()
+    fonts = resources.get("/Font", {})
+    if hasattr(fonts, "get_object"):
+        fonts = fonts.get_object()
+    for reference in fonts.values():
+        font = reference.get_object()
+        # ToUnicode is the authoritative font-to-Unicode map when present.
+        if font.get("/ToUnicode") is not None:
+            continue
+        encoding = font.get("/Encoding", "/StandardEncoding")
+        if hasattr(encoding, "get_object"):
+            encoding = encoding.get_object()
+        if isinstance(encoding, str):
+            if encoding not in charset_encoding:
+                return False
+        elif isinstance(encoding, dict):
+            if encoding.get("/BaseEncoding", "/StandardEncoding") not in charset_encoding:
+                return False
+            if any(
+                isinstance(value, str) and value not in adobe_glyphs
+                for value in encoding.get("/Differences", [])
+            ):
+                return False
+        else:
+            return False
+    return True
+
+
+def _fontless_ascii_pages(data: bytes) -> tuple[PageText, ...]:
+    """Compatibility for fontless fragments only; non-ASCII is unreadable."""
     objects = _objects(data)
     page_bodies = _ordered_page_bodies(data, objects)
     if not page_bodies:
@@ -175,13 +241,16 @@ def _offline_pages(data: bytes) -> tuple[PageText, ...]:
 
     pages: list[PageText] = []
     for index, body in enumerate(page_bodies, start=1):
-        text = "\n".join(
-            extracted
-            for extracted in (
-                _extract_stream_text(stream) for stream in _page_streams(body, objects)
-            )
-            if extracted
-        ).strip()
+        try:
+            text = "\n".join(
+                extracted
+                for extracted in (
+                    _extract_stream_text(stream) for stream in _page_streams(body, objects)
+                )
+                if extracted
+            ).strip()
+        except UnicodeError:
+            text = ""
         # A page whose content this backend cannot read stays a page. Dropping it
         # would hide the one signal a recognition fallback needs.
         pages.append(PageText(page=index, text=text, has_text_layer=bool(text)))
@@ -377,7 +446,7 @@ def _read_balanced_pdf_string(data: bytes, start: int) -> tuple[bytes | None, in
 
 
 def _decode_pdf_string(raw: bytes) -> str:
-    """Resolve PDF literal-string escapes into text."""
+    """Resolve fontless ASCII fragment escapes; reject unmapped high bytes."""
     out = bytearray()
     index = 0
     while index < len(raw):
@@ -404,4 +473,4 @@ def _decode_pdf_string(raw: bytes) -> str:
                 continue
         out += escape
         index += 1
-    return out.decode("latin-1")
+    return out.decode("ascii")
