@@ -72,3 +72,25 @@ def test_optional_period_and_canonical_entity():
     record["period"] = None
     with pytest.raises(ValueError, match="period"):
         build_fact_key_map([record])
+
+
+def test_export_consumes_actual_pdf_extractor_output(tmp_path):
+    from doc_lineage.export.fact_key_map import export_fact_key_map
+    from doc_lineage.extract.variables import publish_variables
+    from doc_lineage.ingest import ingest_document
+
+    source = FIXTURE.parents[1] / "synthetic_lpa.pdf"
+    ingest = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    publish_variables(ingest.output_dir, source, tmp_path / "extract", entity_ref="fund:alpha_iv")
+    records_path = tmp_path / "extract" / "tracked-variables.json"
+    (record,) = json.loads(records_path.read_text())
+    manifest = export_fact_key_map(records_path, tmp_path / "map")
+    assert manifest.is_file()
+    mapping = json.loads((tmp_path / "map" / "fact_key_map.json").read_text())
+    assert mapping[record["variable_id"]] == {
+        "ontology_key": "legal.fees.management_rate",
+        "entity_ref": "fund:alpha_iv",
+    }
+    assert record["evidence"]["excerpt"] == ingest.evidence[0]["excerpt"]

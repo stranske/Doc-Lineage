@@ -37,3 +37,13 @@ Deliberate-break gate: remove `entity_ref` from the first entry in
 `tests/fixtures/fact_key_map/tracked_variables.json`; run
 `python -m pytest tests/export/test_fact_key_map.py::test_map_joins_on_ontology_key -q -o addopts=`.
 It must fail. Restore the fixture and rerun; it must pass.
+
+For an evidence-bearing input produced from a PDF, run `ingest`, then
+`extract-variables` with the original `--source` document and a canonical
+`--entity-ref`, then export `extraction-run/tracked-variables.json`. See
+[extraction coverage](contracts/tracked-variable-v1.md#extraction-coverage) for
+exact supported management-fee forms, identities and the full offline commands.
+The extractor publishes a hash-backed manifest, original source and evidence;
+inspect `extraction-run/unresolved.json` for clauses that could not be asserted.
+The integration test exercises this actual ingest/extract/publish/export path.
+An unresolved run with no records is rejected by the map exporter.

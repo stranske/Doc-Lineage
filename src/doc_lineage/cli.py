@@ -10,6 +10,7 @@ from pathlib import Path
 
 from doc_lineage.export import export_docx_redline
 from doc_lineage.export.fact_key_map import export_fact_key_map
+from doc_lineage.extract.variables import publish_variables
 from doc_lineage.harvest import harvest_edgar_ex10
 from doc_lineage.ingest import ingest_document
 
@@ -76,6 +77,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     fact_map.add_argument("path", type=Path, help="JSON array of tracked-variable/v1 records.")
     fact_map.add_argument("--output", type=Path, required=True, help="New run directory to create.")
+
+    variables = subparsers.add_parser(
+        "extract-variables",
+        help="Extract the documented legal fee subset from a persisted ingest run.",
+    )
+    variables.add_argument("path", type=Path, help="Existing ingest run directory.")
+    variables.add_argument(
+        "--source", type=Path, required=True, help="Original document; digest must match ingest."
+    )
+    variables.add_argument(
+        "--entity-ref", required=True, help="Canonical entity ID from your identity authority."
+    )
+    variables.add_argument(
+        "--output", type=Path, required=True, help="New output directory to create."
+    )
 
     harvest = subparsers.add_parser(
         "harvest-edgar",
@@ -146,6 +162,17 @@ def _run_harvest_edgar(args: argparse.Namespace) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "extract-variables":
+        try:
+            manifest = publish_variables(
+                args.path, args.source, args.output, entity_ref=args.entity_ref
+            )
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage extract-variables: {exc}", file=sys.stderr)
+            return 1
+        print(f"manifest: {manifest}")
+        print(f"unresolved: {manifest.parent / 'unresolved.json'}")
+        return 0
     if args.command == "export-fact-key-map":
         try:
             manifest = export_fact_key_map(args.path, args.output)

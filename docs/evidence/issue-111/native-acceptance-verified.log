@@ -1,0 +1,10 @@
+{"name": "native-final-baseline-ingest", "returncode": 0}
+{"name": "native-final-baseline-extract", "returncode": 0}
+{"name": "native-final-baseline-map", "returncode": 0}
+{"name": "native-final-changed-ingest", "returncode": 0}
+{"name": "native-final-changed-extract", "returncode": 0}
+{"name": "native-final-changed-map", "returncode": 0}
+{"name": "native-final-ambiguous-ingest", "returncode": 0}
+{"name": "native-final-ambiguous-extract", "returncode": 0}
+{"name": "native-final-ambiguous-map", "returncode": 1}
+NATIVE_OFFLINE_ACCEPTANCE_PASS: baseline + changed fee + ambiguous with no assertion; all published hashes and consumer joins checked

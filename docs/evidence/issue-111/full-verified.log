@@ -1,0 +1,67 @@
+........................................................................ [ 13%]
+........................................................................ [ 27%]
+........................................................................ [ 41%]
+........................................................................ [ 55%]
+........................................................................ [ 69%]
+........................................................................ [ 82%]
+........................................................................ [ 96%]
+.................                                                        [100%]
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  {ANACONDA}/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  {ANACONDA}/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.12.2-final-0 _______________
+
+Name                                            Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------
+src/doc_lineage/__init__.py                         5      0      0      0   100%
+src/doc_lineage/adapters/__init__.py                2      0      0      0   100%
+src/doc_lineage/adapters/docling_segmenter.py     330     27    156     27    89%   129->132, 148->150, 180-182, 189-191, 202->204, 205->207, 211, 220, 225-227, 252-253, 272, 275, 278, 290, 293, 296->294, 348-349, 354->356, 364-365, 367->369, 396, 408->410, 411, 420->422, 430, 436-437, 445, 460
+src/doc_lineage/blackline.py                      110      1     22      1    98%   58
+src/doc_lineage/cli.py                            102      8     18      1    92%   166-175
+src/doc_lineage/compare/__init__.py                 3      0      0      0   100%
+src/doc_lineage/compare/classify.py               104      3     28      3    95%   57, 87, 140
+src/doc_lineage/compare/silence.py                  8      0      4      0   100%
+src/doc_lineage/emit/__init__.py                    2      0      0      0   100%
+src/doc_lineage/emit/evidence.py                   57      3     22      7    87%   47->exit, 50->exit, 53->exit, 56->exit, 62, 147, 149
+src/doc_lineage/export/__init__.py                  2      0      0      0   100%
+src/doc_lineage/export/docx_redline.py              7      0      2      0   100%
+src/doc_lineage/export/fact_key_map.py             51      0     22      0   100%
+src/doc_lineage/extract/__init__.py                40      9     12      1    73%   32-35, 40-42, 89-90
+src/doc_lineage/extract/cache.py                   86      7     28      3    91%   89-90, 92, 96, 135-137
+src/doc_lineage/extract/models.py                  21      0      0      0   100%
+src/doc_lineage/extract/ocr.py                     41     15      6      1    62%   15->exit, 30-45, 72-73, 78
+src/doc_lineage/extract/office.py                  50      3     22      5    89%   53, 55->51, 57->49, 72, 78
+src/doc_lineage/extract/pdf.py                    104     11     24      2    90%   104-106, 113, 116, 195-196, 208-209, 212-213
+src/doc_lineage/extract/variables.py              147      8     56      6    93%   59, 82, 98, 134, 144-145, 176, 190
+src/doc_lineage/harvest/__init__.py                 2      0      0      0   100%
+src/doc_lineage/harvest/edgar_ex10.py             214     40     68      8    77%   56, 74, 86-90, 97, 104, 119, 137-142, 146-174, 189, 215, 217, 308-313
+src/doc_lineage/identity.py                        57      0     10      0   100%
+src/doc_lineage/ingest.py                         168      1     40      1    99%   312
+src/doc_lineage/lineage/__init__.py                 2      0      0      0   100%
+src/doc_lineage/lineage/families.py                50      1      6      0    98%   33
+src/doc_lineage/manifest.py                       181      6     76      5    96%   78, 82, 90, 103, 233, 294
+src/doc_lineage/mutations/__init__.py               3      0      0      0   100%
+src/doc_lineage/mutations/catalog.py               10      0      0      0   100%
+src/doc_lineage/mutations/detect.py                25      1      8      2    91%   42, 45->40
+src/doc_lineage/render/__init__.py                  2      0      0      0   100%
+src/doc_lineage/render/links.py                    69      2     30      2    96%   18, 46
+src/doc_lineage/schema/__init__.py                  4      0      0      0   100%
+src/doc_lineage/schema/_finite.py                  24      4     12      4    78%   12, 30, 33, 35
+src/doc_lineage/schema/change_ledger.py           143     16      4      0    89%   96-98, 121, 183, 210, 231-237, 240, 244, 256-257, 260, 264, 305
+src/doc_lineage/schema/enums.py                    15      0      0      0   100%
+src/doc_lineage/schema/validation.py               50      4     10      0    93%   32-34, 47
+src/doc_lineage/supersession.py                    41      0     26      0   100%
+src/doc_lineage/vocab.py                           22      0      6      0   100%
+-------------------------------------------------------------------------------------------
+TOTAL                                            2354    170    718     79    91%
+Coverage XML written to file {RAW}/full-verified-coverage.xml
+Required test coverage of 80.0% reached. Total coverage: 91.11%
+521 passed, 2 warnings in 44.53s

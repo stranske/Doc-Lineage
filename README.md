@@ -35,7 +35,7 @@ tracked-changes acceptance tests can be run from the source archive.
 - Take two or more versions of a recurring document (PPM, LPA, side letter, consultant report, manager letter, DDQ) and produce:
   - a **blackline** (what changed, where, classified by kind of change),
   - a **lineage** (which document supersedes which; families of documents descending from a common template),
-  - a set of **tracked variables** — clauses, defined terms, and recurring work units — extracted into a stable schema so documents and counterparties can be compared.
+  - a set of **tracked variables** — clauses, defined terms, and recurring work units — extracted into a stable schema so documents and counterparties can be compared. The initial evidence-bearing `extract-variables` CLI supports only the documented management-fee forms; inspect its `unresolved.json` for unasserted clauses. See [extraction coverage](docs/contracts/tracked-variable-v1.md#extraction-coverage) for the offline ingest → extraction → fact-map commands.
 - Run without servers: a Python library plus a static/offline review surface, producing HTML and CSV artifacts with one-click links back to the source document and page.
 - **Synthetic and public data only** in this repository. No proprietary manager material is ever committed or used in tests.
 

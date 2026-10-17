@@ -1,0 +1,303 @@
+........................................................................ [ 13%]
+........................................................................ [ 27%]
+..........F............................................................. [ 41%]
+........................................................................ [ 55%]
+........................................................................ [ 69%]
+........................................................................ [ 83%]
+..................................................F..................... [ 97%]
+...............                                                          [100%]
+=================================== FAILURES ===================================
+_______________ test_console_script_runs_the_documented_command ________________
+
+tmp_path = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2382/test_console_script_runs_the_d0')
+
+    def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
+        """`doc-lineage ingest <fixture> --output <dir>` exits 0, as the issue requires."""
+        project_root = Path(__file__).resolve().parents[2]
+>       subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-e", str(project_root), "-q"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+tests/ingest/test_ingest_synthetic_pdf.py:259: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['{ANACONDA_PYTHON}', '-m', 'pip', 'install', '-e', '{REPO}', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout is given, and the process takes too long, a TimeoutExpired
+        exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['{ANACONDA_PYTHON}', '-m', 'pip', 'install', '-e', '{REPO}', '-q']' returned non-zero exit status 1.
+
+{ANACONDA}/lib/python3.12/subprocess.py:571: CalledProcessError
+__________ test_sdist_includes_fact_key_map_fixture_with_export_tests __________
+
+tmp_path = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2382/test_sdist_includes_fact_key_m0')
+
+    def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib.Path) -> None:
+        fixture_path = pathlib.PurePosixPath("tests/fixtures/fact_key_map/tracked_variables.json")
+        expected_paths = {
+            pathlib.PurePosixPath("tests/export/test_fact_key_map.py"),
+            pathlib.PurePosixPath("tests/export/test_fact_key_map_cli.py"),
+            fixture_path,
+        }
+        source = tmp_path / "source"
+        shutil.copytree(
+            pathlib.Path(__file__).resolve().parents[1],
+            source,
+            ignore=shutil.ignore_patterns(
+                ".git",
+                ".gitnexus",
+                ".venv",
+                "build",
+                "dist",
+                "*.egg-info",
+                "__pycache__",
+                ".pytest_cache",
+                ".mypy_cache",
+                ".ruff_cache",
+            ),
+        )
+        output = source / "dist"
+        output.mkdir()
+        subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from setuptools.build_meta import build_sdist; build_sdist('dist')",
+            ],
+            cwd=source,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    
+        archives = list(output.glob("*.tar.gz"))
+        assert len(archives) == 1
+        with tarfile.open(archives[0], "r:gz") as archive:
+            members = {
+                pathlib.PurePosixPath(*pathlib.PurePosixPath(member.name).parts[1:]): member
+                for member in archive.getmembers()
+            }
+            assert expected_paths <= members.keys()
+    
+            archived_fixture = archive.extractfile(members[fixture_path])
+            assert archived_fixture is not None
+            assert archived_fixture.read() == (source / fixture_path).read_bytes()
+    
+            extracted = tmp_path / "extracted"
+            archive.extractall(extracted, filter="data")
+    
+        [sdist_root] = extracted.iterdir()
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "tests/export/test_fact_key_map.py",
+                "tests/export/test_fact_key_map_cli.py",
+                "-q",
+                "-m",
+                "not slow",
+            ],
+            cwd=sdist_root,
+            capture_output=True,
+            text=True,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: ============================= test session starts ==============================
+E         platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0
+E         rootdir: {PYTEST_TMP}/pytest-of-teacher/pytest-2382/test_sdist_includes_fact_key_m0/extracted/doc_lineage-0.1.0
+E         configfile: pyproject.toml
+E         plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+E         asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+E         collected 28 items
+E         
+E         tests/export/test_fact_key_map.py .....................F                 [ 78%]
+E         tests/export/test_fact_key_map_cli.py ......                             [100%]
+E         
+E         =================================== FAILURES ===================================
+E         _______________ test_export_consumes_actual_pdf_extractor_output _______________
+E         
+E         tmp_path = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2383/test_export_consumes_actual_pd0')
+E         
+E             def test_export_consumes_actual_pdf_extractor_output(tmp_path):
+E                 from doc_lineage.export.fact_key_map import export_fact_key_map
+E                 from doc_lineage.extract.variables import publish_variables
+E                 from doc_lineage.ingest import ingest_document
+E             
+E                 source = FIXTURE.parents[1] / "synthetic_lpa.pdf"
+E         >       ingest = ingest_document(
+E                     source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+E                 )
+E         
+E         tests/export/test_fact_key_map.py:83: 
+E         _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+E         
+E         path = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2382/test_sdist_includes_fact_key_m0/extracted/doc_lineage-0.1.0/tests/fixtures/synthetic_lpa.pdf')
+E         output_dir = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2383/test_export_consumes_actual_pd0/ingest')
+E         run_id = None, git_sha = None, created_at = None, allow_docling = False
+E         ocr_enabled = False, ocr_backend = None
+E         
+E             def ingest_document(
+E                 path: Path,
+E                 *,
+E                 output_dir: Path,
+E                 run_id: str | None = None,
+E                 git_sha: str | None = None,
+E                 created_at: str | None = None,
+E                 allow_docling: bool = True,
+E                 ocr_enabled: bool = True,
+E                 ocr_backend: OCRBackend | None = None,
+E             ) -> IngestResult:
+E                 """Parse, segment, and manifest one document into ``output_dir``.
+E             
+E                 Raises ``FileNotFoundError`` when ``path`` is missing and ``ValueError``
+E                 when the document yields no segments, because an empty manifest cannot
+E                 satisfy the contract's ``minItems: 1`` and an empty result is a finding,
+E                 not a success.
+E                 """
+E                 source = path.expanduser().resolve()
+E                 if not source.is_file():
+E         >           raise FileNotFoundError(f"document to ingest does not exist: {source}")
+E         E           FileNotFoundError: document to ingest does not exist: {PYTEST_TMP}/pytest-of-teacher/pytest-2382/test_sdist_includes_fact_key_m0/extracted/doc_lineage-0.1.0/tests/fixtures/synthetic_lpa.pdf
+E         
+E         src/doc_lineage/ingest.py:192: FileNotFoundError
+E         =========================== short test summary info ============================
+E         FAILED tests/export/test_fact_key_map.py::test_export_consumes_actual_pdf_extractor_output
+E         ========================= 1 failed, 27 passed in 0.43s =========================
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['{ANACONDA_PYTHON}', '-m', 'pytest', 'tests/export/test_fact_key_map.py', 'tests/expor...l_pdf_extractor_output\n========================= 1 failed, 27 passed in 0.43s =========================\n', stderr='').returncode
+
+tests/test_package_identity.py:141: AssertionError
+=============================== warnings summary ===============================
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  {ANACONDA}/lib/python3.12/site-packages/pandas/core/computation/expressions.py:23: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.8.7' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/ingest/test_ingest_synthetic_pdf.py::test_offline_backend_reports_missing_text_layer
+  {ANACONDA}/lib/python3.12/site-packages/pandas/core/arrays/masked.py:56: UserWarning: Pandas requires version '1.4.2' or newer of 'bottleneck' (version '1.3.7' currently installed).
+    from pandas.core import (
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.12.2-final-0 _______________
+
+Name                                            Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------
+src/doc_lineage/__init__.py                         5      0      0      0   100%
+src/doc_lineage/adapters/__init__.py                2      0      0      0   100%
+src/doc_lineage/adapters/docling_segmenter.py     330     27    156     27    89%   129->132, 148->150, 180-182, 189-191, 202->204, 205->207, 211, 220, 225-227, 252-253, 272, 275, 278, 290, 293, 296->294, 348-349, 354->356, 364-365, 367->369, 396, 408->410, 411, 420->422, 430, 436-437, 445, 460
+src/doc_lineage/blackline.py                      110      1     22      1    98%   58
+src/doc_lineage/cli.py                            102      8     18      1    92%   166-175
+src/doc_lineage/compare/__init__.py                 3      0      0      0   100%
+src/doc_lineage/compare/classify.py               104      3     28      3    95%   57, 87, 140
+src/doc_lineage/compare/silence.py                  8      0      4      0   100%
+src/doc_lineage/emit/__init__.py                    2      0      0      0   100%
+src/doc_lineage/emit/evidence.py                   57      3     22      7    87%   47->exit, 50->exit, 53->exit, 56->exit, 62, 147, 149
+src/doc_lineage/export/__init__.py                  2      0      0      0   100%
+src/doc_lineage/export/docx_redline.py              7      0      2      0   100%
+src/doc_lineage/export/fact_key_map.py             51      0     22      0   100%
+src/doc_lineage/extract/__init__.py                40      9     12      1    73%   32-35, 40-42, 89-90
+src/doc_lineage/extract/cache.py                   86      7     28      3    91%   89-90, 92, 96, 135-137
+src/doc_lineage/extract/models.py                  21      0      0      0   100%
+src/doc_lineage/extract/ocr.py                     41     15      6      1    62%   15->exit, 30-45, 72-73, 78
+src/doc_lineage/extract/office.py                  50      3     22      5    89%   53, 55->51, 57->49, 72, 78
+src/doc_lineage/extract/pdf.py                    104     11     24      2    90%   104-106, 113, 116, 195-196, 208-209, 212-213
+src/doc_lineage/extract/variables.py              136      6     50      4    95%   59, 82, 98, 126, 136-137
+src/doc_lineage/harvest/__init__.py                 2      0      0      0   100%
+src/doc_lineage/harvest/edgar_ex10.py             214     40     68      8    77%   56, 74, 86-90, 97, 104, 119, 137-142, 146-174, 189, 215, 217, 308-313
+src/doc_lineage/identity.py                        57      0     10      0   100%
+src/doc_lineage/ingest.py                         168      1     40      1    99%   312
+src/doc_lineage/lineage/__init__.py                 2      0      0      0   100%
+src/doc_lineage/lineage/families.py                50      1      6      0    98%   33
+src/doc_lineage/manifest.py                       181      6     76      5    96%   78, 82, 90, 103, 233, 294
+src/doc_lineage/mutations/__init__.py               3      0      0      0   100%
+src/doc_lineage/mutations/catalog.py               10      0      0      0   100%
+src/doc_lineage/mutations/detect.py                25      1      8      2    91%   42, 45->40
+src/doc_lineage/render/__init__.py                  2      0      0      0   100%
+src/doc_lineage/render/links.py                    69      2     30      2    96%   18, 46
+src/doc_lineage/schema/__init__.py                  4      0      0      0   100%
+src/doc_lineage/schema/_finite.py                  24      4     12      4    78%   12, 30, 33, 35
+src/doc_lineage/schema/change_ledger.py           143     16      4      0    89%   96-98, 121, 183, 210, 231-237, 240, 244, 256-257, 260, 264, 305
+src/doc_lineage/schema/enums.py                    15      0      0      0   100%
+src/doc_lineage/schema/validation.py               50      4     10      0    93%   32-34, 47
+src/doc_lineage/supersession.py                    41      0     26      0   100%
+src/doc_lineage/vocab.py                           22      0      6      0   100%
+-------------------------------------------------------------------------------------------
+TOTAL                                            2343    168    712     77    91%
+Coverage XML written to file {RAW}/full-shared-coverage.xml
+Required test coverage of 80.0% reached. Total coverage: 91.19%
+=========================== short test summary info ============================
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_console_script_runs_the_documented_command
+FAILED tests/test_package_identity.py::test_sdist_includes_fact_key_map_fixture_with_export_tests
+2 failed, 517 passed, 2 warnings in 40.54s
