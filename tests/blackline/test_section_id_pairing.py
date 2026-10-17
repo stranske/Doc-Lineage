@@ -335,7 +335,7 @@ def test_docling_items_survive_ingest_and_section_pairing(
 
 def test_persisted_section_pairing_binds_ordered_inputs_and_replays(tmp_path: Path) -> None:
     """Issue #112 production gate: validated independent ingests feed the real engine."""
-    from test_comparison_run_cli import make_runs
+    from tests.blackline.test_comparison_run_cli import make_runs
 
     from doc_lineage.blackline import create_section_comparison, load_section_comparison
 
