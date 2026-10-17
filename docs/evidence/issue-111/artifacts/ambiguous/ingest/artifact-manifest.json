@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "9fa8322d0bf0519d-segments",
+      "bytes": 1509,
+      "kind": "data",
+      "media_type": "application/json",
+      "name": "segments.json",
+      "path": "segments.json",
+      "sha256": "12c87adaa0776a8b036c5e5df0419efb3b0ef0fa608eab4285d8e9f9672c4858"
+    },
+    {
+      "artifact_id": "7557e3871a2b827e3488cb22568fe8ab-evidence",
+      "bytes": 739,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "7557e3871a2b827e3488cb22568fe8ab.json",
+      "path": "evidence/7557e3871a2b827e3488cb22568fe8ab.json",
+      "sha256": "b98fec2447dcded3623a5ac0dee12a579c6743d814fb4e077475445f3919324c"
+    },
+    {
+      "artifact_id": "7a632574f6605b0c0be84d2473a43cfc-evidence",
+      "bytes": 630,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "7a632574f6605b0c0be84d2473a43cfc.json",
+      "path": "evidence/7a632574f6605b0c0be84d2473a43cfc.json",
+      "sha256": "b2e0ccd6395521fc289c91b5dc3f905fd1f0d168bc53d4ae8d7bd790f9eddf01"
+    }
+  ],
+  "created_at": "2026-10-17T11:42:15.802432+00:00",
+  "git_sha": null,
+  "run_id": "ingest-9fa8322d0bf0",
+  "schema_version": "artifact-manifest/v1",
+  "source": {
+    "bytes": 2428,
+    "filename": "control.pdf",
+    "sha256": "9fa8322d0bf0519d311cf47e7e89b0ca63f5fc903a783b3af94cc5541f0a7945"
+  },
+  "tool": "doc-lineage-ingest"
+}

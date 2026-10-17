@@ -21,7 +21,10 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from doc_lineage.extract.variables import VerifiedIngest
 
 from doc_lineage.adapters import DOCLING_BACKEND, OFFLINE_BACKEND, SegmenterResult, segment_document
 from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
@@ -337,3 +340,135 @@ def ingest_document(
 
 def _dump(payload: dict[str, Any]) -> bytes:
     return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+# Full-section grammars deliberately reject qualifications, ranges and exceptions.
+_RATE = r"([0-9]{1,2}(?:\.[0-9]{1,4})?|100(?:\.0{1,4})?)"
+_FEE = re.compile(
+    r"(?:[1-9][0-9]*\. MANAGEMENT FEE )?"
+    r"The Partnership shall pay the General Partner an annual management fee equal to "
+    + _RATE
+    + r"% of aggregate Capital Commitments"
+    r"(?: during the Commitment Period, and " + _RATE + r"% of invested capital thereafter)?\.",
+    re.IGNORECASE,
+)
+_LPA_TITLE = re.compile(
+    r"(?:SYNTHETIC )?LIMITED PARTNERSHIP AGREEMENT " r"(?:[A-Z][A-Za-z0-9'-]*[ ,]+){1,12}L\.P\."
+)
+
+
+def extract_variables(ingest_dir: Path, *, source: Path, entity_ref: str) -> dict[str, Any]:
+    """Extract the documented management-rate subset from a verified persisted run.
+
+    ``entity_ref`` is supplied by the caller's identity authority, never inferred
+    from a PDF name. Unresolved diagnostics are separate from asserted records.
+    """
+    from doc_lineage.extract.variables import load_ingest
+
+    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
+
+
+def _extract_verified(verified: VerifiedIngest, *, entity_ref: str) -> dict[str, Any]:
+    from doc_lineage.extract.variables import dump_json, validate, validate_entity
+    from doc_lineage.vocab import load_legal_clauses
+
+    validate_entity(entity_ref)
+    key = load_legal_clauses()["clauses"]["legal.fees.management_rate"]["ontology_key"]
+    run_id = (
+        "extract-"
+        + sha256_bytes(
+            dump_json(
+                {"source": verified.digest, "entity_ref": entity_ref, "grammar": "management-v1"}
+            )
+        )[:24]
+    )
+    candidates = [
+        (segment, evidence, clause)
+        for segment, evidence in zip(verified.segments, verified.evidence, strict=True)
+        # Offline PDF ingest can combine a whole page. Only numbered uppercase
+        # headings delimit sections; sentence punctuation and decimals do not.
+        for clause in re.split(r" (?=[1-9][0-9]*\. [A-Z][A-Z ]{2,}(?: |$))", segment.text)
+        if re.search(r"\bmanagement\s+fees?\b", clause, re.IGNORECASE)
+    ]
+    records: list[dict[str, Any]] = []
+    unresolved: list[dict[str, Any]] = []
+    reason = None
+    if not verified.complete:
+        reason = "incomplete_ingest_coverage"
+    elif not candidates:
+        reason = "no_supported_management_fee_clause"
+    elif len(candidates) != 1:
+        reason = "multiple_management_fee_candidates"
+    else:
+        segment, evidence, clause = candidates[0]
+        match = _FEE.fullmatch(clause)
+        prefix = segment.text[: segment.text.index(clause)].strip()
+        # Do not assert a value whose complete quotation cannot fit in evidence.
+        if (
+            match is None
+            or evidence["excerpt"] != segment.text
+            or (prefix and _LPA_TITLE.fullmatch(prefix) is None)
+        ):
+            reason = "unsupported_management_fee_clause"
+        else:
+            schedule = []
+            for token, basis, period in (
+                (
+                    match.group(1),
+                    "aggregate Capital Commitments",
+                    "Commitment Period" if match.group(2) else "all",
+                ),
+                (match.group(2), "invested capital", "thereafter"),
+            ):
+                if token is not None:
+                    rate = float(token)
+                    schedule.append({"rate": rate, "basis": basis, "period": period})
+            variable_id = "var:" + sha256_bytes(
+                dump_json(
+                    {
+                        "source": verified.digest,
+                        "entity_ref": entity_ref,
+                        "key": key,
+                        "segment": segment.segment_id,
+                    }
+                )
+            )
+            record = {
+                "schema_version": "tracked-variable/v1",
+                "variable_id": variable_id,
+                "document_id": f"document:{verified.digest}",
+                "artifact_id": f"{verified.digest[:16]}-segments",
+                "ontology_key": key,
+                "ontology_family": "clause",
+                "entity_ref": entity_ref,
+                "status": "asserted",
+                "value_text": clause,
+                "value_structured": {"unit": "percent_per_annum", "schedule": schedule},
+                "evidence": evidence,
+                "evidence_ref": f"evidence/{evidence['evidence_id']}.json",
+                "provenance": {
+                    "document": {"source_id": verified.digest, "locator": evidence["locator"]},
+                    "mirror": {
+                        "mirror_root": ".",
+                        "blob_path": f"source/{verified.source_name}",
+                        "page_anchor": f"#page={segment.page}",
+                    },
+                },
+                "extractor_run_id": run_id,
+            }
+            validate("evidence-object-v1", evidence)
+            validate("tracked-variable-v1", record)
+            records.append(record)
+    if reason:
+        unresolved.append(
+            {
+                "ontology_key": key,
+                "status": "unresolved",
+                "reason": reason,
+                "source_id": verified.digest,
+                "evidence_refs": sorted(
+                    {f"evidence/{e['evidence_id']}.json" for _, e, _ in candidates}
+                ),
+            }
+        )
+    return {"run_id": run_id, "records": records, "unresolved": unresolved}

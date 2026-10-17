@@ -541,3 +541,232 @@ def test_cli_ocr_coverage_and_unrecoverable_failure(
     )
     out = capsys.readouterr().out
     assert "coverage=partial" in out and "no text layer on page(s) 2" in out
+
+
+# Issue #111: these controls render the ORIGINAL text mutation fixtures as PDFs.
+# They never read the pre-authored tracked-variable identity fixture.
+def _fee_control_pdf(tmp_path: Path, *, changed: bool = True, transform=None) -> Path:
+    import textwrap
+
+    from reportlab.pdfgen import canvas
+
+    fixture = (
+        FIXTURE.parent
+        / "mutations"
+        / "management_fee_bump"
+        / ("after_segments.json" if changed else "before_segments.json")
+    )
+    segments = json.loads(fixture.read_text())["segments"]
+    path = tmp_path / "control.pdf"
+    pdf = canvas.Canvas(str(path), invariant=1)
+    page, y = 1, 750
+    for segment in segments:
+        if segment["page"] != page:
+            pdf.showPage()
+            page, y = segment["page"], 750
+        text = segment["text"]
+        if "MANAGEMENT FEE" in text and transform is not None:
+            text = transform(text)
+        for line in textwrap.wrap(text, width=88):
+            pdf.drawString(40, y, line)
+            y -= 15
+        y -= 15
+    pdf.save()
+    return path
+
+
+def test_tracked_variable_synthetic_pdf_and_published_provenance(tmp_path: Path) -> None:
+    from doc_lineage.extract.variables import publish_variables, validate
+    from doc_lineage.ingest import extract_variables
+
+    ingested = ingest_document(
+        FIXTURE, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    result = extract_variables(ingested.output_dir, source=FIXTURE, entity_ref="fund:alpha_iv")
+    assert result["unresolved"] == []
+    (record,) = result["records"]
+    assert record["ontology_key"] == "legal.fees.management_rate"
+    assert record["value_structured"] == {
+        "unit": "percent_per_annum",
+        "schedule": [
+            {"rate": 1.75, "basis": "aggregate Capital Commitments", "period": "Commitment Period"},
+            {"rate": 1.25, "basis": "invested capital", "period": "thereafter"},
+        ],
+    }
+    assert "equal to 1.75%" in record["value_text"]
+    assert record["value_text"] in record["evidence"]["excerpt"]
+    assert record["evidence"] in ingested.evidence
+    assert record["evidence"]["locator"]["page"] == 0
+    assert record["provenance"]["document"]["locator"]["page"] == 0
+    assert record["evidence"]["source_id"] == _sha256(FIXTURE)
+    assert record["document_id"] == f"document:{_sha256(FIXTURE)}"
+    validate("tracked-variable-v1", record)
+    output = tmp_path / "extracted"
+    manifest_path = publish_variables(
+        ingested.output_dir, FIXTURE, output, entity_ref="fund:alpha_iv"
+    )
+    assert json.loads((output / "tracked-variables.json").read_text()) == [record]
+    assert json.loads((output / "unresolved.json").read_text()) == []
+    assert (
+        output / record["provenance"]["mirror"]["blob_path"]
+    ).read_bytes() == FIXTURE.read_bytes()
+    assert record["provenance"]["mirror"]["page_anchor"] == "#page=1"
+    assert json.loads((output / record["evidence_ref"]).read_text()) == record["evidence"]
+    manifest = json.loads(manifest_path.read_text())
+    validate("artifact-manifest-v1", manifest)
+    assert manifest["source"]["sha256"] == _sha256(FIXTURE)
+    assert manifest["input_manifest_sha256"] == _sha256(ingested.manifest_path)
+    for artifact in manifest["artifacts"]:
+        path = output / artifact["path"]
+        assert artifact["sha256"] == _sha256(path)
+        assert artifact["bytes"] == path.stat().st_size
+    assert (output / "segments.json").read_bytes() == ingested.segments_path.read_bytes()
+    assert (output / "input-manifest.json").read_bytes() == ingested.manifest_path.read_bytes()
+    with pytest.raises(FileExistsError):
+        publish_variables(ingested.output_dir, FIXTURE, output, entity_ref="fund:alpha_iv")
+
+
+def test_tracked_variable_changed_fee_follows_source_text(tmp_path: Path) -> None:
+    from doc_lineage.ingest import extract_variables
+
+    source = _fee_control_pdf(tmp_path)
+    ingested = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+    assert not result["unresolved"]
+    (record,) = result["records"]
+    # Independent numeric oracle; this MUST fail if production parsing is disconnected.
+    assert (
+        record["value_structured"]["schedule"][0]["rate"] == 2.0
+    ), "MANAGEMENT_RATE_SOURCE_DISCONNECTION"
+    assert record["value_structured"]["schedule"][1]["rate"] == 1.25
+    assert "equal to 2.0%" in record["evidence"]["excerpt"]
+    assert record["evidence"]["source_id"] == _sha256(source) != _sha256(FIXTURE)
+
+
+@pytest.mark.parametrize("changed, expected", [(False, 1.75), (True, 2.0)])
+def test_tracked_variable_original_mutation_controls(
+    tmp_path: Path, changed: bool, expected: float
+) -> None:
+    from doc_lineage.ingest import extract_variables
+
+    source = _fee_control_pdf(tmp_path, changed=changed)
+    result = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    extraction = extract_variables(result.output_dir, source=source, entity_ref="fund:alpha_iv")
+    assert extraction["records"][0]["value_structured"]["schedule"][0]["rate"] == expected
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda text: text.replace("2.0%", "2.0% or 3.0%"),
+        lambda text: text
+        + " However, the management fee may vary at the General Partner's discretion.",
+        lambda text: text.replace("equal to", "up to"),
+        lambda text: text.replace("2.0%", "101%"),
+        lambda text: "Notwithstanding the following terms, " + text,
+        lambda text: text + " 2. MANAGEMENT FEE The management fee is negotiable.",
+        lambda text: "Management fees are subject to negotiation.",
+        lambda text: "No fee is specified.",
+    ],
+)
+def test_tracked_variable_ambiguous_and_unsupported_emit_no_assertion(
+    tmp_path: Path, change
+) -> None:
+    from doc_lineage.extract.variables import publish_variables
+
+    source = _fee_control_pdf(tmp_path, transform=change)
+    ingested = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    output = tmp_path / "extraction"
+    publish_variables(ingested.output_dir, source, output, entity_ref="fund:alpha_iv")
+    assert json.loads((output / "tracked-variables.json").read_text()) == []
+    (unresolved,) = json.loads((output / "unresolved.json").read_text())
+    assert unresolved["status"] == "unresolved"
+    assert "value_text" not in unresolved and "value_structured" not in unresolved
+    for path in unresolved["evidence_refs"]:
+        assert (output / path).is_file()
+
+
+def test_tracked_variable_flat_fee_and_entity_identity(tmp_path: Path) -> None:
+    from doc_lineage.ingest import extract_variables
+
+    source = _fee_control_pdf(
+        tmp_path,
+        transform=lambda text: text.split(" during the Commitment Period")[0].replace(
+            "2.0%", "0.85%"
+        )
+        + ".",
+    )
+    ingested = ingest_document(
+        source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+    )
+    one = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+    two = extract_variables(ingested.output_dir, source=source, entity_ref="fund:other")
+    assert one["records"][0]["value_structured"]["schedule"] == [
+        {"rate": 0.85, "basis": "aggregate Capital Commitments", "period": "all"}
+    ]
+    assert one["records"][0]["variable_id"] != two["records"][0]["variable_id"]
+    assert one == extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+    for entity in ["Alpha Fund", "document:abc", "fund:UPPER", "fund:"]:
+        with pytest.raises(ValueError, match="canonical entity"):
+            extract_variables(ingested.output_dir, source=source, entity_ref=entity)
+
+
+def test_tracked_variable_native_cli_full_path(tmp_path: Path) -> None:
+    import os
+
+    env = {**os.environ, "PYTHONPATH": str(FIXTURE.parents[2] / "src")}
+    commands = [
+        ["ingest", str(FIXTURE), "--no-docling", "--no-ocr", "--output", str(tmp_path / "ingest")],
+        [
+            "extract-variables",
+            str(tmp_path / "ingest"),
+            "--source",
+            str(FIXTURE),
+            "--entity-ref",
+            "fund:alpha_iv",
+            "--output",
+            str(tmp_path / "extracted"),
+        ],
+        [
+            "export-fact-key-map",
+            str(tmp_path / "extracted" / "tracked-variables.json"),
+            "--output",
+            str(tmp_path / "fact-map"),
+        ],
+    ]
+    for command in commands:
+        result = subprocess.run(
+            [sys.executable, "-m", "doc_lineage.cli", *command],
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+    (record,) = json.loads((tmp_path / "extracted" / "tracked-variables.json").read_text())
+    mapping = json.loads((tmp_path / "fact-map" / "fact_key_map.json").read_text())
+    assert mapping[record["variable_id"]] == {
+        "entity_ref": "fund:alpha_iv",
+        "ontology_key": "legal.fees.management_rate",
+    }
+    # A provenance failure is a native CLI error, before publication.
+    bad = tmp_path / "wrong.pdf"
+    bad.write_bytes(b"not the original source")
+    command = commands[1].copy()
+    command[command.index("--source") + 1] = str(bad)
+    command[-1] = str(tmp_path / "failed")
+    result = subprocess.run(
+        [sys.executable, "-m", "doc_lineage.cli", *command],
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 1 and "digest" in result.stderr
+    assert not (tmp_path / "failed").exists()

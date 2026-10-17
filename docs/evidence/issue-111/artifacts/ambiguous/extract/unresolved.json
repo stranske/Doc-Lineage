@@ -1,0 +1,11 @@
+[
+  {
+    "evidence_refs": [
+      "evidence/7557e3871a2b827e3488cb22568fe8ab.json"
+    ],
+    "ontology_key": "legal.fees.management_rate",
+    "reason": "unsupported_management_fee_clause",
+    "source_id": "9fa8322d0bf0519d311cf47e7e89b0ca63f5fc903a783b3af94cc5541f0a7945",
+    "status": "unresolved"
+  }
+]

@@ -1,0 +1,27 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_tracked_variable_changed_fee_follows_source_text _____________
+
+tmp_path = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2391/test_tracked_variable_changed_0')
+
+    def test_tracked_variable_changed_fee_follows_source_text(tmp_path: Path) -> None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(tmp_path)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+        assert not result["unresolved"]
+        (record,) = result["records"]
+        # Independent numeric oracle; this MUST fail if production parsing is disconnected.
+>       assert (
+            record["value_structured"]["schedule"][0]["rate"] == 2.0
+        ), "MANAGEMENT_RATE_SOURCE_DISCONNECTION"
+E       AssertionError: MANAGEMENT_RATE_SOURCE_DISCONNECTION
+E       assert 1.75 == 2.0
+
+tests/ingest/test_ingest_synthetic_pdf.py:640: AssertionError
+=========================== short test summary info ============================
+FAILED tests/ingest/test_ingest_synthetic_pdf.py::test_tracked_variable_changed_fee_follows_source_text
+1 failed in 0.38s

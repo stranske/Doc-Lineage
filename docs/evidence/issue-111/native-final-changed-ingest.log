@@ -1,0 +1,3 @@
+ingested control.pdf [backend=offline-pdf-text run_id=ingest-172b21d45253 coverage=complete] -> 2 segment(s) across 2 page(s)
+manifest: {RAW}/native-final/changed/ingest/artifact-manifest.json
+segments: {RAW}/native-final/changed/ingest/segments.json

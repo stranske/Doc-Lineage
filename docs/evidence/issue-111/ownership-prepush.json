@@ -1,0 +1,555 @@
+{
+  "at": "2026-10-17T11:44:14.200792+00:00",
+  "source": {
+    "body": "## Why\n\nREADME.md:34-38 commits to extracting legal clauses into stable tracked-variable records, and `docs/contracts/tracked-variable-v1.md:15` defines the record, with extractors owned by domain repos. In this repo `ingest_document` (`src/doc_lineage/ingest.py:242`) stops at a segments artifact plus evidence files, `export-fact-key-map` (`src/doc_lineage/cli.py:72`, `src/doc_lineage/export/fact_key_map.py:16`) only consumes already-authored records, and its fixture `tests/fixtures/fact_key_map/tracked_variables.json` has identities without source evidence. `vocab/legal-clauses.json:20` defines keys such as `legal.fees.management_rate`, but nothing produces a value for them from text. Verified by inspecting the ingest publisher, CLI dispatch and fact-map producer: no extractor or entry point exists. This is a missing capability; schema and vocabulary tests prove components, not a source-to-claim path.\n\nCurrent source readback: `src/doc_lineage/ingest.py:242` at `b9daca70b27f452d62d8c6ccdb3bcd3b5dc7a783` (file SHA-256 `891d8cb788a9f215233f88b3dcb53e812377d19d8b63c510ac5a0d6c7296bcbb`). Earlier detailed line ranges and reproductions retain their reviewed-commit provenance; intervening anchor changes were checked for relevance.\n\n## Scope\n\n- A bounded extractor over ingested segments and evidence that emits `tracked-variable/v1` records for explicitly supported clauses, starting with the management fee in `tests/fixtures/synthetic_lpa.pdf`.\n- A CLI entry point that publishes the records with evidence references and manifest hashes.\n- Unsupported or ambiguous text is reported as unresolved, never as an asserted value.\n\n## Non-Goals\n\n- Do not claim all 25 ontology keys, arbitrary legal language or consultant-report extraction are solved by the initial subset.\n- Do not move extraction into the identity-map exporter, alter fleet schemas, add cloud or model dependencies, or build the downstream renderer.\n- Do not edit `vocab/legal-clauses.json` keys.\n- Scaffold-only completion does NOT count: records copied from a pre-authored fixture, or a value not derived from segment text, fail this issue.\n\n## Tasks\n\n- [ ] Document supported clause forms, identity rules and unresolved behavior in `docs/contracts/tracked-variable-v1.md` (new \"Extraction coverage\" section).\n- [ ] In `src/doc_lineage/ingest.py` (after `ingest_document`, line 294), add a function that reads `segments.json` and evidence objects from an ingest run and returns tracked-variable records keyed by `legal.fees.management_rate` via `src/doc_lineage/vocab.py` (`load_legal_clauses`).\n- [ ] In `src/doc_lineage/cli.py` (parser near line 72-77, dispatch at `main` lines 137-162), add an `extract-variables` subcommand that writes validated records and a manifest to a new output directory.\n- [ ] Validate each record against `docs/contracts/schemas/tracked-variable-v1.schema.json` and each evidence reference against `evidence-object-v1.schema.json` before publishing.\n- [ ] Add tests to `tests/ingest/test_ingest_synthetic_pdf.py` ingesting `tests/fixtures/synthetic_lpa.pdf`, plus changed-fee and ambiguous-clause cases using `tests/fixtures/mutations/management_fee_bump/`.\n- [ ] Add a test in `tests/export/test_fact_key_map.py` feeding extractor output to `export_fact_key_map` (`src/doc_lineage/export/fact_key_map.py:50`).\n- [ ] Update README.md:34-38 and `docs/fact-key-map.md:25` to describe the extractor and how to inspect unresolved clauses.\n\n## Acceptance Criteria\n\n- [ ] `pytest tests/ingest/test_ingest_synthetic_pdf.py -k tracked_variable` passes: the synthetic LPA yields `legal.fees.management_rate` with a value taken from source text, not from a fixture.\n- [ ] Published records validate against `tracked-variable-v1.schema.json` and evidence quotes, page locator, original digest and manifest hashes match the emitted files.\n- [ ] Deliberate-break gate: temporarily hard-code the extracted value in the new extractor in `src/doc_lineage/ingest.py`; the changed-fee test must FAIL. Revert afterward.\n- [ ] An ambiguous or unsupported clause produces an unresolved entry and no asserted value, and `pytest tests/export/test_fact_key_map.py` passes using extractor output.\n\n## Implementation Notes\n\n- `src/doc_lineage/ingest.py:242`, `src/doc_lineage/cli.py:72`, `:137-162`.\n- `src/doc_lineage/export/fact_key_map.py:16`, `src/doc_lineage/vocab.py`.\n- `vocab/legal-clauses.json:20`, `docs/contracts/tracked-variable-v1.md:15`, `docs/fact-key-map.md:25`.\n- `tests/fixtures/synthetic_lpa.pdf`, `tests/fixtures/mutations/management_fee_bump/before_segments.json` and `tests/fixtures/mutations/management_fee_bump/after_segments.json`.\n- `tests/fixtures/fact_key_map/tracked_variables.json`, `tests/export/test_fact_key_map.py`.\n- Execution authority: the owner released the intake hold on 2026-10-16 (recorded decision, Claude Code campaign session). Auto-pilot, keepalive and runner assignment are permitted for this issue under the normal priority order.\n\n<!-- repo-review-finding: stranske/Doc-Lineage#175cfc2c6674 -->\n\n<!-- repo-review-item: stranske/Doc-Lineage#175cfc2c6674 -->\n\n",
+    "comments": [
+      {
+        "id": "IC_kwDOUOakrc8AAAABcvD4cw",
+        "author": {
+          "login": "agents-workflows-bot"
+        },
+        "authorAssociation": "CONTRIBUTOR",
+        "body": "### \ud83c\udff7\ufe0f Label Suggestions\n\nBased on the issue content, these labels might be relevant:\n\n- `dependencies` (95% confidence)\n- `priority:normal` (95% confidence)\n- `runner:claude` (95% confidence)\n- `documentation` (90% confidence)\n- `enhancement` (90% confidence)\n\n<details>\n<summary>How to use these suggestions</summary>\n\n- Click the label name in the sidebar to add it\n- Or use the GitHub CLI: `gh issue edit 111 --add-label \"label-name\"`\n</details>\n\n---\n*Auto-generated by label matcher*",
+        "createdAt": "2026-10-16T19:43:58Z",
+        "includesCreatedEdit": true,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/stranske/Doc-Lineage/issues/111#issuecomment-6223362163",
+        "viewerDidAuthor": false
+      }
+    ],
+    "labels": [
+      {
+        "id": "LA_kwDOUOakrc8AAAAC1gTHhA",
+        "name": "priority:normal",
+        "description": "Normal-priority weekly repo-review work",
+        "color": "fbca04"
+      },
+      {
+        "id": "LA_kwDOUOakrc8AAAAC8wCXxg",
+        "name": "repo-review-approved",
+        "description": "Owner-approved repository review finding",
+        "color": "0E8A16"
+      }
+    ],
+    "state": "OPEN",
+    "title": "Add an evidence-bearing legal tracked-variable extraction path",
+    "updatedAt": "2026-10-16T20:37:17Z"
+  },
+  "all_pr_heads": [
+    {
+      "number": 127,
+      "headRefName": "codex/issue-110-persisted-comparison",
+      "headRefOid": "6201af9e62a64730f441bfaaa41601be8b970373",
+      "state": "OPEN"
+    },
+    {
+      "number": 126,
+      "headRefName": "codex/issue-109-protect-export-inputs",
+      "headRefOid": "3155c0c4b02b3fd86ae0c7e9ad19511e607b3ea6",
+      "state": "MERGED"
+    },
+    {
+      "number": 125,
+      "headRefName": "codex/issue-108-font-aware-evidence",
+      "headRefOid": "a81a204305bdeffdb3fd20aa257436f313f65a95",
+      "state": "MERGED"
+    },
+    {
+      "number": 124,
+      "headRefName": "codex/issue-107-immutable-extraction-snapshot",
+      "headRefOid": "423abb37aad006321c29af78e369da77c07fbd18",
+      "state": "MERGED"
+    },
+    {
+      "number": 123,
+      "headRefName": "muse/issue-121",
+      "headRefOid": "f7f8048dc7db85938bba0ff0da42de20feb88400",
+      "state": "CLOSED"
+    },
+    {
+      "number": 122,
+      "headRefName": "deps/sync-dev-versions-1b6ed54c18d9",
+      "headRefOid": "bc67cfd5f1d9c784fbe65e5613de6f4ae965d5f1",
+      "state": "MERGED"
+    },
+    {
+      "number": 120,
+      "headRefName": "owner/muse-belt-registry",
+      "headRefOid": "d799c7cdde3855c9cacba1c457b5b6caf3cdcf7c",
+      "state": "MERGED"
+    },
+    {
+      "number": 119,
+      "headRefName": "owner/deliver-ledger-validate",
+      "headRefOid": "6fe0941a28db4c5e05c47a318bc8b7373f47f395",
+      "state": "MERGED"
+    },
+    {
+      "number": 118,
+      "headRefName": "cursor/issue-117",
+      "headRefOid": "3e510d37588ebe52d64765f52d9bb2954b6907d3",
+      "state": "CLOSED"
+    },
+    {
+      "number": 116,
+      "headRefName": "owner/runner-lib-muse-provider",
+      "headRefOid": "03d66836f9a8adbc0848819d6a09c63070d6ed5a",
+      "state": "MERGED"
+    },
+    {
+      "number": 106,
+      "headRefName": "muse/issue-105",
+      "headRefOid": "a4648d35a05f37a8c4c081799c5e8c30bb113fbf",
+      "state": "CLOSED"
+    },
+    {
+      "number": 104,
+      "headRefName": "owner/cursor-belt-registry-3929",
+      "headRefOid": "1b047482df785e9b7327ccfdad40afc17a956824",
+      "state": "MERGED"
+    },
+    {
+      "number": 103,
+      "headRefName": "owner/muse-template-delivery-3934",
+      "headRefOid": "1087e8c89f2252ef4a0f6e0994b90e35e3dd9ce9",
+      "state": "MERGED"
+    },
+    {
+      "number": 102,
+      "headRefName": "owner/n806-fix-issue-3925",
+      "headRefOid": "ba15cae78789b3a8d75e153bbab6312cb381d2f8",
+      "state": "MERGED"
+    },
+    {
+      "number": 101,
+      "headRefName": "owner/sync-close-1ff5c1223456-20261016",
+      "headRefOid": "20463452b69910fc28053c37f9898836cdae6a9a",
+      "state": "MERGED"
+    },
+    {
+      "number": 100,
+      "headRefName": "cursor/issue-99",
+      "headRefOid": "4e3584a3b395607f4417f6a1218f14a2c498a23c",
+      "state": "CLOSED"
+    },
+    {
+      "number": 98,
+      "headRefName": "deps/sync-dev-versions-33cb201f650a",
+      "headRefOid": "193f766a81c014c96bb7b704cc6f5f1150249868",
+      "state": "MERGED"
+    },
+    {
+      "number": 97,
+      "headRefName": "codex/issue-95-lineage-content-hashes",
+      "headRefOid": "a9295c7a67886865aa74cb8b90c197425fad2e90",
+      "state": "MERGED"
+    },
+    {
+      "number": 96,
+      "headRefName": "codex/issue-94-document-identity-audit",
+      "headRefOid": "a8833a28e6fd487986e4ba01bc3b72ca6827d376",
+      "state": "MERGED"
+    },
+    {
+      "number": 93,
+      "headRefName": "codex/issue-92-ocr-ingest",
+      "headRefOid": "1b806ddd1c8003cd9f5db59dc00f126289875809",
+      "state": "MERGED"
+    },
+    {
+      "number": 91,
+      "headRefName": "codex/issue-90-supersession-evidence",
+      "headRefOid": "f9ca4b8aaaa073a46b88cbbe77bf175900b2f1f0",
+      "state": "MERGED"
+    },
+    {
+      "number": 89,
+      "headRefName": "codex/issue-88-docling-item-boundaries",
+      "headRefOid": "e545811c7eb71e8cfc09dc1865ecd39689c6276a",
+      "state": "MERGED"
+    },
+    {
+      "number": 87,
+      "headRefName": "codex/issue-86-zero-based-locators",
+      "headRefOid": "31d55352bcd551745dadde02255cafbbfaf36359",
+      "state": "MERGED"
+    },
+    {
+      "number": 85,
+      "headRefName": "deps/sync-dev-versions-ab725abacde7",
+      "headRefOid": "ed7c85692ca77103f894a10a9fce3fa16bec8ab1",
+      "state": "MERGED"
+    },
+    {
+      "number": 84,
+      "headRefName": "deps/sync-dev-versions-c1762b8ace76",
+      "headRefOid": "31015ea7243dc53cd27b53d87ecfcdcdd81f0f22",
+      "state": "MERGED"
+    },
+    {
+      "number": 83,
+      "headRefName": "deps/sync-dev-versions-34572ab72851",
+      "headRefOid": "13a8068c20c1e70d8075059ab5bf2784a90dd97e",
+      "state": "CLOSED"
+    },
+    {
+      "number": 82,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "72a3609e7328a5c1669a0bd4295d47751b103e15",
+      "state": "MERGED"
+    },
+    {
+      "number": 81,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "55b190eed137814e40fd41b9ed99883e104b596c",
+      "state": "MERGED"
+    },
+    {
+      "number": 80,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "782329bb24d6b74d26203eed5103ca1a6afd5c64",
+      "state": "MERGED"
+    },
+    {
+      "number": 79,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "ef28ce93334ad36089066f1add46a7cf3a5afb27",
+      "state": "MERGED"
+    },
+    {
+      "number": 78,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "602b28e009c063f356da6ddfc6b26120e43d294c",
+      "state": "MERGED"
+    },
+    {
+      "number": 77,
+      "headRefName": "chore/sonnet-5-5",
+      "headRefOid": "fa9b87c86b4d861cd77c543149cfe5039a96a31f",
+      "state": "MERGED"
+    },
+    {
+      "number": 76,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "7396285d1f5180f604b0b3dfecee8ad749620541",
+      "state": "MERGED"
+    },
+    {
+      "number": 75,
+      "headRefName": "codex/issue-74-deliberate-break-evidence",
+      "headRefOid": "45ad6fdc1e1d4aabeb79ed8f9cf832f041b1f232",
+      "state": "MERGED"
+    },
+    {
+      "number": 73,
+      "headRefName": "codex/issue-72-fork-gate-readonly-token",
+      "headRefOid": "67c1528cac0cc9f4c68be42e0f5aff3033a679dd",
+      "state": "MERGED"
+    },
+    {
+      "number": 71,
+      "headRefName": "cursor/issue-45-redline-renderer-break-evidence",
+      "headRefOid": "e93e9b5137ffe3efa230c9a45908e9aa85d6dd33",
+      "state": "MERGED"
+    },
+    {
+      "number": 70,
+      "headRefName": "cursor/issue-38-section-id-blackline-break-evidence",
+      "headRefOid": "77b039bfa13e1e02949759a155b1b23490e5ce65",
+      "state": "MERGED"
+    },
+    {
+      "number": 69,
+      "headRefName": "cursor/issue-37-ocr-fallback-break-evidence",
+      "headRefOid": "8ffc4ce6da0484a5e8e72ab6b95ebb75ec81d886",
+      "state": "MERGED"
+    },
+    {
+      "number": 68,
+      "headRefName": "cursor/issue-36-ingest-sha256-break-evidence",
+      "headRefOid": "9c38eca0900782100347b233a54a2938fb394510",
+      "state": "MERGED"
+    },
+    {
+      "number": 67,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "9cf7cffcc6584addc71e386ac371dabbb333100f",
+      "state": "MERGED"
+    },
+    {
+      "number": 66,
+      "headRefName": "deps/sync-dev-versions-8e06e2550e46",
+      "headRefOid": "47ee0772ab6ed130810a3935762ce63d10111641",
+      "state": "MERGED"
+    },
+    {
+      "number": 65,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "602220faf7982036d2a313acd8bf5272793e500b",
+      "state": "MERGED"
+    },
+    {
+      "number": 64,
+      "headRefName": "deps/sync-dev-versions-5b7f2704042c",
+      "headRefOid": "b83a59f0aa7478844b45cd13c04dc2233899899e",
+      "state": "MERGED"
+    },
+    {
+      "number": 63,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "8b50cdbaa7591c24f041c38e7151e761227d4fe7",
+      "state": "MERGED"
+    },
+    {
+      "number": 62,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "02af153c3177c322183d7369eadc7b4f465e2c62",
+      "state": "MERGED"
+    },
+    {
+      "number": 61,
+      "headRefName": "codex/issue-60-pdf-source-lines",
+      "headRefOid": "5e1d5ec9b7da61a901349fd3b83433e62a8b9579",
+      "state": "MERGED"
+    },
+    {
+      "number": 59,
+      "headRefName": "codex/issue-58-jsonschema-426",
+      "headRefOid": "bcfc2ecb1290eda6c119335928cf018c7b78734b",
+      "state": "MERGED"
+    },
+    {
+      "number": 57,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "0f1f76b7818fb4774d4e364cd2fd448e7c0a0422",
+      "state": "MERGED"
+    },
+    {
+      "number": 56,
+      "headRefName": "codex/issue-51-doc-lineage-project-urls",
+      "headRefOid": "33fd56e4a53308f72c50428d91dd149cddadfb49",
+      "state": "MERGED"
+    },
+    {
+      "number": 55,
+      "headRefName": "cursor/issue-50-edgar-atomic-publish",
+      "headRefOid": "91b3392a8f749433f1998488b903c0e24a2f418f",
+      "state": "MERGED"
+    },
+    {
+      "number": 54,
+      "headRefName": "codex/issue-49-manifest-ingest-size",
+      "headRefOid": "45c596ce226cab75752bcba625d0776ca33740c1",
+      "state": "MERGED"
+    },
+    {
+      "number": 53,
+      "headRefName": "codex/issue-48-manifest-root-containment",
+      "headRefOid": "81b6990039ef66f981e0cf9df4f1f638070354ba",
+      "state": "MERGED"
+    },
+    {
+      "number": 52,
+      "headRefName": "codex/issue-47-package-fact-key-map-fixture",
+      "headRefOid": "525f1ff3ed16f998f770aa025f1eb8d7f4d15116",
+      "state": "MERGED"
+    },
+    {
+      "number": 46,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "e7a173b75b7d1d8241ef638ef74b1803b0197828",
+      "state": "MERGED"
+    },
+    {
+      "number": 44,
+      "headRefName": "codex/issue-14-triple-link-resolver",
+      "headRefOid": "f679ec2958c8f3bc1799c853575d1ed5b56bfa29",
+      "state": "MERGED"
+    },
+    {
+      "number": 43,
+      "headRefName": "codex/issue-5-catalog-consistency",
+      "headRefOid": "ae7f6355c3e41cc9e866e5843d40e36795cd4e86",
+      "state": "MERGED"
+    },
+    {
+      "number": 42,
+      "headRefName": "codex/issue-13-fact-key-map",
+      "headRefOid": "673cd7fc661a3be2555ddbf3b8b585ac0851e99b",
+      "state": "MERGED"
+    },
+    {
+      "number": 41,
+      "headRefName": "cursor/issue-12-mutation-harness",
+      "headRefOid": "534c5cbbfd2d7a27ba86f4e4f37ed20ab8b948a8",
+      "state": "MERGED"
+    },
+    {
+      "number": 40,
+      "headRefName": "cursor/issue-11-edgar-ex10",
+      "headRefOid": "50c1aab2031209c0ff71cafeeff6f907d2887ef8",
+      "state": "MERGED"
+    },
+    {
+      "number": 39,
+      "headRefName": "cursor/issue-5-lineage-engine",
+      "headRefOid": "491fb6097d74dd67bdbd60de7789e10df80ff968",
+      "state": "MERGED"
+    },
+    {
+      "number": 35,
+      "headRefName": "cursor/issue-10-blackline-engine",
+      "headRefOid": "ee3a531fb2e7509291787f0502c6a47a50f8ade7",
+      "state": "MERGED"
+    },
+    {
+      "number": 34,
+      "headRefName": "claude/issue-9-evidence-object",
+      "headRefOid": "8953c55f4098e645a0dc70f8bc4c75ec875f7016",
+      "state": "MERGED"
+    },
+    {
+      "number": 33,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "96c30555d8adab66efb47a258fb092bc210d37e6",
+      "state": "MERGED"
+    },
+    {
+      "number": 32,
+      "headRefName": "claude/issue-8-m1-ingest-pipeline",
+      "headRefOid": "5dcdd99b0d2e473f0a85aa99a130e64fac59a1ee",
+      "state": "MERGED"
+    },
+    {
+      "number": 31,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "8af49d590c9ab280e2c3761bf39a8f96a8a3e1da",
+      "state": "MERGED"
+    },
+    {
+      "number": 30,
+      "headRefName": "cursor/issue-7-fixture-corpus",
+      "headRefOid": "ce0b58b60e9a59e7faa794f83b19abafb92ca751",
+      "state": "MERGED"
+    },
+    {
+      "number": 29,
+      "headRefName": "cursor/issue-4-ledger-schemas",
+      "headRefOid": "eee93361ea0596aa51cdf91742b1bedfb2a14d82",
+      "state": "MERGED"
+    },
+    {
+      "number": 28,
+      "headRefName": "cursor/issue-3-extract-coverage",
+      "headRefOid": "1681da0d5b8769084bca08acdfff2b64390f5f02",
+      "state": "MERGED"
+    },
+    {
+      "number": 27,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "2b7f0cc08d0f72f2cd610c1cdf531d48feddb854",
+      "state": "MERGED"
+    },
+    {
+      "number": 26,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "a30b5751a9d680c929f9247f6c2c058f446dbf4f",
+      "state": "MERGED"
+    },
+    {
+      "number": 25,
+      "headRefName": "codex/issue-2-document-identity",
+      "headRefOid": "7307d153d2074c28666d11132b1cbf9982cc0ad7",
+      "state": "MERGED"
+    },
+    {
+      "number": 24,
+      "headRefName": "deps/sync-dev-versions-da45be92183d",
+      "headRefOid": "079938594bac7fac247de219c7be47dbf6d55772",
+      "state": "MERGED"
+    },
+    {
+      "number": 23,
+      "headRefName": "codex/issue-6",
+      "headRefOid": "134e1d9c3b51ff603468e92e6e1fdf360d4fd5b5",
+      "state": "MERGED"
+    },
+    {
+      "number": 22,
+      "headRefName": "codex/issue-15",
+      "headRefOid": "834b5487ffac6a307bb799cfee110d81eb28568b",
+      "state": "MERGED"
+    },
+    {
+      "number": 21,
+      "headRefName": "deps/sync-dev-versions-c333e7448d42",
+      "headRefOid": "8e6a63ed39dafa8b77c4228460bd5cfe1efe1dd4",
+      "state": "MERGED"
+    },
+    {
+      "number": 20,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "c18cc9c9e135b5d407892d9d72926fc72857b6e3",
+      "state": "MERGED"
+    },
+    {
+      "number": 18,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "bf60b4ba23deb9197bc824bf284442f87cee82eb",
+      "state": "MERGED"
+    },
+    {
+      "number": 17,
+      "headRefName": "sync/workflows-delivery",
+      "headRefOid": "e253bf69bb73b46f93b49c0539a446df67ed5caf",
+      "state": "MERGED"
+    },
+    {
+      "number": 16,
+      "headRefName": "scaffold-package",
+      "headRefOid": "a62d70c236558fb3b46655ee0266bcdb1dc410d0",
+      "state": "MERGED"
+    }
+  ],
+  "linked": [],
+  "native_record_comments": [],
+  "native_records_decoded": 0,
+  "recorded_attempts": [],
+  "commands": [
+    {
+      "argv": [
+        "{HOME}/.codex/bin/detached-net.sh",
+        "gh",
+        "issue",
+        "view",
+        "111",
+        "-R",
+        "stranske/Doc-Lineage",
+        "--json",
+        "title,body,state,comments,labels,updatedAt"
+      ],
+      "returncode": 0,
+      "stderr": "launchd-exec: launchctl submit failed for com.teacher.codex.exec.job.7iHQfv-43404-9746 with exit 1\ndetached-net: launchd wrapper failed; retrying in current shell with detached auth\n"
+    },
+    {
+      "argv": [
+        "{HOME}/.codex/bin/detached-net.sh",
+        "gh",
+        "pr",
+        "list",
+        "-R",
+        "stranske/Doc-Lineage",
+        "--state",
+        "all",
+        "--limit",
+        "1000",
+        "--json",
+        "number,headRefName,headRefOid,state,body,closingIssuesReferences"
+      ],
+      "returncode": 0,
+      "stderr": "launchd-exec: launchctl submit failed for com.teacher.codex.exec.job.z3bF2O-43432-12422 with exit 1\ndetached-net: launchd wrapper failed; retrying in current shell with detached auth\n"
+    }
+  ]
+}

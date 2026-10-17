@@ -1,0 +1,76 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "extraction-71175c9f1601525f",
+      "bytes": 739,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "7557e3871a2b827e3488cb22568fe8ab.json",
+      "path": "evidence/7557e3871a2b827e3488cb22568fe8ab.json",
+      "sha256": "b98fec2447dcded3623a5ac0dee12a579c6743d814fb4e077475445f3919324c"
+    },
+    {
+      "artifact_id": "extraction-3c187a94b7451d9e",
+      "bytes": 630,
+      "kind": "evidence",
+      "media_type": "application/json",
+      "name": "7a632574f6605b0c0be84d2473a43cfc.json",
+      "path": "evidence/7a632574f6605b0c0be84d2473a43cfc.json",
+      "sha256": "b2e0ccd6395521fc289c91b5dc3f905fd1f0d168bc53d4ae8d7bd790f9eddf01"
+    },
+    {
+      "artifact_id": "extraction-c435ac52ee9a315e",
+      "bytes": 1381,
+      "kind": "data",
+      "media_type": "application/json",
+      "name": "input-manifest.json",
+      "path": "input-manifest.json",
+      "sha256": "9a09110a6bb3d6e3ca9e91504bab8e4e389a614a4a8f5d86db450f32ce039c1a"
+    },
+    {
+      "artifact_id": "extraction-17da4ac5d9e0a274",
+      "bytes": 1509,
+      "kind": "data",
+      "media_type": "application/json",
+      "name": "segments.json",
+      "path": "segments.json",
+      "sha256": "12c87adaa0776a8b036c5e5df0419efb3b0ef0fa608eab4285d8e9f9672c4858"
+    },
+    {
+      "artifact_id": "extraction-d9b194769413fd2d",
+      "bytes": 2428,
+      "kind": "data",
+      "media_type": "application/octet-stream",
+      "name": "control.pdf",
+      "path": "source/control.pdf",
+      "sha256": "9fa8322d0bf0519d311cf47e7e89b0ca63f5fc903a783b3af94cc5541f0a7945"
+    },
+    {
+      "artifact_id": "extraction-d6e463002419a069",
+      "bytes": 3,
+      "kind": "tracked_variables",
+      "media_type": "application/json",
+      "name": "tracked-variables.json",
+      "path": "tracked-variables.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "artifact_id": "extraction-64fc653a3341b871",
+      "bytes": 310,
+      "kind": "data",
+      "media_type": "application/json",
+      "name": "unresolved.json",
+      "path": "unresolved.json",
+      "sha256": "3fff194dcbacf4181a693218a2e3b138357c01bf89627a08554c8919f4c1f6b8"
+    }
+  ],
+  "input_manifest_sha256": "9a09110a6bb3d6e3ca9e91504bab8e4e389a614a4a8f5d86db450f32ce039c1a",
+  "run_id": "extract-5f839ad3b489b4194d660f1f",
+  "schema_version": "artifact-manifest/v1",
+  "source": {
+    "bytes": 2428,
+    "filename": "control.pdf",
+    "sha256": "9fa8322d0bf0519d311cf47e7e89b0ca63f5fc903a783b3af94cc5541f0a7945"
+  },
+  "tool": "doc-lineage-extract-variables"
+}

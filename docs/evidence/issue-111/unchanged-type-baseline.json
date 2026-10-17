@@ -1,0 +1,7 @@
+{
+  "path": "src/doc_lineage/adapters/docling_segmenter.py",
+  "base_ref": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+  "base_sha256": "e57b894d9a29ab5419cc1c3badf2a0645ef87fc587da542de1650783352eac87",
+  "current_sha256": "e57b894d9a29ab5419cc1c3badf2a0645ef87fc587da542de1650783352eac87",
+  "identical": true
+}
