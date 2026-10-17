@@ -1,0 +1,14 @@
+{
+  "runtime": "/opt/anaconda3/bin/python3",
+  "base": "2b70d80f26dbde153695471ceeaf6bf777fdc9df",
+  "red_command": "python3 -m pytest tests/test_extract_coverage.py tests/test_extract_office.py -k replacement -q",
+  "red_result": "3 assertion failures: revised text under original digest",
+  "green_command": "python3 -m pytest tests/test_extract_coverage.py tests/test_extract_office.py tests/test_extract_lines.py tests/ingest/test_ingest_synthetic_pdf.py -q",
+  "green_result": "57 passed",
+  "files": {
+    "107-red.log": "fd00e5ae0ffda71ad7922e252be8c7661e50980d5fbba8a044dd44c0b7a81eed",
+    "107-green.xml": "98269803e8493605277aa9dc370b98305b36470362e4c0557ef099fc19a0656f",
+    "107-red.xml": "a6400db8c997dee87b0d356a6eb55791ed59dcc3bc300fc792c80f3c060b7877",
+    "107-green.log": "b7e4ffa923a14fa3d60759a5cf4389fd8baaa83f5b6e3e0a85213d859f519f00"
+  }
+}

@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import hashlib
+from io import BytesIO
 from typing import TYPE_CHECKING
 
 from doc_lineage.extract.models import CoverageStats, Document, Span
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from doc_lineage.extract.cache import ExtractCache
 
 #: Office documents are cached as one whole-document entry; page ``0`` is the
@@ -17,12 +16,12 @@ if TYPE_CHECKING:
 _WHOLE_DOCUMENT_PAGE = 0
 
 
-def extract_docx(path: Path, stable_id: str, *, cache: ExtractCache | None = None) -> Document:
+def extract_docx(content: bytes, stable_id: str, *, cache: ExtractCache | None = None) -> Document:
     spans = _cached_spans(cache, stable_id)
     if spans is None:
         from docx import Document as DocxDocument
 
-        doc = DocxDocument(str(path))
+        doc = DocxDocument(BytesIO(content))
         spans = []
         for index, paragraph in enumerate(doc.paragraphs, start=1):
             text = paragraph.text.strip()
@@ -40,12 +39,12 @@ def extract_docx(path: Path, stable_id: str, *, cache: ExtractCache | None = Non
     return _document(stable_id, spans)
 
 
-def extract_pptx(path: Path, stable_id: str, *, cache: ExtractCache | None = None) -> Document:
+def extract_pptx(content: bytes, stable_id: str, *, cache: ExtractCache | None = None) -> Document:
     spans = _cached_spans(cache, stable_id)
     if spans is None:
         from pptx import Presentation
 
-        presentation = Presentation(str(path))
+        presentation = Presentation(BytesIO(content))
         spans = []
         for slide_index, slide in enumerate(presentation.slides, start=1):
             texts = []
