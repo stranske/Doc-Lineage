@@ -160,13 +160,17 @@ def align_sections(
         for index in range(pair_count):
             left = left_list[index] if index < len(left_list) else None
             right = right_list[index] if index < len(right_list) else None
-            left_conf = _finite_confidence(left.header_confidence if left is not None else 1.0)
-            right_conf = _finite_confidence(right.header_confidence if right is not None else 1.0)
-            confidence = min(left_conf, right_conf)
+            left_conf = left.header_confidence if left is not None else 1.0
+            right_conf = right.header_confidence if right is not None else 1.0
+            confidence = min(_finite_confidence(left_conf), _finite_confidence(right_conf))
             if (
                 left is None
                 or right is None
                 or duplicate_ambiguity
+                # Sanitizing for serialization must not make invalid confidence
+                # eligible for automatic pairing at a zero threshold.
+                or not math.isfinite(left_conf)
+                or not math.isfinite(right_conf)
                 or confidence < effective_threshold
             ):
                 pairing_method: PairingMethod = "manual_review"
