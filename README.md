@@ -178,3 +178,13 @@ it to an ingestable manifest; an omitted document is not an ingest success.
 The small [static provenance link helper](docs/triple-link-resolver.md) resolves
 document-page, mirror, and source-system links for consumers of tracked variables.
 It does not implement the output renderer.
+
+## Persisted ingest consumer audit
+
+The bounded [source #113 audit](docs/reports/persisted-ingest-consumer-audit.md)
+records the current persisted segment/evidence consumers, working restart
+controls, identity boundaries and explicit sibling unknowns. Legal claim
+production is owned by [#111 / PR #128](https://github.com/stranske/Doc-Lineage/pull/128),
+and validated persisted section pairing by [#112 / PR #129](https://github.com/stranske/Doc-Lineage/pull/129).
+The audit adds no production handoff and returns additional questions for human
+decision. Native DOCX replay remains separate under [#110 / PR #127](https://github.com/stranske/Doc-Lineage/pull/127).

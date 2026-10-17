@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "$ADVISOR_SOURCE/src/capability_advisor.py", line 5598, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "$ADVISOR_SOURCE/src/capability_advisor.py", line 5579, in main
+    result = advise(
+             ^^^^^^^
+  File "$ADVISOR_SOURCE/src/capability_advisor.py", line 591, in advise
+    caps = capabilities.load_declared(path or capabilities.REG)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "$ADVISOR_SOURCE/src/capabilities.py", line 2198, in load_declared
+    capabilities = load(path, create=False)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "$ADVISOR_SOURCE/src/capabilities.py", line 2122, in load
+    with _locked(path, shared=True):
+  File "$BASE_RUNTIME/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "$ADVISOR_SOURCE/src/capabilities.py", line 1271, in _locked
+    with lock_path.open("a+") as handle:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "$BASE_RUNTIME/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 1] Operation not permitted: '$ORCHESTRATOR/capabilities.json.lock'
