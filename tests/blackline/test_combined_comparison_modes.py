@@ -36,9 +36,9 @@ def test_combined_cli_keeps_both_comparison_schemas(tmp_path, capsys):
     left, right = tmp_path / "left", tmp_path / "right"
     for source, run in [(pdf, left), (changed, right)]:
         ingest_document(source, output_dir=run, allow_docling=False)
-    assert main(["pair-sections", str(left), str(right), "--store", str(store)]) == 0, (
-        "PDF_PAIRING_DISPATCH_SURVIVES_INTEGRATION"
-    )
+    assert (
+        main(["pair-sections", str(left), str(right), "--store", str(store)]) == 0
+    ), "PDF_PAIRING_DISPATCH_SURVIVES_INTEGRATION"
     pdf_id = capsys.readouterr().out.strip()
     before = {path: path.read_bytes() for path in store.iterdir()}
     assert docx_id != pdf_id
@@ -47,9 +47,9 @@ def test_combined_cli_keeps_both_comparison_schemas(tmp_path, capsys):
     replay = json.loads(capsys.readouterr().out)
     assert replay["schema_version"] == "section-pairing-comparison/v1"
     assert replay["decisions"], "PDF_PAIRING_DECISIONS_SURVIVE_INTEGRATION"
-    assert main(["lookup-section-pairing", docx_id, "--store", str(store)]) == 1, (
-        "SECTION_LOADER_REJECTS_DOCX_SCHEMA"
-    )
+    assert (
+        main(["lookup-section-pairing", docx_id, "--store", str(store)]) == 1
+    ), "SECTION_LOADER_REJECTS_DOCX_SCHEMA"
     assert capsys.readouterr().out == ""
     output = tmp_path / "not-pdf.docx"
     assert (
