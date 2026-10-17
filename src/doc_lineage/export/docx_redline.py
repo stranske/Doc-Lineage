@@ -9,7 +9,8 @@ def export_docx_redline(original: bytes, modified: bytes, *, author: str = "Doc-
     ``original`` is the baseline and ``modified`` is the revised document.
     Revisions are attributed to ``author``. The bundled Docxodus engine runs
     locally; its dependency, invalid-document, and comparison errors propagate
-    to the caller. Neither input is modified.
+    to the caller. Neither input is modified; the exporter accepts bytes and
+    never writes to either input path. The CLI rejects output aliases separately.
     """
     if not author.strip():
         raise ValueError("Tracked changes require a non-empty author")

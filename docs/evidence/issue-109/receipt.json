@@ -1,0 +1,18 @@
+{
+  "runtime": "/opt/anaconda3/bin/python3",
+  "cli_command": "python3 -m pytest tests/test_cli.py -q",
+  "cli_result": "16 passed; all eight aliases preserve both input SHA256 values and do not call the engine",
+  "golden_command": "python3 -m pytest tests/export/test_docx_redline_golden.py -q",
+  "golden_result": "9 passed, actual bundled native Docxodus tracked-changes acceptance included",
+  "native_executable_sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "native_identity": "Installed package archive matches cached helper; ad hoc signature, no Team ID; publisher not verified",
+  "files": {
+    "109-golden.xml": "84c605068ac6f3393656edb18dd876dbb4d8a90a926ab17a547804bb65c6d949",
+    "109-red.xml": "10a45516a70b9529f04b7d1aebf7bd6a15be3ea543afb4e603958f1f6e3a8a7a",
+    "109-cli-green.log": "1e2205cbe53e830660010b39725ca82136c40c36556d16bb2e1f9493a7608c6b",
+    "109-red.log": "4e60933db27d6ba8d00e37c373025a39427c7673167d4978f9ff232f60dc2131",
+    "109-cli-green.xml": "779e349f81b07f639e2b0c6d3c7ddeb8fb9288b6977ea555932671707e81253a",
+    "109-golden.log": "79885dfcb9e9fd00687549b367d60b35fc1553770940ab3b9be3902bb616cb1b",
+    "109-mutation.json": "dfa83e3c2579c88c3e308d5bdc12032905aa31994267b2b06f09c38168805d5c"
+  }
+}

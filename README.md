@@ -14,7 +14,8 @@ doc-lineage export-docx --original original.docx --modified revised.docx \
 ```
 
 The command writes native Word insertion/deletion markup. Without `--output`, it
-writes DOCX bytes to standard output. Input files remain unchanged.
+writes DOCX bytes to standard output. Input files remain unchanged: destinations
+that alias either input, including symbolic and hard links, are rejected.
 
 Here `--blackline` is a boolean flag for a file-pair comparison. The planned
 `--blackline <id>` interface in [issue #15](https://github.com/stranske/Doc-Lineage/issues/15)

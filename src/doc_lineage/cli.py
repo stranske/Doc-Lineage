@@ -101,6 +101,15 @@ def _run_export_docx(args: argparse.Namespace) -> int:
         print("doc-lineage export-docx: --blackline is required", file=sys.stderr)
         return 1
     try:
+        if args.output is not None:
+            destination = args.output.resolve()
+            for source in (args.original, args.modified):
+                if destination == source.resolve() or (
+                    args.output.exists() and args.output.samefile(source)
+                ):
+                    raise ValueError(
+                        "--output must not be the same file as --original or --modified"
+                    )
         redline = export_docx_redline(
             args.original.read_bytes(),
             args.modified.read_bytes(),
