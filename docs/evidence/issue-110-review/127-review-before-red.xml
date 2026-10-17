@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="36.245" timestamp="2026-10-17T06:53:11.856455-05:00" hostname="&lt;HOST&gt;"><testcase classname="tests.test_issue110_review" name="test_corrupt_deflate_has_clean_cli_error_without_record" time="12.593"><failure message="AssertionError: CORRUPT_ZIP_ERROR_CONTRACT&#10;assert b'Corrupt DOCX package' in b'Traceback (most recent call last):\n  File &quot;&lt;frozen runpy&gt;&quot;, line 198, in _run_module_as_main\n  File &quot;&lt;frozen runpy...           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n'&#10; +  where b'Traceback (most recent call last):\n  File &quot;&lt;frozen runpy&gt;&quot;, line 198, in _run_module_as_main\n  File &quot;&lt;frozen runpy...           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n' = CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-m', 'doc_lineage.cli', 'create-compa...          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n').stderr">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_corrupt_deflate_has_clean0')
+
+    def test_corrupt_deflate_has_clean_cli_error_without_record(tmp_path):
+        archive = BytesIO()
+        with ZipFile(BytesIO(_docx("A legal source."))) as source, ZipFile(
+            archive, "w", compression=ZIP_DEFLATED
+        ) as target:
+            for member in source.infolist():
+                target.writestr(member.filename, source.read(member.filename))
+        payload = bytearray(archive.getvalue())
+        with ZipFile(BytesIO(payload)) as package:
+            member = package.getinfo("word/document.xml")
+        name, extra = struct.unpack_from("&lt;HH", payload, member.header_offset + 26)
+        payload[member.header_offset + 30 + name + extra] = 0xFF
+        broken, valid = tmp_path / "broken.docx", tmp_path / "valid.docx"
+        broken.write_bytes(payload)
+        valid.write_bytes(_docx("Other source."))
+        store = tmp_path / "records"
+        result = subprocess.run(
+            [sys.executable, "-m", "doc_lineage.cli", "create-comparison", "--original",
+             str(broken), "--modified", str(valid), "--comparison-store", str(store)],
+            env={**os.environ, "PYTHONPATH": str(ROOT / "src")}, capture_output=True, check=False,
+        )
+        assert result.returncode == 1
+&gt;       assert b"Corrupt DOCX package" in result.stderr, "CORRUPT_ZIP_ERROR_CONTRACT"
+E       AssertionError: CORRUPT_ZIP_ERROR_CONTRACT
+E       assert b'Corrupt DOCX package' in b'Traceback (most recent call last):\n  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main\n  File "&lt;frozen runpy...           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n'
+E        +  where b'Traceback (most recent call last):\n  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main\n  File "&lt;frozen runpy...           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n' = CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-m', 'doc_lineage.cli', 'create-compa...          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nzlib.error: Error -3 while decompressing data: invalid block type\n').stderr
+
+tests/test_issue110_review.py:46: AssertionError</failure></testcase><testcase classname="tests.test_issue110_review" name="test_new_records_are_private_and_exclusive_under_permissive_umask" time="11.278"><failure message="AssertionError: PRIVATE_COMPARISON_STORE&#10;assert 511 == 448&#10; +  where 511 = &lt;built-in function S_IMODE&gt;(16895)&#10; +    where &lt;built-in function S_IMODE&gt; = stat.S_IMODE&#10; +    and   16895 = os.stat_result(st_mode=16895, st_ino=440738308, st_dev=16777232, st_nlink=3, st_uid=502, st_gid=20, st_size=96, st_atime=1792238015, st_mtime=1792238015, st_ctime=1792238015).st_mode&#10; +      where os.stat_result(st_mode=16895, st_ino=440738308, st_dev=16777232, st_nlink=3, st_uid=502, st_gid=20, st_size=96, st_atime=1792238015, st_mtime=1792238015, st_ctime=1792238015) = stat()&#10; +        where stat = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_new_records_are_private_a0/records').stat">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_new_records_are_private_a0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x1079093a0&gt;
+
+    def test_new_records_are_private_and_exclusive_under_permissive_umask(tmp_path, monkeypatch):
+        original, modified = tmp_path / "a.docx", tmp_path / "b.docx"
+        original.write_bytes(_docx("Original."))
+        modified.write_bytes(_docx("Modified."))
+        store = tmp_path / "records"
+        previous = os.umask(0)
+        try:
+            identity = blackline.write_comparison_record(original, modified, store=store)
+        finally:
+            os.umask(previous)
+        record = store / f"{identity}.json"
+&gt;       assert stat.S_IMODE(store.stat().st_mode) == 0o700, "PRIVATE_COMPARISON_STORE"
+E       AssertionError: PRIVATE_COMPARISON_STORE
+E       assert 511 == 448
+E        +  where 511 = &lt;built-in function S_IMODE&gt;(16895)
+E        +    where &lt;built-in function S_IMODE&gt; = stat.S_IMODE
+E        +    and   16895 = os.stat_result(st_mode=16895, st_ino=440738308, st_dev=16777232, st_nlink=3, st_uid=502, st_gid=20, st_size=96, st_atime=1792238015, st_mtime=1792238015, st_ctime=1792238015).st_mode
+E        +      where os.stat_result(st_mode=16895, st_ino=440738308, st_dev=16777232, st_nlink=3, st_uid=502, st_gid=20, st_size=96, st_atime=1792238015, st_mtime=1792238015, st_ctime=1792238015) = stat()
+E        +        where stat = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_new_records_are_private_a0/records').stat
+
+tests/test_issue110_review.py:63: AssertionError</failure></testcase><testcase classname="tests.test_issue110_review" name="test_replay_hash_validation_survives_optimized_python" time="5.765"><failure message="AssertionError: OPTIMIZED_REPLAY_HASH_CHECK&#10;assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', &quot;import hashlib\nimport js...dout=b'Retained original package hashes verified; creating a NEW record with explicit relocated inputs.\n', stderr=b'').returncode&#10; +    where CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', &quot;import hashlib\nimport js...dout=b'Retained original package hashes verified; creating a NEW record with explicit relocated inputs.\n', stderr=b'') = _optimized(&quot;import hashlib\nimport json\nfrom pathlib import Path\nimport sys\n\nartifacts = Path(sys.argv[1]) / 'artifacts'\nrec...e}_sha256']\nprint('Retained original package hashes verified; creating a NEW record with explicit relocated inputs.')&quot;, PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_hash_validation_su0'))">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_hash_validation_su0')
+
+    def test_replay_hash_validation_survives_optimized_python(tmp_path):
+        programs = re.findall(r"&lt;&lt;'PY'\n(.*?)\nPY", (EVIDENCE / "replay.sh").read_text(), re.S)
+        artifacts = tmp_path / "artifacts"
+        artifacts.mkdir()
+        record = {}
+        for role in ("original", "modified"):
+            content = _docx(role)
+            (artifacts / f"{role}.docx").write_bytes(content)
+            record[f"{role}_sha256"] = hashlib.sha256(content).hexdigest()
+        (artifacts / "comparison-record.json").write_text(json.dumps(record))
+        assert _optimized(programs[0], tmp_path).returncode == 0
+        (artifacts / "original.docx").write_bytes(_docx("Changed valid document."))
+&gt;       assert _optimized(programs[0], tmp_path).returncode != 0, "OPTIMIZED_REPLAY_HASH_CHECK"
+E       AssertionError: OPTIMIZED_REPLAY_HASH_CHECK
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', "import hashlib\nimport js...dout=b'Retained original package hashes verified; creating a NEW record with explicit relocated inputs.\n', stderr=b'').returncode
+E        +    where CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', "import hashlib\nimport js...dout=b'Retained original package hashes verified; creating a NEW record with explicit relocated inputs.\n', stderr=b'') = _optimized("import hashlib\nimport json\nfrom pathlib import Path\nimport sys\n\nartifacts = Path(sys.argv[1]) / 'artifacts'\nrec...e}_sha256']\nprint('Retained original package hashes verified; creating a NEW record with explicit relocated inputs.')", PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_hash_validation_su0'))
+
+tests/test_issue110_review.py:91: AssertionError</failure></testcase><testcase classname="tests.test_issue110_review" name="test_replay_revision_validation_survives_optimized_python" time="6.351"><failure message="AssertionError: OPTIMIZED_REPLAY_REVISION_CHECK&#10;assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', &quot;from io import BytesIO\nf...6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0/wrong-revisions.docx\n', stderr=b'').returncode&#10; +    where CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', &quot;from io import BytesIO\nf...6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0/wrong-revisions.docx\n', stderr=b'') = _optimized(&quot;from io import BytesIO\nfrom pathlib import Path\nimport sys\nfrom xml.etree import ElementTree as ET\nfrom zipfile i...ocument, 'del') == 'The fee is ten dollars.'\nprint('Native DOCX reject/accept reconstruction verified:', sys.argv[1])&quot;, PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0/wrong-revisions.docx'))">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0')
+
+    def test_replay_revision_validation_survives_optimized_python(tmp_path):
+        programs = re.findall(r"&lt;&lt;'PY'\n(.*?)\nPY", (EVIDENCE / "replay.sh").read_text(), re.S)
+        original = EVIDENCE / "artifacts/redline.docx"
+        assert _optimized(programs[1], original).returncode == 0
+        changed = tmp_path / "wrong-revisions.docx"
+        with ZipFile(original) as source, ZipFile(changed, "w") as target:
+            for member in source.infolist():
+                content = source.read(member.filename)
+                if member.filename == "word/document.xml":
+                    assert b"five" in content
+                    content = content.replace(b"five", b"eleven")
+                target.writestr(member, content)
+&gt;       assert _optimized(programs[1], changed).returncode != 0, "OPTIMIZED_REPLAY_REVISION_CHECK"
+E       AssertionError: OPTIMIZED_REPLAY_REVISION_CHECK
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', "from io import BytesIO\nf...6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0/wrong-revisions.docx\n', stderr=b'').returncode
+E        +    where CompletedProcess(args=['&lt;PYTHON_ENV&gt;/bin/python', '-O', '-c', "from io import BytesIO\nf...6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0/wrong-revisions.docx\n', stderr=b'') = _optimized("from io import BytesIO\nfrom pathlib import Path\nimport sys\nfrom xml.etree import ElementTree as ET\nfrom zipfile i...ocument, 'del') == 'The fee is ten dollars.'\nprint('Native DOCX reject/accept reconstruction verified:', sys.argv[1])", PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-4801/test_replay_revision_validatio0/wrong-revisions.docx'))
+
+tests/test_issue110_review.py:106: AssertionError</failure></testcase></testsuite></testsuites>

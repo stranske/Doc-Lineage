@@ -1,0 +1,18 @@
+{
+  "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_delet1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+  "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "argv": [
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_delet1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmp8c_e_rcn",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmp89m8hswe",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/tmpup8i8u9k",
+    "--author=Doc-Lineage"
+  ],
+  "pid": 22484,
+  "before_ns": 1792241474732416000,
+  "original_sha256": "ea6ab8473e33ee9e6ead9550f50f47c9bbdaf84ff7533d75e7569716c750afe0",
+  "modified_sha256": "fa4fecc8f92a275e12fc7629698566a86a0ba0c99aff9127f3896b211c29de2a",
+  "returncode": 0,
+  "output_sha256": "d65350d2ac7137d02d2e5b5c8e187660a8e41272ea8510bc9f3399ec00cb576f",
+  "after_ns": 1792241475973708000
+}

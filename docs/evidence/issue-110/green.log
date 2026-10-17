@@ -1,0 +1,38 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0 -- /opt/anaconda3/bin/python3
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__110__opener
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 45 items / 20 deselected / 25 selected
+
+tests/test_cli.py::test_comparison_new_process_native_round_trip[id-only] PASSED [  4%]
+tests/test_cli.py::test_comparison_new_process_native_round_trip[file-pair] PASSED [  8%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[file-original] PASSED [ 12%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[file-modified] PASSED [ 16%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[stdout-original] PASSED [ 20%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[stdout-modified] PASSED [ 24%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[unknown] PASSED [ 28%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[malformed] PASSED [ 32%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[path] PASSED [ 36%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[missing-original] PASSED [ 40%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[missing-modified] PASSED [ 44%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[schema] PASSED [ 48%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[id] PASSED     [ 52%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[hash] PASSED   [ 56%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[relative-path] PASSED [ 60%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[json] PASSED   [ 64%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[list] PASSED   [ 68%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[original] PASSED [ 72%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[modified] PASSED [ 76%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[record] PASSED [ 80%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[record-hardlink] PASSED [ 84%]
+tests/test_cli.py::test_comparison_create_rejects_unusable_input[missing] PASSED [ 88%]
+tests/test_cli.py::test_comparison_create_rejects_unusable_input[not-docx] PASSED [ 92%]
+tests/test_cli.py::test_comparison_id_cannot_override_sources PASSED     [ 96%]
+tests/test_cli.py::test_comparison_boolean_requires_file_pair PASSED     [100%]
+
+----- generated xml file: /private/tmp/doc-lineage-110-evidence/green.xml ------
+====================== 25 passed, 20 deselected in 10.80s ======================

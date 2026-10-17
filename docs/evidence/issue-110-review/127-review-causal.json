@@ -1,0 +1,30 @@
+{
+  "command": [
+    "<PYTHON_ENV>/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_issue110_review.py",
+    "--no-cov",
+    "-q"
+  ],
+  "red_exit": 1,
+  "restored_exit": 0,
+  "assertion_failures": 4,
+  "zero_errors": true,
+  "test_file_sha256": "51fd3682915dabef6ed51087e03dc1f9a9c4fc48c47f88f5c0f49baf4fada37b",
+  "test_bytes_unchanged": true,
+  "files": {
+    "src/doc_lineage/blackline.py": {
+      "restored_sha256": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270",
+      "disconnected_sha256": "76ae0d749e8544c3fb10d93316f1bfd5305095148653b93a22cad4c30ed25fb3",
+      "disconnection_source": "6201af9e62a64730f441bfaaa41601be8b970373:src/doc_lineage/blackline.py",
+      "byte_identical_restoration": true
+    },
+    "docs/evidence/issue-110/replay.sh": {
+      "restored_sha256": "e46a1a264d4b08204dff79d7df7941ecc526cff1ad34e407efca2f810f64e784",
+      "disconnected_sha256": "6e69798ee4e9707f95db0befc3331aeeb1d7623871db6d411b844a7bb06744c8",
+      "disconnection_source": "6201af9e62a64730f441bfaaa41601be8b970373:docs/evidence/issue-110/replay.sh",
+      "byte_identical_restoration": true
+    }
+  }
+}

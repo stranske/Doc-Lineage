@@ -1,0 +1,67 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0 -- /opt/anaconda3/bin/python3
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__110__opener
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 54 items
+
+tests/test_cli.py::test_comparison_new_process_native_round_trip[id-only] PASSED [  1%]
+tests/test_cli.py::test_comparison_new_process_native_round_trip[file-pair] PASSED [  3%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[file-original] PASSED [  5%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[file-modified] PASSED [  7%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[stdout-original] PASSED [  9%]
+tests/test_cli.py::test_comparison_sha256_check_disconnection[stdout-modified] PASSED [ 11%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[unknown] PASSED [ 12%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[malformed] PASSED [ 14%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[path] PASSED [ 16%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[missing-original] PASSED [ 18%]
+tests/test_cli.py::test_comparison_invalid_or_missing_inputs[missing-modified] PASSED [ 20%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[schema] PASSED [ 22%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[id] PASSED     [ 24%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[hash] PASSED   [ 25%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[relative-path] PASSED [ 27%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[json] PASSED   [ 29%]
+tests/test_cli.py::test_comparison_rejects_invalid_record[list] PASSED   [ 31%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[original] PASSED [ 33%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[modified] PASSED [ 35%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[record] PASSED [ 37%]
+tests/test_cli.py::test_comparison_preserves_sources_and_record[record-hardlink] PASSED [ 38%]
+tests/test_cli.py::test_comparison_create_rejects_unusable_input[missing] PASSED [ 40%]
+tests/test_cli.py::test_comparison_create_rejects_unusable_input[not-docx] PASSED [ 42%]
+tests/test_cli.py::test_comparison_id_cannot_override_sources PASSED     [ 44%]
+tests/test_cli.py::test_comparison_boolean_requires_file_pair PASSED     [ 46%]
+tests/test_cli.py::test_export_docx[file] PASSED                         [ 48%]
+tests/test_cli.py::test_export_docx[stdout] PASSED                       [ 50%]
+tests/test_cli.py::test_export_requires_blackline PASSED                 [ 51%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[direct-original] PASSED [ 53%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[direct-modified] PASSED [ 55%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[relative-original] PASSED [ 57%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[relative-modified] PASSED [ 59%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[relative-input-original] PASSED [ 61%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[relative-input-modified] PASSED [ 62%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[normalized-original] PASSED [ 64%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[normalized-modified] PASSED [ 66%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[symlink-original] PASSED [ 68%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[symlink-modified] PASSED [ 70%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[hardlink-original] PASSED [ 72%]
+tests/test_cli.py::test_export_rejects_input_alias_without_changing_hashes[hardlink-modified] PASSED [ 74%]
+tests/test_cli.py::test_export_reports_engine_errors_without_a_traceback PASSED [ 75%]
+tests/test_cli.py::test_ingest_subcommand_survived_the_merge PASSED      [ 77%]
+tests/test_cli.py::test_harvest_edgar_cli_offline_fixture PASSED         [ 79%]
+tests/test_cli.py::test_harvest_edgar_cli_reports_errors_without_traceback PASSED [ 81%]
+tests/test_cli.py::test_harvest_edgar_cli_reports_truncated_download PASSED [ 83%]
+tests/export/test_docx_redline_golden.py::test_tracked_changes_present PASSED [ 85%]
+tests/export/test_docx_redline_golden.py::test_golden_rejects_unmarked_output[original] PASSED [ 87%]
+tests/export/test_docx_redline_golden.py::test_golden_rejects_unmarked_output[modified] PASSED [ 88%]
+tests/export/test_docx_redline_golden.py::test_golden_rejects_partial_markup[ins-insertion] PASSED [ 90%]
+tests/export/test_docx_redline_golden.py::test_golden_rejects_partial_markup[del-deletion] PASSED [ 92%]
+tests/export/test_docx_redline_golden.py::test_revision_round_trip[insertion-only] PASSED [ 94%]
+tests/export/test_docx_redline_golden.py::test_revision_round_trip[deletion-only] PASSED [ 96%]
+tests/export/test_docx_redline_golden.py::test_revision_round_trip[unchanged] PASSED [ 98%]
+tests/export/test_docx_redline_golden.py::test_revision_round_trip[unicode-and-xml-characters] PASSED [100%]
+
+---- generated xml file: /private/tmp/doc-lineage-110-evidence/focused.xml -----
+============================= 54 passed in 22.32s ==============================

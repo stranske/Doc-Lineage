@@ -1,0 +1,36 @@
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+root = Path('/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__110__opener')
+evidence = Path(__file__).resolve().parent
+source = root / 'src/doc_lineage/cli.py'
+original = source.read_bytes()
+needle = b'if hashlib.sha256(content).hexdigest() != expected:'
+assert original.count(needle) == 1
+mutated = original.replace(needle, b'if False:  # deliberate SHA256 check disconnection')
+sha = lambda data: hashlib.sha256(data).hexdigest()
+results = {'source': 'src/doc_lineage/cli.py', 'original_sha256': sha(original), 'mutated_sha256': sha(mutated), 'gate': 'tests/test_cli.py::test_comparison_sha256_check_disconnection'}
+try:
+    source.write_bytes(mutated)
+    cmd = [sys.executable, '-m', 'pytest', 'tests/test_cli.py', '-k', 'comparison_sha256_check_disconnection', f'--junitxml={evidence}/red.xml', f'--basetemp={evidence}/red-runtime']
+    with (evidence / 'red.log').open('w') as log:
+        result = subprocess.run(cmd, cwd=root, stdout=log, stderr=subprocess.STDOUT)
+    results['red_command'] = cmd
+    results['red_exit'] = result.returncode
+finally:
+    source.write_bytes(original)
+    results['restored_sha256'] = sha(source.read_bytes())
+    assert source.read_bytes() == original
+    (evidence / 'mutation.json').write_text(json.dumps(results, indent=2) + '\n')
+assert results['red_exit'] == 1
+cmd = [sys.executable, '-m', 'pytest', 'tests/test_cli.py', '-k', 'comparison', f'--junitxml={evidence}/green.xml', f'--basetemp={evidence}/green-runtime']
+with (evidence / 'green.log').open('w') as log:
+    result = subprocess.run(cmd, cwd=root, stdout=log, stderr=subprocess.STDOUT)
+results['green_command'] = cmd
+results['green_exit'] = result.returncode
+(evidence / 'mutation.json').write_text(json.dumps(results, indent=2) + '\n')
+assert result.returncode == 0
+print(json.dumps(results, indent=2))

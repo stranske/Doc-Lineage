@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/tmp/doc110-integration-venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "src",
+    "tests"
+  ],
+  "cwd": "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__127__opener",
+  "returncode": 0,
+  "seconds": 0.242,
+  "environment": {
+    "PIP_NO_BUILD_ISOLATION": "0",
+    "PIP_NO_DEPS": "1",
+    "PYTHONPATH": "/tmp/doc110-native-audit:/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__127__opener/src:/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__127__opener",
+    "XDG_CACHE_HOME": "/tmp/doc110-integration-cache",
+    "DOC110_NATIVE_EVIDENCE": "/tmp/doc110-native-records"
+  }
+}

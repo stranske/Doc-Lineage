@@ -1,0 +1,2 @@
+pyproject.toml: note: unused section(s): module = ['edgar', 'edgartools', 'pypdfium2', 'python_redlines.*', 'tests.*']
+Success: no issues found in 1 source file

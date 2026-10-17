@@ -54,8 +54,8 @@ PR #127's separate schema is `docx-comparison/v1`, with ordered
 `original_sha256` / `modified_sha256` package digests. The common conventions are
 an opaque ID, a versioned record, original-byte identity and explicit order.
 The section schema nests these digests beside extraction bindings and carries an
-explicit mode. Neither loader accepts the other schema. This implementation is
-based on main; it does not import or stack #127's unmerged implementation.
+explicit mode. Neither loader accepts the other schema. Both implementations coexist after merging main at
+`c274b866e695d92a083c182c19f3119cab01e0b0` (including merged PR #127).
 Native DOCX-by-ID acceptance and README issue #15 completion remain pending that
 separate scope. No shared workflow, identity convention or fleet schema changes.
 
@@ -106,3 +106,14 @@ Checksums detect corruption and accidental modification, not a malicious actor
 rewriting every local record and checksum. These are trusted local records, not
 signed attestations. A future engine change needs explicit version/migration
 policy; a replay decision mismatch fails rather than silently rewriting history.
+
+### Local filesystem capability boundary
+
+On the tested POSIX runtime, private artifacts use descriptor chmod0600 and
+publication syncs file bytes followed by the containing directory. Real sync
+errors propagate. Where `O_DIRECTORY` is absent, publication emits a RuntimeWarning
+and directory durability is unsupported. Where `fchmod` is absent, path chmod
+runs before payload writes and emits a RuntimeWarning: owner-only privacy is
+unverified on that platform. Chmod errors propagate. This compatibility path
+does not establish Windows ACL, Office, or hardware power-loss guarantees; it
+requires no installer, helper, security approval, or privacy-setting changes.

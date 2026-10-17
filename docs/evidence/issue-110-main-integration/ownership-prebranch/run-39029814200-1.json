@@ -1,0 +1,1161 @@
+{
+  "conclusion": "success",
+  "event": "workflow_run",
+  "headSha": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+  "jobs": [
+    {
+      "completedAt": "2026-10-17T11:44:16Z",
+      "conclusion": "success",
+      "databaseId": 117387848020,
+      "name": "Prepare autofix context",
+      "startedAt": "2026-10-17T11:44:00Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:01Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:02Z",
+          "conclusion": "success",
+          "name": "Checkout (for security gate + agent registry)",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:11Z",
+          "conclusion": "success",
+          "name": "Setup API client",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:13Z",
+          "conclusion": "success",
+          "name": "Security gate - prompt injection guard",
+          "number": 4,
+          "startedAt": "2026-10-17T11:44:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "success",
+          "name": "Evaluate workflow_run",
+          "number": 5,
+          "startedAt": "2026-10-17T11:44:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "skipped",
+          "name": "Check runner dispatch debounce",
+          "number": 6,
+          "startedAt": "2026-10-17T11:44:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "success",
+          "name": "Post Checkout (for security gate + agent registry)",
+          "number": 12,
+          "startedAt": "2026-10-17T11:44:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-17T11:44:15Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387848020"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:17Z",
+      "conclusion": "success",
+      "databaseId": 117387848139,
+      "name": "Evaluate keepalive loop",
+      "startedAt": "2026-10-17T11:44:00Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:01Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:02Z",
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:06Z",
+          "conclusion": "success",
+          "name": "Setup API client",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:07Z",
+          "conclusion": "success",
+          "name": "Compute state fingerprint",
+          "number": 4,
+          "startedAt": "2026-10-17T11:44:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:07Z",
+          "conclusion": "skipped",
+          "name": "Report unchanged state skip",
+          "number": 5,
+          "startedAt": "2026-10-17T11:44:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:07Z",
+          "conclusion": "success",
+          "name": "Capture timestamps",
+          "number": 6,
+          "startedAt": "2026-10-17T11:44:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:10Z",
+          "conclusion": "success",
+          "name": "Security gate - prompt injection guard",
+          "number": 7,
+          "startedAt": "2026-10-17T11:44:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:14Z",
+          "conclusion": "success",
+          "name": "Evaluate keepalive state",
+          "number": 8,
+          "startedAt": "2026-10-17T11:44:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "success",
+          "name": "Check runner dispatch debounce",
+          "number": 9,
+          "startedAt": "2026-10-17T11:44:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 18,
+          "startedAt": "2026-10-17T11:44:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:15Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-17T11:44:15Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387848139"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:06Z",
+      "conclusion": "success",
+      "databaseId": 117387848205,
+      "name": "Merge automerge-labelled agent PRs",
+      "startedAt": "2026-10-17T11:44:00Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:02Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:04Z",
+          "conclusion": "success",
+          "name": "Checkout (for retry helpers)",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:04Z",
+          "conclusion": "success",
+          "name": "Merge labelled agent PRs (guarded)",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:04Z",
+          "conclusion": "success",
+          "name": "Post Checkout (for retry helpers)",
+          "number": 6,
+          "startedAt": "2026-10-17T11:44:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:04Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 7,
+          "startedAt": "2026-10-17T11:44:04Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387848205"
+    },
+    {
+      "completedAt": "2026-10-17T11:43:58Z",
+      "conclusion": "skipped",
+      "databaseId": 117387848807,
+      "name": "Wake generated delivery reconciler",
+      "startedAt": "2026-10-17T11:43:58Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387848807"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:26Z",
+      "conclusion": "success",
+      "databaseId": 117387906686,
+      "name": "Record autofix metrics",
+      "startedAt": "2026-10-17T11:44:19Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:21Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:22Z",
+          "conclusion": "success",
+          "name": "Checkout (for retry helpers)",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:22Z",
+          "conclusion": "success",
+          "name": "Collect metrics",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:23Z",
+          "conclusion": "success",
+          "name": "Write summary and artifact",
+          "number": 4,
+          "startedAt": "2026-10-17T11:44:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:24Z",
+          "conclusion": "success",
+          "name": "Upload metrics artifact",
+          "number": 5,
+          "startedAt": "2026-10-17T11:44:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:24Z",
+          "conclusion": "success",
+          "name": "Post Checkout (for retry helpers)",
+          "number": 10,
+          "startedAt": "2026-10-17T11:44:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:24Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-17T11:44:24Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387906686"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:17Z",
+      "conclusion": "skipped",
+      "databaseId": 117387907038,
+      "name": "Run Muse autofix",
+      "startedAt": "2026-10-17T11:44:17Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387907038"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:17Z",
+      "conclusion": "skipped",
+      "databaseId": 117387907090,
+      "name": "Run Codex autofix",
+      "startedAt": "2026-10-17T11:44:17Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387907090"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:22Z",
+      "conclusion": "success",
+      "databaseId": 117387907151,
+      "name": "Test job creation",
+      "startedAt": "2026-10-17T11:44:19Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "success",
+          "name": "Run echo \"Test job ran!\"",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387907151"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:21Z",
+      "conclusion": "success",
+      "databaseId": 117387907155,
+      "name": "Verify secrets available",
+      "startedAt": "2026-10-17T11:44:19Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "success",
+          "name": "Check secrets",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "skipped",
+          "name": "Checkout authority release helpers",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "skipped",
+          "name": "Release prepared authority challenge after preflight failure",
+          "number": 4,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:20Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 5,
+          "startedAt": "2026-10-17T11:44:20Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387907155"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:17Z",
+      "conclusion": "skipped",
+      "databaseId": 117387907352,
+      "name": "Run Claude autofix",
+      "startedAt": "2026-10-17T11:44:17Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387907352"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:17Z",
+      "conclusion": "skipped",
+      "databaseId": 117387907668,
+      "name": "Flag for human follow-up",
+      "startedAt": "2026-10-17T11:44:17Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387907668"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:37Z",
+      "conclusion": "success",
+      "databaseId": 117387919588,
+      "name": "Mark agent running",
+      "startedAt": "2026-10-17T11:44:23Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:25Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:26Z",
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:30Z",
+          "conclusion": "success",
+          "name": "Setup API client",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:31Z",
+          "conclusion": "success",
+          "name": "Mint KEEPALIVE_APP running token",
+          "number": 4,
+          "startedAt": "2026-10-17T11:44:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:31Z",
+          "conclusion": "skipped",
+          "name": "Mint WORKFLOWS_APP running token",
+          "number": 5,
+          "startedAt": "2026-10-17T11:44:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:31Z",
+          "conclusion": "success",
+          "name": "Select trusted keepalive running writer",
+          "number": 6,
+          "startedAt": "2026-10-17T11:44:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:31Z",
+          "conclusion": "skipped",
+          "name": "Probe PAT keepalive running identity",
+          "number": 7,
+          "startedAt": "2026-10-17T11:44:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:31Z",
+          "conclusion": "skipped",
+          "name": "Enforce PAT keepalive running identity",
+          "number": 8,
+          "startedAt": "2026-10-17T11:44:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:31Z",
+          "conclusion": "success",
+          "name": "Require trusted keepalive running writer",
+          "number": 9,
+          "startedAt": "2026-10-17T11:44:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:35Z",
+          "conclusion": "success",
+          "name": "Update summary with running status",
+          "number": 10,
+          "startedAt": "2026-10-17T11:44:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:35Z",
+          "conclusion": "skipped",
+          "name": "Finalize authority challenge after mark-running",
+          "number": 11,
+          "startedAt": "2026-10-17T11:44:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:35Z",
+          "conclusion": "skipped",
+          "name": "Release prepared challenge after mark-running failure",
+          "number": 12,
+          "startedAt": "2026-10-17T11:44:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:35Z",
+          "conclusion": "success",
+          "name": "Post Mint KEEPALIVE_APP running token",
+          "number": 23,
+          "startedAt": "2026-10-17T11:44:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:35Z",
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 24,
+          "startedAt": "2026-10-17T11:44:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:35Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-17T11:44:35Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387919588"
+    },
+    {
+      "completedAt": "2026-10-17T11:45:53Z",
+      "conclusion": "success",
+      "databaseId": 117387966145,
+      "name": "Keepalive next task (Claude) / Claude (keepalive)",
+      "startedAt": "2026-10-17T11:44:40Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:44:43Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:44:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:44Z",
+          "conclusion": "success",
+          "name": "Mint Workflows bootstrap app token",
+          "number": 2,
+          "startedAt": "2026-10-17T11:44:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:45Z",
+          "conclusion": "success",
+          "name": "Checkout target repository",
+          "number": 3,
+          "startedAt": "2026-10-17T11:44:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:47Z",
+          "conclusion": "success",
+          "name": "Checkout Workflows run-base action",
+          "number": 4,
+          "startedAt": "2026-10-17T11:44:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:48Z",
+          "conclusion": "success",
+          "name": "Cache workspace Octokit dependencies",
+          "number": 5,
+          "startedAt": "2026-10-17T11:44:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:53Z",
+          "conclusion": "success",
+          "name": "Agent run base setup",
+          "number": 6,
+          "startedAt": "2026-10-17T11:44:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:53Z",
+          "conclusion": "success",
+          "name": "Cache Workflows Octokit dependencies",
+          "number": 7,
+          "startedAt": "2026-10-17T11:44:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:53Z",
+          "conclusion": "success",
+          "name": "Ensure Workflows script deps",
+          "number": 8,
+          "startedAt": "2026-10-17T11:44:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:54Z",
+          "conclusion": "success",
+          "name": "Setup Workflows API client",
+          "number": 9,
+          "startedAt": "2026-10-17T11:44:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:54Z",
+          "conclusion": "success",
+          "name": "Validate workflows tooling",
+          "number": 10,
+          "startedAt": "2026-10-17T11:44:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:44:57Z",
+          "conclusion": "success",
+          "name": "Set up Python",
+          "number": 11,
+          "startedAt": "2026-10-17T11:44:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:13Z",
+          "conclusion": "success",
+          "name": "Install Python dependencies",
+          "number": 12,
+          "startedAt": "2026-10-17T11:44:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:22Z",
+          "conclusion": "success",
+          "name": "Install Workflows repo LLM dependencies",
+          "number": 13,
+          "startedAt": "2026-10-17T11:45:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:22Z",
+          "conclusion": "success",
+          "name": "Validate optional capability effect evidence",
+          "number": 14,
+          "startedAt": "2026-10-17T11:45:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:22Z",
+          "conclusion": "success",
+          "name": "Validate prompt template integrity",
+          "number": 15,
+          "startedAt": "2026-10-17T11:45:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:23Z",
+          "conclusion": "success",
+          "name": "Download task appendix artifact",
+          "number": 16,
+          "startedAt": "2026-10-17T11:45:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:23Z",
+          "conclusion": "success",
+          "name": "Validate and materialize reference packs",
+          "number": 17,
+          "startedAt": "2026-10-17T11:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:23Z",
+          "conclusion": "success",
+          "name": "Assemble prompt",
+          "number": 18,
+          "startedAt": "2026-10-17T11:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:23Z",
+          "conclusion": "success",
+          "name": "Clean workspace for Claude",
+          "number": 19,
+          "startedAt": "2026-10-17T11:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:23Z",
+          "conclusion": "skipped",
+          "name": "Surface merge conflicts",
+          "number": 20,
+          "startedAt": "2026-10-17T11:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:23Z",
+          "conclusion": "success",
+          "name": "Expose cached Claude CLI",
+          "number": 21,
+          "startedAt": "2026-10-17T11:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:25Z",
+          "conclusion": "success",
+          "name": "Cache Claude CLI",
+          "number": 22,
+          "startedAt": "2026-10-17T11:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:25Z",
+          "conclusion": "success",
+          "name": "Preflight auth",
+          "number": 23,
+          "startedAt": "2026-10-17T11:45:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:25Z",
+          "conclusion": "success",
+          "name": "Ensure Claude CLI",
+          "number": 24,
+          "startedAt": "2026-10-17T11:45:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:46Z",
+          "conclusion": "success",
+          "name": "Run Claude",
+          "number": 25,
+          "startedAt": "2026-10-17T11:45:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:47Z",
+          "conclusion": "success",
+          "name": "Commit and push changes",
+          "number": 26,
+          "startedAt": "2026-10-17T11:45:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:47Z",
+          "conclusion": "success",
+          "name": "Upload Claude output",
+          "number": 27,
+          "startedAt": "2026-10-17T11:45:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "success",
+          "name": "Analyze Claude session",
+          "number": 28,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "success",
+          "name": "Analyze task completion with LLM",
+          "number": 29,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "success",
+          "name": "Compatibility outputs (LLM analysis)",
+          "number": 30,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "skipped",
+          "name": "Post completion checkpoint comment",
+          "number": 31,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "skipped",
+          "name": "Classify failure",
+          "number": 32,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "skipped",
+          "name": "Write error summary to GITHUB_STEP_SUMMARY",
+          "number": 33,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "skipped",
+          "name": "Create error diagnostics artifact",
+          "number": 34,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "skipped",
+          "name": "Upload error diagnostics",
+          "number": 35,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "skipped",
+          "name": "Post PR comment on non-transient failure",
+          "number": 36,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "success",
+          "name": "Post Cache Claude CLI",
+          "number": 65,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:48Z",
+          "conclusion": "success",
+          "name": "Post Set up Python",
+          "number": 66,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:49Z",
+          "conclusion": "success",
+          "name": "Post Cache Workflows Octokit dependencies",
+          "number": 67,
+          "startedAt": "2026-10-17T11:45:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:50Z",
+          "conclusion": "success",
+          "name": "Post Agent run base setup",
+          "number": 68,
+          "startedAt": "2026-10-17T11:45:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:50Z",
+          "conclusion": "success",
+          "name": "Post Cache workspace Octokit dependencies",
+          "number": 69,
+          "startedAt": "2026-10-17T11:45:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:50Z",
+          "conclusion": "success",
+          "name": "Post Checkout Workflows run-base action",
+          "number": 70,
+          "startedAt": "2026-10-17T11:45:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:50Z",
+          "conclusion": "success",
+          "name": "Post Checkout target repository",
+          "number": 71,
+          "startedAt": "2026-10-17T11:45:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:51Z",
+          "conclusion": "success",
+          "name": "Post Mint Workflows bootstrap app token",
+          "number": 72,
+          "startedAt": "2026-10-17T11:45:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:51Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 73,
+          "startedAt": "2026-10-17T11:45:51Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387966145"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:38Z",
+      "conclusion": "skipped",
+      "databaseId": 117387966575,
+      "name": "Keepalive next task (Muse)",
+      "startedAt": "2026-10-17T11:44:38Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387966575"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:38Z",
+      "conclusion": "skipped",
+      "databaseId": 117387966601,
+      "name": "Keepalive next task (Codex)",
+      "startedAt": "2026-10-17T11:44:38Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387966601"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:37Z",
+      "conclusion": "skipped",
+      "databaseId": 117387966662,
+      "name": "Keepalive next task (Cursor)",
+      "startedAt": "2026-10-17T11:44:38Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387966662"
+    },
+    {
+      "completedAt": "2026-10-17T11:44:38Z",
+      "conclusion": "skipped",
+      "databaseId": 117387966812,
+      "name": "Keepalive next task (Gemini)",
+      "startedAt": "2026-10-17T11:44:38Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117387966812"
+    },
+    {
+      "completedAt": "2026-10-17T11:46:12Z",
+      "conclusion": "success",
+      "databaseId": 117388192379,
+      "name": "Update keepalive summary",
+      "startedAt": "2026-10-17T11:45:56Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:45:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:45:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:45:59Z",
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "startedAt": "2026-10-17T11:45:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:02Z",
+          "conclusion": "success",
+          "name": "Setup API client",
+          "number": 3,
+          "startedAt": "2026-10-17T11:45:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:02Z",
+          "conclusion": "success",
+          "name": "Emit keepalive metrics",
+          "number": 4,
+          "startedAt": "2026-10-17T11:46:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:03Z",
+          "conclusion": "success",
+          "name": "Upload keepalive metrics artifact",
+          "number": 5,
+          "startedAt": "2026-10-17T11:46:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:03Z",
+          "conclusion": "skipped",
+          "name": "Auto-reconcile task checkboxes",
+          "number": 6,
+          "startedAt": "2026-10-17T11:46:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:04Z",
+          "conclusion": "success",
+          "name": "Mint KEEPALIVE_APP summary token",
+          "number": 7,
+          "startedAt": "2026-10-17T11:46:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:04Z",
+          "conclusion": "skipped",
+          "name": "Mint WORKFLOWS_APP summary token",
+          "number": 8,
+          "startedAt": "2026-10-17T11:46:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:04Z",
+          "conclusion": "success",
+          "name": "Require trusted keepalive summary writer",
+          "number": 9,
+          "startedAt": "2026-10-17T11:46:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:08Z",
+          "conclusion": "success",
+          "name": "Update summary comment",
+          "number": 10,
+          "startedAt": "2026-10-17T11:46:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:10Z",
+          "conclusion": "success",
+          "name": "Persist state fingerprint",
+          "number": 11,
+          "startedAt": "2026-10-17T11:46:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:10Z",
+          "conclusion": "success",
+          "name": "Post Mint KEEPALIVE_APP summary token",
+          "number": 21,
+          "startedAt": "2026-10-17T11:46:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:10Z",
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 22,
+          "startedAt": "2026-10-17T11:46:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:10Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "startedAt": "2026-10-17T11:46:10Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117388192379"
+    },
+    {
+      "completedAt": "2026-10-17T11:46:24Z",
+      "conclusion": "success",
+      "databaseId": 117388252373,
+      "name": "Record keepalive dispatch completion",
+      "startedAt": "2026-10-17T11:46:16Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-17T11:46:18Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-17T11:46:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:19Z",
+          "conclusion": "success",
+          "name": "Checkout runner library",
+          "number": 2,
+          "startedAt": "2026-10-17T11:46:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:20Z",
+          "conclusion": "success",
+          "name": "Measure runner productivity",
+          "number": 3,
+          "startedAt": "2026-10-17T11:46:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:22Z",
+          "conclusion": "success",
+          "name": "Record completion",
+          "number": 4,
+          "startedAt": "2026-10-17T11:46:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:22Z",
+          "conclusion": "success",
+          "name": "Post Checkout runner library",
+          "number": 8,
+          "startedAt": "2026-10-17T11:46:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-17T11:46:22Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-10-17T11:46:22Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/job/117388252373"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/stranske/Doc-Lineage/actions/runs/39029814200/attempts/1"
+}

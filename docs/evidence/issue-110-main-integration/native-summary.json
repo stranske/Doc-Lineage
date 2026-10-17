@@ -1,0 +1,273 @@
+{
+  "observed_invocations": 26,
+  "distinct_actual_paths": [
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_golden_rejects_partial_ma0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_golden_rejects_partial_ma1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_delet0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_delet1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_inser0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_inser1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_uncha0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_uncha1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_unico0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_unico1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_tracked_changes_present0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na0/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na1/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na2/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na3/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_golden_rejects_partial_ma0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_golden_rejects_partial_ma1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_delet0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_delet1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_inser0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_inser1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_uncha0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_uncha1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_unico0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_unico1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+    "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_tracked_changes_present0/python-redlines/docxodus/1.0.0/osx-arm64/redline"
+  ],
+  "invocations": [
+    {
+      "capture": "native/21668-1792241421646012000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_tracked_changes_present0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "ff6062345ee82de93ebda4fba4ff891c0d4830da0070db9958483c5289e094ce",
+      "modified_sha256": "37397d73632738502a613698e4ebd5ea621676f75fc883ee826a0dff935d0578",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/21668-1792241423493128000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_golden_rejects_partial_ma0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "6de0ddbf1b7461caf649fa76eed10a20a74bf99440d80a56f36498fa9f5d3019",
+      "modified_sha256": "175a9fd28dc7f054a9ae7f6a6a3a130bceee4830576c1e4dc43432e52d66c88a",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/21668-1792241425286676000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_golden_rejects_partial_ma1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "7994e6968fa2938436faa3789324ed8ab3f802bdb50711ccd1a67576fa558493",
+      "modified_sha256": "84b75f08cfe20a2ec20656520651b19121141cc23186a52351cdddf7aa743a79",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/21668-1792241427179420000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_inser0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "59c5a39a59026e4d81cc05265c1bd2cee1be20dddd4c8fe6422238fc853ce5da",
+      "modified_sha256": "a2f2811a901ca2950a0066e4596d919ebdeea7239a323ab0bef90c915e1f1ce9",
+      "output_sha256": "89ec14bcf29114f673f5c6227c35e541aff14f59372cc0995878e0341b458036"
+    },
+    {
+      "capture": "native/21668-1792241428908647000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_inser1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "3efadbed7e8a47dc5b4cbb895a25ce15625b4b62c5d7cabda58ffa79840fef0d",
+      "modified_sha256": "b8089c449cc1b13fd7ad29d9e0aa3a62082fbaf4a1e9c22f25d4fabed3d80a14",
+      "output_sha256": "89ec14bcf29114f673f5c6227c35e541aff14f59372cc0995878e0341b458036"
+    },
+    {
+      "capture": "native/21668-1792241430533885000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_delet0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "b8089c449cc1b13fd7ad29d9e0aa3a62082fbaf4a1e9c22f25d4fabed3d80a14",
+      "modified_sha256": "3efadbed7e8a47dc5b4cbb895a25ce15625b4b62c5d7cabda58ffa79840fef0d",
+      "output_sha256": "d65350d2ac7137d02d2e5b5c8e187660a8e41272ea8510bc9f3399ec00cb576f"
+    },
+    {
+      "capture": "native/21668-1792241432247771000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_delet1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "8ef0e7d95382ea2781c7f77408fd7e1dcd6f0446dc2dadcbffa21921161b1c06",
+      "modified_sha256": "c474181554c55367c8e3a644713e7123a18c8f918600d2029b1733ce371c7fa9",
+      "output_sha256": "d65350d2ac7137d02d2e5b5c8e187660a8e41272ea8510bc9f3399ec00cb576f"
+    },
+    {
+      "capture": "native/21668-1792241434118721000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_uncha0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "e0c5a81983606af270eab64fd713499da39a58c21443b9862c490aae6ae9588e",
+      "modified_sha256": "e0c5a81983606af270eab64fd713499da39a58c21443b9862c490aae6ae9588e",
+      "output_sha256": "e0c5a81983606af270eab64fd713499da39a58c21443b9862c490aae6ae9588e"
+    },
+    {
+      "capture": "native/21668-1792241435823850000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_uncha1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "261e0c69db4c8e12f4e4dc10487a18d7ab3aae2d0013fac8dd472638a3023e01",
+      "modified_sha256": "261e0c69db4c8e12f4e4dc10487a18d7ab3aae2d0013fac8dd472638a3023e01",
+      "output_sha256": "261e0c69db4c8e12f4e4dc10487a18d7ab3aae2d0013fac8dd472638a3023e01"
+    },
+    {
+      "capture": "native/21668-1792241437504991000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_unico0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "b64ed4b6731e8e8315d1683608dd6953d34bb33a9153c583a60cda3ceb442545",
+      "modified_sha256": "2a0f56f4f61195cd724a74d0c5ee94e87ef0c734834a1a15dda5c85c465cc29c",
+      "output_sha256": "d28f6d76721a19062f226b4ac1310b082cc3dd8cd23afbf1357023aff6901c42"
+    },
+    {
+      "capture": "native/21668-1792241439303949000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2469/test_revision_round_trip_unico1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "be7364719d00eed48e7d9585026b088a0cc88ea321ed88a05d27646ec48ee5e1",
+      "modified_sha256": "9d3a8167a0b5f9e70d6f7334af4325227a2d1e2e3f7d2e30b970419204c1fadd",
+      "output_sha256": "d28f6d76721a19062f226b4ac1310b082cc3dd8cd23afbf1357023aff6901c42"
+    },
+    {
+      "capture": "native/22484-1792241463652310000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_tracked_changes_present0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "772bb2079e9a7955ebb080bcb5267b77739b894d50d3a6634332541071084ea8",
+      "modified_sha256": "56ec4e08a606d6a15e0af6682143c4c4f2c293225f3f53166d2a413a4b095389",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/22484-1792241465465310000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_golden_rejects_partial_ma0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "b6d517403c4816e023345cd0fcf2e891a921a2df6afe74a357f89436e2dd6ca9",
+      "modified_sha256": "1247b3d36f964b8ed080c125d164917d40d7863ead0ddb104ea2ee439a6584ff",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/22484-1792241467248129000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_golden_rejects_partial_ma1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "d941c175ba695f7be4f994b6411c1a259bc323b8542922985135244ee13b086a",
+      "modified_sha256": "ecc9b8a4d3e14910f2dea843b05d992c1c2ff382cef9491e3eae30fcac3de86b",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/22484-1792241469169583000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_inser0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "c5240bc8d64b29455361cf9c58eb946e7851c2a36d0b2e9f227a4a1bfd6c07c5",
+      "modified_sha256": "76c55745d3a1dc2af30ac854ec31cfa82eeef22ce08e54a151a72f03e0784ffe",
+      "output_sha256": "89ec14bcf29114f673f5c6227c35e541aff14f59372cc0995878e0341b458036"
+    },
+    {
+      "capture": "native/22484-1792241471106609000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_inser1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "742c4a96b14165825c6d37fe0e214c504c6b601809ce882dad65855e3652dfaa",
+      "modified_sha256": "ea31764379d7833fa8ec0173c51e5469678210e4ea7a3f6dc608f5e48a3d6771",
+      "output_sha256": "89ec14bcf29114f673f5c6227c35e541aff14f59372cc0995878e0341b458036"
+    },
+    {
+      "capture": "native/22484-1792241472910566000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_delet0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "39b6c8ab19abe16f6369b79d81e9d39e1e127f0c1188202b347829848d020941",
+      "modified_sha256": "f1b468f95f62472814892f38572cc1a15bda65c4c8bf589d22b697e242adac18",
+      "output_sha256": "d65350d2ac7137d02d2e5b5c8e187660a8e41272ea8510bc9f3399ec00cb576f"
+    },
+    {
+      "capture": "native/22484-1792241474732332000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_delet1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "ea6ab8473e33ee9e6ead9550f50f47c9bbdaf84ff7533d75e7569716c750afe0",
+      "modified_sha256": "fa4fecc8f92a275e12fc7629698566a86a0ba0c99aff9127f3896b211c29de2a",
+      "output_sha256": "d65350d2ac7137d02d2e5b5c8e187660a8e41272ea8510bc9f3399ec00cb576f"
+    },
+    {
+      "capture": "native/22484-1792241476630346000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_uncha0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "fa4fecc8f92a275e12fc7629698566a86a0ba0c99aff9127f3896b211c29de2a",
+      "modified_sha256": "fa4fecc8f92a275e12fc7629698566a86a0ba0c99aff9127f3896b211c29de2a",
+      "output_sha256": "fa4fecc8f92a275e12fc7629698566a86a0ba0c99aff9127f3896b211c29de2a"
+    },
+    {
+      "capture": "native/22484-1792241478371809000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_uncha1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "01d181a508b852a0b66dbefa8947fda17816ceb6835d44bbe65922b0066b0948",
+      "modified_sha256": "01d181a508b852a0b66dbefa8947fda17816ceb6835d44bbe65922b0066b0948",
+      "output_sha256": "01d181a508b852a0b66dbefa8947fda17816ceb6835d44bbe65922b0066b0948"
+    },
+    {
+      "capture": "native/22484-1792241480111353000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_unico0/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "d80641e6ddc5934fcfd83dcb61fbc8f498c422bfbd349eb591a4997801d2ca74",
+      "modified_sha256": "3a83c01f9379c948e2b32477214ed46069efad167c289f416a0fb58017db858a",
+      "output_sha256": "d28f6d76721a19062f226b4ac1310b082cc3dd8cd23afbf1357023aff6901c42"
+    },
+    {
+      "capture": "native/22484-1792241481950972000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_revision_round_trip_unico1/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "c0d74cf444b3c6e9f5a7d6635ff3ddc42f32bf3c1d66250cac6a56d7dce4ca3f",
+      "modified_sha256": "5b5bc4baf8d2f9b7b3e46ddfd767c3201ca0fabc5bbf7ea3c18641a182310d4c",
+      "output_sha256": "d28f6d76721a19062f226b4ac1310b082cc3dd8cd23afbf1357023aff6901c42"
+    },
+    {
+      "capture": "native/22900-1792241491217321000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na0/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "c12a3641eee6d5e0967aeba5175ca4a7e85add31278d75e483097fa7575a2fb7",
+      "modified_sha256": "088b6a2739a68d521c3a7ec9f66975e73331889d480da8f2760d1b323c82e985",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/22920-1792241493146613000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na1/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "7da1b52b757e7368a28369a37fead81d76f951182702a38765af3de8af668458",
+      "modified_sha256": "06c9ff19875223802b9e3915a12008297ec9c3f88820afb960329a956cb668c5",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/22964-1792241495257755000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na2/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "23454591c3dd6b2023ff55197aa49bbf1a71777f6a601b02549456a7350ef54f",
+      "modified_sha256": "b790aef7ab1b90024f7cb463cdcb695b36d0788e311c51e3389a70c4aaf0113f",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    },
+    {
+      "capture": "native/22976-1792241497334189000",
+      "path": "/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2471/test_comparison_new_process_na3/fresh-process-cwd/engine-cache/python-redlines/docxodus/1.0.0/osx-arm64/redline",
+      "sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+      "returncode": 0,
+      "original_sha256": "a5e0bdfb577c86831fca69cffb1682ac1312a39e34769424cd1997310e3bb584",
+      "modified_sha256": "25cdb09f6db8c86519f721b032c14beb524acdf94162ec0915748a05669e774d",
+      "output_sha256": "b4466924444a786b94444630763f56dd7cebd95f45e1b53de88c11caa20531fb"
+    }
+  ],
+  "prompt_or_native_access_failure_observed": false,
+  "downloaded_helper": false,
+  "publisher": "UNKNOWN",
+  "archive_sha256": "c231bd1aefa7af56932cf0aebbd7a0fbe8cf1143eb3baff6abf42dc426c04571",
+  "binary_sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+  "observation_limit": "Initial focused child processes overrode PYTHONPATH before the observer was installed into the isolated venv. All subsequent children including the full normal suite load that venv-local observer. Counts describe captured executions only."
+}
