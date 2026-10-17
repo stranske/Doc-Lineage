@@ -1,0 +1,20 @@
+{
+  "surface": "opener-lane",
+  "live_consult": "Shared ledger lock denied by filesystem sandbox; no live ledger update claimed.",
+  "snapshot_consult": "Successful consult using ORCH_CAPABILITIES_PATH on a captured local ledger copy.",
+  "snapshot_sha256": "0d45afaa562a248489aedfd21a8b012bfe2aac9c80adcc258ee7f48aab03cf8c",
+  "considered_declines": [
+    {
+      "capability": "deliberate-break-verifier",
+      "reason": "dispatch_ready=false; deliberately gated off; required mutation executed directly, not dispatched"
+    },
+    {
+      "capability": "codemod-campaign",
+      "reason": "withheld for missing PR facts; no repeated-pattern campaign in this bounded feature"
+    },
+    {
+      "capability": "runtime-ac-checks",
+      "reason": "withheld for missing PR size; public subprocess CLI and real renderer gates executed directly"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "source": "src/doc_lineage/cli.py",
+  "original_sha256": "343a5cb865801f8fda1885adb4227b6f208a99e0f8972b882c6d784478998fdd",
+  "mutated_sha256": "71f157bff792ce1d0882bc088d86a4138c3c679d941675ce650d892ebef6963e",
+  "gate": "tests/test_cli.py::test_comparison_sha256_check_disconnection",
+  "red_command": [
+    "/opt/anaconda3/bin/python3",
+    "-m",
+    "pytest",
+    "tests/test_cli.py",
+    "-k",
+    "comparison_sha256_check_disconnection",
+    "--junitxml=/private/tmp/doc-lineage-110-evidence/red.xml",
+    "--basetemp=/private/tmp/doc-lineage-110-evidence/red-runtime"
+  ],
+  "red_exit": 1,
+  "restored_sha256": "343a5cb865801f8fda1885adb4227b6f208a99e0f8972b882c6d784478998fdd",
+  "green_command": [
+    "/opt/anaconda3/bin/python3",
+    "-m",
+    "pytest",
+    "tests/test_cli.py",
+    "-k",
+    "comparison",
+    "--junitxml=/private/tmp/doc-lineage-110-evidence/green.xml",
+    "--basetemp=/private/tmp/doc-lineage-110-evidence/green-runtime"
+  ],
+  "green_exit": 0
+}

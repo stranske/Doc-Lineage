@@ -11,12 +11,254 @@ import hashlib
 import http.client
 import json
 import os
+import re
+import subprocess
+import sys
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock, Mock
+from xml.etree import ElementTree as ET
+from zipfile import ZipFile
 
 import pytest
 
 from doc_lineage.cli import main
+from tests.export.test_docx_redline_golden import NS, W, _docx, _visible_text
+
+
+def _comparison_cli(*args: str, cwd: Path) -> subprocess.CompletedProcess[bytes]:
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
+    env["XDG_CACHE_HOME"] = str(cwd / "engine-cache")
+    return subprocess.run(
+        [sys.executable, "-m", "doc_lineage.cli", *args],
+        cwd=cwd,
+        env=env,
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+
+
+@pytest.fixture
+def comparison_inputs(tmp_path):
+    original, modified = tmp_path / "original.docx", tmp_path / "modified.docx"
+    original.write_bytes(_docx("The fee is five dollars."))
+    modified.write_bytes(_docx("The fee is ten dollars."))
+    manifest = tmp_path / "artifact-manifest.json"
+    manifest.write_text('{"evidence": "retain unchanged"}\n', encoding="utf-8")
+    store = tmp_path / "records"
+    result = _comparison_cli(
+        "create-comparison",
+        "--original",
+        original.name,
+        "--modified",
+        modified.name,
+        "--comparison-store",
+        str(store),
+        cwd=tmp_path,
+    )
+    assert result.returncode == 0, result.stderr.decode()
+    comparison_id = result.stdout.decode().strip()
+    assert re.fullmatch(r"cmp_[0-9a-f]{32}", comparison_id)
+    return original, modified, manifest, store, comparison_id
+
+
+@pytest.mark.parametrize("by_id", [True, False], ids=["id-only", "file-pair"])
+def test_comparison_new_process_native_round_trip(comparison_inputs, tmp_path, by_id):
+    original, modified, manifest, store, comparison_id = comparison_inputs
+    record_path = store / f"{comparison_id}.json"
+    preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
+    record = json.loads(record_path.read_text())
+    assert record == {
+        "schema_version": "docx-comparison/v1",
+        "comparison_id": comparison_id,
+        "original_path": str(original),
+        "modified_path": str(modified),
+        "original_sha256": hashlib.sha256(original.read_bytes()).hexdigest(),
+        "modified_sha256": hashlib.sha256(modified.read_bytes()).hexdigest(),
+    }
+    elsewhere = tmp_path / "fresh-process-cwd"
+    elsewhere.mkdir()
+    output = elsewhere / "redline.docx"
+    selection = (
+        ["--blackline", comparison_id, "--comparison-store", str(store)]
+        if by_id
+        else ["--blackline", "--original", str(original), "--modified", str(modified)]
+    )
+    result = _comparison_cli(
+        "export-docx", *selection, "--output", str(output), "--author", "Counsel", cwd=elsewhere
+    )
+    assert result.returncode == 0, result.stderr.decode()
+    with ZipFile(BytesIO(output.read_bytes())) as package:
+        assert package.testzip() is None
+        document = ET.fromstring(package.read("word/document.xml"))
+    revisions = document.findall(".//w:ins", NS) + document.findall(".//w:del", NS)
+    assert document.findall(".//w:ins", NS), "Expected native Word insertion markup"
+    assert document.findall(".//w:del", NS), "Expected native Word deletion markup"
+    assert all(node.get(f"{{{W}}}author") == "Counsel" for node in revisions)
+    assert all(node.get(f"{{{W}}}id") is not None for node in revisions)
+    assert _visible_text(document, "ins") == "The fee is five dollars."
+    assert _visible_text(document, "del") == "The fee is ten dollars."
+    assert all(path.read_bytes() == content for path, content in preserved.items())
+
+
+@pytest.mark.parametrize("role", ["original", "modified"])
+@pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])
+def test_comparison_sha256_check_disconnection(comparison_inputs, tmp_path, role, to_file):
+    """Named mutation gate: valid changed DOCX bytes MUST fail before publication."""
+    original, modified, manifest, store, comparison_id = comparison_inputs
+    source = original if role == "original" else modified
+    source.write_bytes(_docx("Changed but still a valid DOCX package."))
+    record_path = store / f"{comparison_id}.json"
+    preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
+    output = tmp_path / "unchanged-output.docx"
+    output.write_bytes(b"existing output must survive")
+    result = _comparison_cli(
+        "export-docx",
+        "--blackline",
+        comparison_id,
+        "--comparison-store",
+        str(store),
+        *(["--output", str(output)] if to_file else []),
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0, "SHA256_CHECK_DISCONNECTION: changed bytes were exported"
+    assert b"SHA-256 mismatch" in result.stderr
+    assert result.stdout == b""
+    assert output.read_bytes() == b"existing output must survive"
+    assert all(path.read_bytes() == content for path, content in preserved.items())
+
+
+@pytest.mark.parametrize(
+    "problem", ["unknown", "malformed", "path", "missing-original", "missing-modified"]
+)
+def test_comparison_invalid_or_missing_inputs(comparison_inputs, tmp_path, problem):
+    original, modified, _, store, comparison_id = comparison_inputs
+    selection = comparison_id
+    expected = b"No such file"
+    if problem == "unknown":
+        selection, expected = "cmp_" + "0" * 32, b"Unknown comparison ID"
+    elif problem == "malformed":
+        selection, expected = "ingest-run-123", b"Not a comparison ID"
+    elif problem == "path":
+        selection, expected = str(store / f"{comparison_id}.json"), b"Not a comparison ID"
+    else:
+        (original if problem == "missing-original" else modified).unlink()
+    output = tmp_path / "must-not-exist.docx"
+    result = _comparison_cli(
+        "export-docx",
+        "--blackline",
+        selection,
+        "--comparison-store",
+        str(store),
+        "--output",
+        str(output),
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+    assert expected in result.stderr
+    assert result.stdout == b""
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("problem", ["schema", "id", "hash", "relative-path", "json", "list"])
+def test_comparison_rejects_invalid_record(comparison_inputs, tmp_path, problem):
+    _, _, _, store, comparison_id = comparison_inputs
+    path = store / f"{comparison_id}.json"
+    record = json.loads(path.read_text())
+    key, value = {
+        "schema": ("schema_version", "docx-comparison/v99"),
+        "id": ("comparison_id", "cmp_" + "f" * 32),
+        "hash": ("original_sha256", None),
+        "relative-path": ("modified_path", "relative.docx"),
+        "json": ("unused", None),
+        "list": ("unused", None),
+    }[problem]
+    record[key] = value
+    path.write_text("{" if problem == "json" else "[]" if problem == "list" else json.dumps(record))
+    output = tmp_path / "no-output.docx"
+    result = _comparison_cli(
+        "export-docx",
+        "--blackline",
+        comparison_id,
+        "--comparison-store",
+        str(store),
+        "--output",
+        str(output),
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+    assert b"Invalid comparison record" in result.stderr
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("target", ["original", "modified", "record", "record-hardlink"])
+def test_comparison_preserves_sources_and_record(comparison_inputs, tmp_path, target):
+    original, modified, manifest, store, comparison_id = comparison_inputs
+    record_path = store / f"{comparison_id}.json"
+    preserved = {path: path.read_bytes() for path in (original, modified, manifest, record_path)}
+    output = {"original": original, "modified": modified}.get(target, record_path)
+    if target == "record-hardlink":
+        output = tmp_path / "record-alias"
+        os.link(record_path, output)
+    result = _comparison_cli(
+        "export-docx",
+        "--blackline",
+        comparison_id,
+        "--comparison-store",
+        str(store),
+        "--output",
+        str(output),
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+    assert b"--output must not be the same file" in result.stderr
+    assert all(path.read_bytes() == content for path, content in preserved.items())
+
+
+@pytest.mark.parametrize("problem", ["missing", "not-docx"])
+def test_comparison_create_rejects_unusable_input(tmp_path, problem):
+    source = tmp_path / "input.docx"
+    if problem == "not-docx":
+        source.write_bytes(b"not a DOCX")
+    store = tmp_path / "records"
+    result = _comparison_cli(
+        "create-comparison",
+        "--original",
+        str(source),
+        "--modified",
+        str(source),
+        "--comparison-store",
+        str(store),
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+    assert result.stdout == b""
+    assert not store.exists()
+
+
+def test_comparison_id_cannot_override_sources(comparison_inputs, tmp_path):
+    original, _, _, store, comparison_id = comparison_inputs
+    result = _comparison_cli(
+        "export-docx",
+        "--blackline",
+        comparison_id,
+        "--original",
+        str(original),
+        "--comparison-store",
+        str(store),
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+    assert b"cannot be combined" in result.stderr
+    assert result.stdout == b""
+
+
+def test_comparison_boolean_requires_file_pair(tmp_path):
+    result = _comparison_cli("export-docx", "--blackline", cwd=tmp_path)
+    assert result.returncode != 0
+    assert b"requires --original and --modified" in result.stderr
 
 
 @pytest.mark.parametrize("to_file", [True, False], ids=["file", "stdout"])

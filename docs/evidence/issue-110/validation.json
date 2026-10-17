@@ -1,0 +1,69 @@
+{
+  "base_head": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+  "interpreter": "/opt/anaconda3/bin/python3 (CPython 3.12.2)",
+  "isolated_interpreter": "/private/tmp/doc-lineage-110-evidence/venv/bin/python (system-site-packages, based on /opt/anaconda3/bin/python3)",
+  "checks": {
+    "focused": {
+      "exit": 0,
+      "passed": 54,
+      "junit": "focused.xml"
+    },
+    "sha256_disconnected": {
+      "exit": 1,
+      "failed": 4,
+      "junit": "red.xml"
+    },
+    "restored_comparisons": {
+      "exit": 0,
+      "passed": 25,
+      "deselected": 20,
+      "junit": "green.xml"
+    },
+    "initial_full_suite": {
+      "exit": 1,
+      "passed": 502,
+      "failed": 1,
+      "junit": "full.xml.gz",
+      "reason": "Existing editable-install test attempts to write to read-only shared interpreter"
+    },
+    "isolated_full_suite": {
+      "exit": 0,
+      "passed": 503,
+      "coverage_percent": 89.02,
+      "required_coverage_percent": 80,
+      "junit": "full-isolated.xml"
+    },
+    "ruff": {
+      "exit": 0,
+      "version": "0.16.7",
+      "command": "/opt/anaconda3/bin/python3 -m ruff check ."
+    },
+    "black": {
+      "exit": 0,
+      "version": "26.5.1",
+      "command": "/opt/anaconda3/bin/python3 -m black --check ."
+    },
+    "mypy_full": {
+      "exit": 1,
+      "version": "2.3.1",
+      "command": "/opt/anaconda3/bin/python3 -m mypy src",
+      "reason": "Two unused-ignore errors in unchanged src/doc_lineage/adapters/docling_segmenter.py:111-112"
+    },
+    "mypy_changed": {
+      "exit": 0,
+      "command": "/opt/anaconda3/bin/python3 -m mypy --follow-imports=silent src/doc_lineage/blackline.py src/doc_lineage/cli.py",
+      "limit": "Imported baseline errors suppressed only in this focused command; full mypy remains FAIL"
+    },
+    "portable_replay": {
+      "exit": 0,
+      "command": "/bin/sh docs/evidence/issue-110/replay.sh /opt/anaconda3/bin/python3",
+      "log": "replay.log"
+    }
+  },
+  "limits": [
+    "Local Ruff/Black/mypy versions are older than pyproject dev pins 0.17.1/26.10.1/2.4.0; pinned-version results unknown.",
+    "Original source paths are retained, not archived by the feature. Replay needs exact bytes at the recorded paths.",
+    "Captured record absolute paths describe the original test run; replay.sh explicitly verifies copied package hashes and creates a new local record.",
+    "No native Office, macOS approvals, hosted CI, merge, or source closure were performed."
+  ]
+}
