@@ -70,6 +70,11 @@ Use separate directories for versions and retain them for replay. Legacy runs
 without a manifested original snapshot fail with a re-ingest instruction; the
 loader does not guess a source from a filename or claim to verify absent bytes.
 
+Ingest run/evidence directories are owner-only (`0700`); snapshots, segments,
+manifest and evidence files are `0600`, including reused runs and retained
+originals. Snapshots are written and synced in a private temporary file, then
+published exclusively. Interrupted writes cannot expose a partial final snapshot.
+
 Every manifested file must exist, match its hash and byte count, and have a
 unique safe relative path and artifact ID. Symlinked files/path components and
 traversal are rejected. Segment schema/source binding, order, IDs, page order,
@@ -80,7 +85,10 @@ PDF bytes and match both original-artifact and manifest-source bindings.
 
 Creation validates everything before creating the store. A private temporary
 file is linked atomically and exclusively into `<store>/<id>.json`; collisions
-never overwrite records. Records have no update API. Repeating a comparison
+never overwrite records. The temporary file is synced before linking; temporary
+cleanup is followed by a directory sync before returning an ID. A directory-sync
+failure reports an I/O error even if a complete final file already exists; its
+durability is then unknown. Records have no update API. Repeating a comparison
 creates a new opaque ID; identical ordered inputs/options have the same identity
 digest. Reversing order or changing options produces a different identity.
 Relative locators allow moving a **complete bundle** of store and runs while

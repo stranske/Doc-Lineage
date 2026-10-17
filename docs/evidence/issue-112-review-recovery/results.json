@@ -1,0 +1,28 @@
+{
+  "focused-final": {
+    "tests": 247,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "full-final": {
+    "tests": 586,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "native": {
+    "actual_executions_entire_recovery_session": 42,
+    "all_exit_zero": true,
+    "scope": "fresh initial and final focused/full runs combined; not all assigned to final full suite",
+    "binary_sha256": "12b0955111e348543e55ac9fbc06599b3e79294781198c6fb1b46f3029867c36",
+    "archive_sha256": "c231bd1aefa7af56932cf0aebbd7a0fbe8cf1143eb3baff6abf42dc426c04571",
+    "publisher": "UNKNOWN; adhoc signature; no TeamID",
+    "unexpected_prompt": "none observed/reported; no download/privacy changes"
+  },
+  "coverage": {
+    "combined_percent": 89.85,
+    "unchanged_floor_percent": 80,
+    "line_rate": "0.918"
+  }
+}

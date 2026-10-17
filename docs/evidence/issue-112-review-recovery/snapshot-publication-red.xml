@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.244" timestamp="2026-10-17T08:19:54.779404-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_private_publication" name="test_snapshot_failure_cleanup_and_retry[write]" time="0.076"><failure message="AssertionError: INTERRUPTED_SNAPSHOT_NEVER_PUBLISHES_FINAL&#10;assert not [PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2518/test_snapshot_failure_cleanup_0/run/source-b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f.bin')]">tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2518/test_snapshot_failure_cleanup_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x105f53bc0&gt;
+failure = 'write'
+
+    @pytest.mark.parametrize("failure", ["write", "file-sync", "link", "directory-sync"])
+    def test_snapshot_failure_cleanup_and_retry(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+    ) -&gt; None:
+        run = tmp_path / "run"
+        fdopen, fsync, link = os.fdopen, os.fsync, os.link
+    
+        class InterruptedWriter:
+            def __init__(self, handle: Any) -&gt; None:
+                self.handle = handle
+    
+            def __enter__(self) -&gt; InterruptedWriter:
+                self.handle.__enter__()
+                return self
+    
+            def __exit__(self, *args: Any) -&gt; Any:
+                return self.handle.__exit__(*args)
+    
+            def fileno(self) -&gt; int:
+                return self.handle.fileno()
+    
+            def write(self, payload: bytes) -&gt; None:
+                self.handle.write(payload[: len(payload) // 2])
+                self.handle.flush()
+                raise KeyboardInterrupt("interrupted snapshot write")
+    
+        def interrupted(fd: int, mode: str) -&gt; InterruptedWriter:
+            return InterruptedWriter(fdopen(fd, mode))
+    
+        def failed_sync(fd: int) -&gt; None:
+            directory = stat.S_ISDIR(os.fstat(fd).st_mode)
+            if directory == (failure == "directory-sync"):
+                raise OSError("injected sync failure")
+            fsync(fd)
+    
+        def failed_link(*args: Any, **kwargs: Any) -&gt; None:
+            raise OSError("injected publication failure")
+    
+        with monkeypatch.context() as patch:
+            if failure == "write":
+                patch.setattr(persistence.os, "fdopen", interrupted)
+            elif failure == "link":
+                patch.setattr(persistence.os, "link", failed_link)
+            else:
+                patch.setattr(persistence.os, "fsync", failed_sync)
+            with pytest.raises((KeyboardInterrupt, OSError)):
+                ingest_document(FIXTURE, output_dir=run, allow_docling=False)
+        assert not list(run.glob(".snapshot-*")), "SNAPSHOT_FAILURE_CLEANS_TEMPORARY"
+        finals = list(run.glob("source-*.bin"))
+        if failure == "directory-sync":
+            assert len(finals) == 1 and finals[0].read_bytes() == FIXTURE.read_bytes()
+        else:
+&gt;           assert not finals, "INTERRUPTED_SNAPSHOT_NEVER_PUBLISHES_FINAL"
+E           AssertionError: INTERRUPTED_SNAPSHOT_NEVER_PUBLISHES_FINAL
+E           assert not [PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2518/test_snapshot_failure_cleanup_0/run/source-b709931830bf21859bb1819e9b0b8b13428a0971699e33ad73bc401e422bf18f.bin')]
+
+tests/ingest/test_private_publication.py:101: AssertionError</failure></testcase></testsuite></testsuites>

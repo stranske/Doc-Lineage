@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.264" timestamp="2026-10-17T08:19:57.199954-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_private_publication" name="test_comparison_durable_publication_order" time="0.084"><failure message="AssertionError: DURABLE_COMPARISON_ORDER&#10;assert ['file-sync',...h', 'cleanup'] == ['file-sync',...rectory-sync']&#10;  &#10;  Right contains one more item: 'directory-sync'&#10;  Use -v to get more diff">tmp_path = PosixPath('/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2520/test_comparison_durable_public0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x106c4d550&gt;
+
+    def test_comparison_durable_publication_order(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        left, right = make_runs(tmp_path)
+        store = tmp_path / "store"
+        events: list[str] = []
+        fsync, link, unlink = os.fsync, os.link, Path.unlink
+    
+        def observe_sync(fd: int) -&gt; None:
+            events.append("directory-sync" if stat.S_ISDIR(os.fstat(fd).st_mode) else "file-sync")
+            fsync(fd)
+    
+        def observe_link(source: Any, target: Any) -&gt; None:
+            assert Path(source).read_bytes()
+            assert not Path(target).exists()
+            events.append("publish")
+            link(source, target)
+    
+        def observe_unlink(path: Path, *args: Any, **kwargs: Any) -&gt; None:
+            if path.parent == store:
+                events.append("cleanup")
+            unlink(path, *args, **kwargs)
+    
+        monkeypatch.setattr(persistence.os, "fsync", observe_sync)
+        monkeypatch.setattr(persistence.os, "link", observe_link)
+        monkeypatch.setattr(Path, "unlink", observe_unlink)
+        cid = blackline.create_section_comparison(left, right, store=store)
+&gt;       assert events == [
+            "file-sync",
+            "publish",
+            "cleanup",
+            "directory-sync",
+        ], "DURABLE_COMPARISON_ORDER"
+E       AssertionError: DURABLE_COMPARISON_ORDER
+E       assert ['file-sync',...h', 'cleanup'] == ['file-sync',...rectory-sync']
+E         
+E         Right contains one more item: 'directory-sync'
+E         Use -v to get more diff
+
+tests/ingest/test_private_publication.py:166: AssertionError</failure></testcase></testsuite></testsuites>

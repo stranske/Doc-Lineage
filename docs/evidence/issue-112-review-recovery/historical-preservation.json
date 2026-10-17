@@ -1,0 +1,6 @@
+{
+  "old_issue112_files_unchanged": 58,
+  "scope": "git-tracked issue112 evidence only; does not validate external historical raw captures",
+  "prior_components": "original16 run bindings,9 source bindings,31 scientific raw checks remain historical component only",
+  "known_limit": "one historical writer-terminal raw receipt timestamps changed; public copy hash valid; not all32 raw captures match"
+}

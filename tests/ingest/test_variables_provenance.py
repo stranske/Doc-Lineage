@@ -205,3 +205,52 @@ def test_tracked_variable_partial_coverage_is_unresolved(tmp_path):
         json.loads((output / "unresolved.json").read_text())[0]["reason"]
         == "incomplete_ingest_coverage"
     )
+
+
+@pytest.mark.parametrize("failure", ["bytes", "identity", "kind"])
+def test_retained_source_snapshot_provenance_is_verified(tmp_path, failure):
+    from doc_lineage.extract.variables import load_ingest
+
+    result = ingest_document(SOURCE, output_dir=tmp_path / "ingest", allow_docling=False)
+    snapshot = next(result.output_dir.glob("source-*.bin"))
+    if failure == "bytes":
+        # Rehashing the manifest must not authorize bytes unlike the supplied source.
+        snapshot.write_bytes(b"different source bytes")
+        manifest = json.loads(result.manifest_path.read_text())
+        from doc_lineage.identity import sha256_bytes
+
+        for artifact in manifest["artifacts"]:
+            if artifact["path"] == snapshot.name:
+                artifact["sha256"] = sha256_bytes(snapshot.read_bytes())
+                artifact["bytes"] = snapshot.stat().st_size
+        result.manifest_path.write_text(json.dumps(manifest))
+    else:
+        _rewrite(
+            result.output_dir,
+            "artifact-manifest.json",
+            lambda p: next(a for a in p["artifacts"] if a["path"] == snapshot.name).update(
+                **(
+                    {"artifact_id": "foreign-original"}
+                    if failure == "identity"
+                    else {"kind": "evidence"}
+                )
+            ),
+            rehash=False,
+        )
+    with pytest.raises(ValueError, match="snapshot|identity or kind"):
+        load_ingest(result.output_dir, SOURCE)
+
+
+def test_pre_snapshot_ingest_remains_extractable(tmp_path):
+    from doc_lineage.extract.variables import load_ingest
+
+    result = ingest_document(SOURCE, output_dir=tmp_path / "ingest", allow_docling=False)
+    _rewrite(
+        result.output_dir,
+        "artifact-manifest.json",
+        lambda p: p.update(
+            artifacts=[a for a in p["artifacts"] if not a["path"].startswith("source-")]
+        ),
+        rehash=False,
+    )
+    assert load_ingest(result.output_dir, SOURCE).source == SOURCE.read_bytes()

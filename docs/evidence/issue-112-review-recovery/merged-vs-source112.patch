@@ -1,0 +1,471 @@
+diff --git a/src/doc_lineage/cli.py b/src/doc_lineage/cli.py
+index c20918a..149041a 100644
+--- a/src/doc_lineage/cli.py
++++ b/src/doc_lineage/cli.py
+@@ -12,6 +12,7 @@ from pathlib import Path
+ from doc_lineage.blackline import create_section_comparison, load_section_comparison
+ from doc_lineage.export import export_docx_redline
+ from doc_lineage.export.fact_key_map import export_fact_key_map
++from doc_lineage.extract.variables import publish_variables
+ from doc_lineage.harvest import harvest_edgar_ex10
+ from doc_lineage.ingest import ingest_document
+ 
+@@ -95,6 +96,21 @@ def build_parser() -> argparse.ArgumentParser:
+     fact_map.add_argument("path", type=Path, help="JSON array of tracked-variable/v1 records.")
+     fact_map.add_argument("--output", type=Path, required=True, help="New run directory to create.")
+ 
++    variables = subparsers.add_parser(
++        "extract-variables",
++        help="Extract the documented legal fee subset from a persisted ingest run.",
++    )
++    variables.add_argument("path", type=Path, help="Existing ingest run directory.")
++    variables.add_argument(
++        "--source", type=Path, required=True, help="Original document; digest must match ingest."
++    )
++    variables.add_argument(
++        "--entity-ref", required=True, help="Canonical entity ID from your identity authority."
++    )
++    variables.add_argument(
++        "--output", type=Path, required=True, help="New output directory to create."
++    )
++
+     harvest = subparsers.add_parser(
+         "harvest-edgar",
+         help="Harvest SEC EX-10 exhibits for one CIK into a mirror-compatible manifest.",
+@@ -184,6 +200,17 @@ def main(argv: Sequence[str] | None = None) -> int:
+             print(f"doc-lineage {args.command}: {exc}", file=sys.stderr)
+             return 1
+         return 0
++    if args.command == "extract-variables":
++        try:
++            manifest = publish_variables(
++                args.path, args.source, args.output, entity_ref=args.entity_ref
++            )
++        except (OSError, ValueError) as exc:
++            print(f"doc-lineage extract-variables: {exc}", file=sys.stderr)
++            return 1
++        print(f"manifest: {manifest}")
++        print(f"unresolved: {manifest.parent / 'unresolved.json'}")
++        return 0
+     if args.command == "export-fact-key-map":
+         try:
+             manifest = export_fact_key_map(args.path, args.output)
+diff --git a/src/doc_lineage/extract/variables.py b/src/doc_lineage/extract/variables.py
+new file mode 100644
+index 0000000..b532af4
+--- /dev/null
++++ b/src/doc_lineage/extract/variables.py
+@@ -0,0 +1,261 @@
++"""Validate persisted ingest provenance and publish bounded legal extractions.
++
++This verifies consistency and hashes, not authenticity against a malicious party
++who rewrites an entire ingest run. The original document is always required.
++"""
++
++from __future__ import annotations
++
++import json
++import re
++from dataclasses import dataclass
++from pathlib import Path
++from typing import Any, cast
++
++from jsonschema import Draft202012Validator, ValidationError
++from referencing import Registry, Resource
++
++from doc_lineage.adapters import DOCLING_BACKEND, OFFLINE_BACKEND
++from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
++from doc_lineage.identity import sha256_bytes
++from doc_lineage.ingest import (
++    MANIFEST_FILENAME,
++    SEGMENTS_FILENAME,
++    SEGMENTS_SCHEMA_VERSION,
++    Segment,
++    build_evidence_objects,
++)
++from doc_lineage.schema.validation import load_contract_schema, validate_contract_record
++
++
++@dataclass(frozen=True)
++class VerifiedIngest:
++    digest: str
++    source: bytes
++    source_name: str
++    segments: tuple[Segment, ...]
++    evidence: tuple[dict[str, Any], ...]
++    files: dict[str, bytes]
++    manifest: dict[str, Any]
++    complete: bool
++
++
++def dump_json(payload: Any) -> bytes:
++    return (json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n").encode()
++
++
++def _unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
++    result: dict[str, Any] = {}
++    for key, value in pairs:
++        if key in result:
++            raise ValueError(f"duplicate JSON key: {key}")
++        result[key] = value
++    return result
++
++
++def _object(raw: bytes) -> dict[str, Any]:
++    obj = json.loads(raw, object_pairs_hook=_unique)
++    if not isinstance(obj, dict):
++        raise ValueError("expected a JSON object")
++    return obj
++
++
++def validate(schema: str, payload: dict[str, Any]) -> None:
++    try:
++        if schema == "tracked-variable-v1":
++            # Resolve the shared contract's evidence $ref locally, never over
++            # the network (the generic validator only handles standalone schemas).
++            contracts = [load_contract_schema(name) for name in (schema, "evidence-object-v1")]
++            registry: Registry[Any] = Registry().with_resources(
++                (s["$id"], Resource.from_contents(s)) for s in contracts
++            )
++            Draft202012Validator(contracts[0], registry=registry).validate(payload)
++        else:
++            validate_contract_record(schema, payload)
++    except ValidationError as exc:
++        raise ValueError(f"invalid {schema}: {exc.message}") from exc
++
++
++def _read_local(root: Path, relative: str) -> bytes:
++    path = Path(relative)
++    if path.is_absolute() or ".." in path.parts or path.as_posix() != relative:
++        raise ValueError("ingest artifact path must be relative and normalized")
++    target = root / path
++    if not target.resolve().is_relative_to(root) or any(
++        part.is_symlink() for part in (target, *target.parents) if part != root.parent
++    ):
++        raise ValueError("ingest artifact must not traverse symlinks or escape its run")
++    return read_bounded_bytes(target, MAX_INGEST_BYTES)
++
++
++def load_ingest(ingest_dir: Path, source: Path) -> VerifiedIngest:
++    """Read and validate every listed artifact and every segment/evidence link."""
++    root = ingest_dir.expanduser().resolve()
++    manifest_raw = _read_local(root, MANIFEST_FILENAME)
++    manifest = _object(manifest_raw)
++    validate("artifact-manifest-v1", manifest)
++    if manifest.get("tool") != "doc-lineage-ingest":
++        raise ValueError("input must be a doc-lineage-ingest run")
++    raw = read_bounded_bytes(source, MAX_INGEST_BYTES)
++    digest = sha256_bytes(raw)
++    source_info = manifest.get("source", {})
++    if not isinstance(source_info, dict):
++        raise ValueError("invalid source provenance")
++    name = source_info.get("filename", "")
++    if (
++        source_info.get("sha256") != digest
++        or source_info.get("bytes") != len(raw)
++        or not isinstance(name, str)
++        or not name
++        or Path(name).name != name
++        or name in {".", ".."}
++    ):
++        raise ValueError("original source digest, byte count or filename mismatch")
++    artifacts: dict[str, bytes] = {}
++    artifact_ids: set[str] = set()
++    for entry in manifest["artifacts"]:
++        path = entry["path"]
++        if path in artifacts or entry["artifact_id"] in artifact_ids:
++            raise ValueError("duplicate ingest artifact path or identity")
++        data = _read_local(root, path)
++        if sha256_bytes(data) != entry["sha256"] or len(data) != entry.get("bytes"):
++            raise ValueError(f"ingest artifact hash or byte count mismatch: {path}")
++        artifacts[path] = data
++        artifact_ids.add(entry["artifact_id"])
++        expected_id = (
++            f"{digest[:16]}-segments"
++            if path == SEGMENTS_FILENAME
++            else f"{Path(path).stem}-evidence"
++        )
++        expected_kind = "data" if path == SEGMENTS_FILENAME else "evidence"
++        if entry["artifact_id"] != expected_id or entry.get("kind") != expected_kind:
++            raise ValueError("ingest artifact identity or kind mismatch")
++    if SEGMENTS_FILENAME not in artifacts:
++        raise ValueError("ingest manifest must reference segments.json")
++    payload = _object(artifacts[SEGMENTS_FILENAME])
++    if (
++        payload.get("schema_version") != SEGMENTS_SCHEMA_VERSION
++        or payload.get("source_sha256") != digest
++        or payload.get("backend") not in {OFFLINE_BACKEND, DOCLING_BACKEND}
++    ):
++        raise ValueError("segments provenance or format mismatch")
++    try:
++        segments = tuple(Segment(**s) for s in payload["segments"])
++    except (TypeError, KeyError) as exc:
++        raise ValueError("invalid ingest segment structure") from exc
++    if not segments:
++        raise ValueError("ingest must contain segments")
++    for order, segment in enumerate(segments, 1):
++        if (
++            type(segment.page) is not int
++            or segment.page < 1
++            or type(segment.order) is not int
++            or segment.order != order
++            or segment.segment_id != f"{digest[:16]}-p{segment.page:04d}-s{order:04d}"
++            or not isinstance(segment.text, str)
++            or not segment.text.strip()
++            or segment.char_count != len(segment.text)
++            or segment.word_count != len(segment.text.split())
++            or type(segment.char_count) is not int
++            or type(segment.word_count) is not int
++            or segment.method not in {"text", "parser", "ocr"}
++        ):
++            raise ValueError("segment identity, text counts or location mismatch")
++    expected = build_evidence_objects(segments, source_id=digest, backend=payload["backend"])
++    expected_paths = {SEGMENTS_FILENAME}
++    for evidence in expected:
++        path = f"evidence/{evidence['evidence_id']}.json"
++        expected_paths.add(path)
++        if path not in artifacts:
++            raise ValueError("missing segment evidence reference")
++        persisted = _object(artifacts[path])
++        validate("evidence-object-v1", persisted)
++        if persisted != evidence:
++            raise ValueError("segment/evidence provenance mismatch")
++    if set(artifacts) != expected_paths:
++        raise ValueError("unexpected or unreferenced ingest evidence artifact")
++    if {
++        p.relative_to(root).as_posix() for p in (root / "evidence").glob("*.json")
++    } != expected_paths - {SEGMENTS_FILENAME}:
++        raise ValueError("unlisted evidence object in ingest run")
++    artifacts["input-manifest.json"] = manifest_raw
++    coverage = payload.get("coverage")
++    if not isinstance(coverage, dict):
++        raise ValueError("missing ingest coverage")
++    counts = [
++        coverage.get(key)
++        for key in ("pages_total", "pages_with_text_layer", "pages_recognized", "pages_unreadable")
++    ]
++    if any(type(count) is not int or count < 0 for count in counts):
++        raise ValueError("invalid ingest coverage counts")
++    integer_counts = cast(list[int], counts)
++    unreadable = payload.get("unreadable_pages")
++    if (
++        coverage["pages_total"] < max(s.page for s in segments)
++        or coverage["pages_total"] != sum(integer_counts[1:])
++        or not isinstance(unreadable, list)
++        or any(
++            type(page) is not int or not 1 <= page <= coverage["pages_total"] for page in unreadable
++        )
++        or len(set(unreadable)) != len(unreadable)
++        or len(unreadable) != coverage["pages_unreadable"]
++        or set(unreadable) & {s.page for s in segments}
++        or coverage.get("status") != ("partial" if unreadable else "complete")
++        or len({s.page for s in segments}) + len(unreadable) != coverage["pages_total"]
++    ):
++        raise ValueError("ingest coverage provenance mismatch")
++    complete = coverage.get("status") == "complete" and payload.get("unreadable_pages") == []
++    return VerifiedIngest(digest, raw, name, segments, expected, artifacts, manifest, complete)
++
++
++def validate_entity(entity_ref: str) -> None:
++    if not re.fullmatch(
++        r"(?:manager|fund|pension|provider|person|strategy):[a-z0-9][a-z0-9_.:-]*", entity_ref
++    ):
++        raise ValueError("entity_ref must be a canonical entity ID with a supported entity type")
++
++
++def publish_variables(ingest_dir: Path, source: Path, output_dir: Path, *, entity_ref: str) -> Path:
++    """Publish validated records, original evidence and source bytes into a new run."""
++    from doc_lineage.ingest import _extract_verified
++
++    verified = load_ingest(ingest_dir, source)
++    result = _extract_verified(verified, entity_ref=entity_ref)
++    files = dict(verified.files)
++    files["tracked-variables.json"] = dump_json(result["records"])
++    files["unresolved.json"] = dump_json(result["unresolved"])
++    files[f"source/{verified.source_name}"] = verified.source
++    manifest = {
++        "schema_version": "artifact-manifest/v1",
++        "run_id": result["run_id"],
++        "tool": "doc-lineage-extract-variables",
++        "source": verified.manifest["source"],
++        "input_manifest_sha256": sha256_bytes(files["input-manifest.json"]),
++        "artifacts": [
++            {
++                "artifact_id": f"extraction-{sha256_bytes(path.encode())[:16]}",
++                "name": Path(path).name,
++                "kind": (
++                    "tracked_variables"
++                    if path == "tracked-variables.json"
++                    else "evidence" if path.startswith("evidence/") else "data"
++                ),
++                "path": path,
++                "sha256": sha256_bytes(data),
++                "bytes": len(data),
++                "media_type": (
++                    "application/json" if path.endswith(".json") else "application/octet-stream"
++                ),
++            }
++            for path, data in sorted(files.items())
++        ],
++    }
++    validate("artifact-manifest-v1", manifest)
++    output_dir.mkdir(parents=True, exist_ok=False)
++    for path, data in files.items():
++        target = output_dir / path
++        target.parent.mkdir(parents=True, exist_ok=True)
++        target.write_bytes(data)
++    manifest_path = output_dir / MANIFEST_FILENAME
++    manifest_path.write_bytes(dump_json(manifest))
++    return manifest_path
+diff --git a/src/doc_lineage/ingest.py b/src/doc_lineage/ingest.py
+index fc80b53..08960d2 100644
+--- a/src/doc_lineage/ingest.py
++++ b/src/doc_lineage/ingest.py
+@@ -21,7 +21,10 @@ from collections.abc import Mapping, Sequence
+ from dataclasses import asdict, dataclass, replace
+ from datetime import UTC, datetime
+ from pathlib import Path
+-from typing import Any
++from typing import TYPE_CHECKING, Any
++
++if TYPE_CHECKING:
++    from doc_lineage.extract.variables import VerifiedIngest
+ 
+ from doc_lineage.adapters import DOCLING_BACKEND, OFFLINE_BACKEND, SegmenterResult, segment_document
+ from doc_lineage.adapters.docling_segmenter import MAX_INGEST_BYTES, read_bounded_bytes
+@@ -355,3 +358,135 @@ def ingest_document(
+ 
+ def _dump(payload: dict[str, Any]) -> bytes:
+     return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
++
++
++# Full-section grammars deliberately reject qualifications, ranges and exceptions.
++_RATE = r"([0-9]{1,2}(?:\.[0-9]{1,4})?|100(?:\.0{1,4})?)"
++_FEE = re.compile(
++    r"(?:[1-9][0-9]*\. MANAGEMENT FEE )?"
++    r"The Partnership shall pay the General Partner an annual management fee equal to "
++    + _RATE
++    + r"% of aggregate Capital Commitments"
++    r"(?: during the Commitment Period, and " + _RATE + r"% of invested capital thereafter)?\.",
++    re.IGNORECASE,
++)
++_LPA_TITLE = re.compile(
++    r"(?:SYNTHETIC )?LIMITED PARTNERSHIP AGREEMENT " r"(?:[A-Z][A-Za-z0-9'-]*[ ,]+){1,12}L\.P\."
++)
++
++
++def extract_variables(ingest_dir: Path, *, source: Path, entity_ref: str) -> dict[str, Any]:
++    """Extract the documented management-rate subset from a verified persisted run.
++
++    ``entity_ref`` is supplied by the caller's identity authority, never inferred
++    from a PDF name. Unresolved diagnostics are separate from asserted records.
++    """
++    from doc_lineage.extract.variables import load_ingest
++
++    return _extract_verified(load_ingest(ingest_dir, source), entity_ref=entity_ref)
++
++
++def _extract_verified(verified: VerifiedIngest, *, entity_ref: str) -> dict[str, Any]:
++    from doc_lineage.extract.variables import dump_json, validate, validate_entity
++    from doc_lineage.vocab import load_legal_clauses
++
++    validate_entity(entity_ref)
++    key = load_legal_clauses()["clauses"]["legal.fees.management_rate"]["ontology_key"]
++    run_id = (
++        "extract-"
++        + sha256_bytes(
++            dump_json(
++                {"source": verified.digest, "entity_ref": entity_ref, "grammar": "management-v1"}
++            )
++        )[:24]
++    )
++    candidates = [
++        (segment, evidence, clause)
++        for segment, evidence in zip(verified.segments, verified.evidence, strict=True)
++        # Offline PDF ingest can combine a whole page. Only numbered uppercase
++        # headings delimit sections; sentence punctuation and decimals do not.
++        for clause in re.split(r" (?=[1-9][0-9]*\. [A-Z][A-Z ]{2,}(?: |$))", segment.text)
++        if re.search(r"\bmanagement\s+fees?\b", clause, re.IGNORECASE)
++    ]
++    records: list[dict[str, Any]] = []
++    unresolved: list[dict[str, Any]] = []
++    reason = None
++    if not verified.complete:
++        reason = "incomplete_ingest_coverage"
++    elif not candidates:
++        reason = "no_supported_management_fee_clause"
++    elif len(candidates) != 1:
++        reason = "multiple_management_fee_candidates"
++    else:
++        segment, evidence, clause = candidates[0]
++        match = _FEE.fullmatch(clause)
++        prefix = segment.text[: segment.text.index(clause)].strip()
++        # Do not assert a value whose complete quotation cannot fit in evidence.
++        if (
++            match is None
++            or evidence["excerpt"] != segment.text
++            or (prefix and _LPA_TITLE.fullmatch(prefix) is None)
++        ):
++            reason = "unsupported_management_fee_clause"
++        else:
++            schedule = []
++            for token, basis, period in (
++                (
++                    match.group(1),
++                    "aggregate Capital Commitments",
++                    "Commitment Period" if match.group(2) else "all",
++                ),
++                (match.group(2), "invested capital", "thereafter"),
++            ):
++                if token is not None:
++                    rate = float(token)
++                    schedule.append({"rate": rate, "basis": basis, "period": period})
++            variable_id = "var:" + sha256_bytes(
++                dump_json(
++                    {
++                        "source": verified.digest,
++                        "entity_ref": entity_ref,
++                        "key": key,
++                        "segment": segment.segment_id,
++                    }
++                )
++            )
++            record = {
++                "schema_version": "tracked-variable/v1",
++                "variable_id": variable_id,
++                "document_id": f"document:{verified.digest}",
++                "artifact_id": f"{verified.digest[:16]}-segments",
++                "ontology_key": key,
++                "ontology_family": "clause",
++                "entity_ref": entity_ref,
++                "status": "asserted",
++                "value_text": clause,
++                "value_structured": {"unit": "percent_per_annum", "schedule": schedule},
++                "evidence": evidence,
++                "evidence_ref": f"evidence/{evidence['evidence_id']}.json",
++                "provenance": {
++                    "document": {"source_id": verified.digest, "locator": evidence["locator"]},
++                    "mirror": {
++                        "mirror_root": ".",
++                        "blob_path": f"source/{verified.source_name}",
++                        "page_anchor": f"#page={segment.page}",
++                    },
++                },
++                "extractor_run_id": run_id,
++            }
++            validate("evidence-object-v1", evidence)
++            validate("tracked-variable-v1", record)
++            records.append(record)
++    if reason:
++        unresolved.append(
++            {
++                "ontology_key": key,
++                "status": "unresolved",
++                "reason": reason,
++                "source_id": verified.digest,
++                "evidence_refs": sorted(
++                    {f"evidence/{e['evidence_id']}.json" for _, e, _ in candidates}
++                ),
++            }
++        )
++    return {"run_id": run_id, "records": records, "unresolved": unresolved}

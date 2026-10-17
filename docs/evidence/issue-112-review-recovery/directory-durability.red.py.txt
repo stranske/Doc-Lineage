@@ -1,0 +1,44 @@
+"""Private local artifact writes and exclusive durable publication."""
+
+from __future__ import annotations
+
+import os
+import tempfile
+from pathlib import Path
+
+
+def sync_directory(directory: Path) -> None:
+    """Persist directory entry changes before reporting successful publication."""
+    descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def publish_exclusive(path: Path, payload: bytes, *, prefix: str) -> None:
+    """Link fully written, synced bytes into place without overwriting a winner.
+
+    A directory-sync failure is reported even though the complete final file may
+    already exist. Callers must not interpret the exception as a successful commit.
+    """
+    descriptor, temporary = tempfile.mkstemp(prefix=prefix, dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "wb") as output:
+            os.fchmod(output.fileno(), 0o600)
+            output.write(payload)
+            output.flush()
+            os.fsync(output.fileno())
+        os.link(temporary, path)
+    finally:
+        Path(temporary).unlink()
+    # disconnected durable directory publication
+
+
+def write_private(path: Path, payload: bytes) -> None:
+    """Restrict new and existing artifacts before writing sensitive bytes."""
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT, 0o600)
+    with os.fdopen(descriptor, "wb") as output:
+        os.fchmod(output.fileno(), 0o600)
+        output.truncate(0)
+        output.write(payload)

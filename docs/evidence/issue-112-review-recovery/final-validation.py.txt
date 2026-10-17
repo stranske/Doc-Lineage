@@ -1,0 +1,15 @@
+import pathlib,shutil,json
+from validate import ROOT,OUT,PY,run
+# Preserve the earlier integration-failure run as diagnostic history.
+history=OUT/'initial-validation';history.mkdir(exist_ok=True)
+for label in ['focused','full','ruff','black','mypy-focused','mypy-full']:
+ for ext in ['log','json','xml']:
+  p=OUT/f'{label}.{ext}'
+  if p.exists():shutil.copy2(p,history/p.name)
+for label,args in [
+ ('focused-final',['pytest','tests/test_cli.py','tests/ingest','tests/blackline','tests/export','tests/test_package_identity.py','-q',f'--junitxml={OUT}/focused-final.xml']),
+ ('full-final',['pytest','--cov=src','--cov-report=term-missing',f'--cov-report=xml:{OUT}/coverage-final.xml',f'--junitxml={OUT}/full-final.xml','-q']),
+ ('ruff-final',['ruff','check','src','tests']),('black-final',['black','--check','src','tests']),
+ ('mypy-focused-final',['mypy','--follow-imports=silent','src/doc_lineage/cli.py','src/doc_lineage/ingest.py','src/doc_lineage/blackline.py','src/doc_lineage/persistence.py','src/doc_lineage/extract/variables.py'])]:
+ run(label,[PY,'-m',*args])
+run('real-pdf-replay',[PY,'docs/evidence/issue-112/replay.py',str(OUT/'real-pdf-replay-final')])

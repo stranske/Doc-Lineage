@@ -6,7 +6,6 @@ import json
 import math
 import os
 import re
-import tempfile
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -23,6 +22,7 @@ from doc_lineage.ingest import (
     SEGMENTS_SCHEMA_VERSION,
     Segment,
 )
+from doc_lineage.persistence import publish_exclusive
 from doc_lineage.schema.validation import validate_contract_record
 
 LINEAGE_EDGES_SCHEMA_VERSION = "lineage-edges/v1"
@@ -375,17 +375,11 @@ def create_section_comparison(
     }
     record["record_sha256"] = sha256_bytes(_canonical_bytes(record))
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-    # Link a complete temporary file into place atomically and exclusively.
-    # An ID collision cannot overwrite an existing artifact.
-    descriptor, temporary = tempfile.mkstemp(prefix=".section-", dir=directory)
-    try:
-        with os.fdopen(descriptor, "wb") as output:
-            output.write(_canonical_bytes(record))
-            output.flush()
-            os.fsync(output.fileno())
-        os.link(temporary, directory / f"{record['comparison_id']}.json")
-    finally:
-        Path(temporary).unlink()
+    publish_exclusive(
+        directory / f"{record['comparison_id']}.json",
+        _canonical_bytes(record),
+        prefix=".section-",
+    )
     return str(record["comparison_id"])
 
 

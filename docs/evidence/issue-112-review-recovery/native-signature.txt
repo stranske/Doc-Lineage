@@ -1,0 +1,3 @@
+argv: codesign -dvv /Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_revision_round_trip_inser0/python-redlines/docxodus/1.0.0/osx-arm64/redline
+exit: 1
+/Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pytest-of-teacher/pytest-2496/test_revision_round_trip_inser0/python-redlines/docxodus/1.0.0/osx-arm64/redline: No such file or directory
