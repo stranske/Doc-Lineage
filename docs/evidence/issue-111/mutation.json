@@ -1,0 +1,13 @@
+{
+  "production_file": "src/doc_lineage/ingest.py",
+  "needle": "rate = float(token)",
+  "replacement": "rate = 1.75  # deliberate source disconnection",
+  "original_sha256": "2414115fcc64ada2f79fb5e1b34029ef9c94e207780537c237bda0909e144d23",
+  "mutant_sha256": "4fe3dcad074d69d5f988573187e90d521c853d6bb7120891a7c3e654495a158c",
+  "restored_sha256": "2414115fcc64ada2f79fb5e1b34029ef9c94e207780537c237bda0909e144d23",
+  "red_returncode": 1,
+  "green_returncode": 0,
+  "named_assertion": "MANAGEMENT_RATE_SOURCE_DISCONNECTION",
+  "byte_identical_restoration": true,
+  "all_test_and_fixture_bindings_unchanged": true
+}

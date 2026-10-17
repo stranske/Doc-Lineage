@@ -1,0 +1,10 @@
+{
+  "lane": "opener",
+  "surface": "opener-lane",
+  "repository": "stranske/Doc-Lineage",
+  "result": "ERROR_FAIL_OPEN",
+  "error": "capabilities.json.lock PermissionError sandbox-denied",
+  "offers": [],
+  "considered_declines": [],
+  "production_mutation": "not requested: conflict-only integration has no new logical product fix"
+}

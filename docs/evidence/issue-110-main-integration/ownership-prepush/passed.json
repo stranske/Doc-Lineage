@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-17T12:53:58.617439+00:00",
+  "passed": true,
+  "head": "89542e1103330e076ce1afad24091e3428fd56ee",
+  "records": 8,
+  "native": [
+    {
+      "id": "stranske/Doc-Lineage:39028813549:1",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "workflow_run",
+      "actual_terminal": true,
+      "matching_completion": true
+    },
+    {
+      "id": "stranske/Doc-Lineage:39029314307:1",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "workflow_run",
+      "actual_terminal": true,
+      "matching_completion": true
+    },
+    {
+      "id": "stranske/Doc-Lineage:39029814200:1",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "workflow_run",
+      "actual_terminal": true,
+      "matching_completion": true
+    },
+    {
+      "id": "stranske/Doc-Lineage:39033246501:1",
+      "status": "completed",
+      "conclusion": "failure",
+      "event": "workflow_dispatch",
+      "actual_terminal": true,
+      "matching_completion": false
+    }
+  ],
+  "claims": {
+    "stranske/Doc-Lineage#127": {
+      "target": "stranske/Doc-Lineage#127",
+      "agent": "codex",
+      "pid": 13537,
+      "ts": 1792241243.9503329,
+      "log": "/Users/teacher/.codex/handoff/dispatch-logs/stranske__Doc-Lineage_127.codex.log",
+      "worktree": "/Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__127__opener",
+      "lane": "opener",
+      "task_type": "implement",
+      "mode": "full",
+      "run_id": "stranske__Doc-Lineage_127-codex-1792241243926690000",
+      "started_ts": 1792241243,
+      "updated_ts": 1792241243.9503329,
+      "age_s": 394
+    },
+    "stranske/Doc-Lineage#110": {
+      "target": "stranske/Doc-Lineage#110",
+      "agent": "opener1155-source110-guardian",
+      "pid": 12506,
+      "ts": 1792241233.889806,
+      "age_s": 404
+    }
+  }
+}

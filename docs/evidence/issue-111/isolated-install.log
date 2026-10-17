@@ -1,0 +1,21 @@
+WARNING: The directory '{HOME}/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Obtaining file://{REPO}
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: doc-lineage
+  Building editable for doc-lineage (pyproject.toml): started
+  Building editable for doc-lineage (pyproject.toml): finished with status 'done'
+  Created wheel for doc-lineage: filename=doc_lineage-0.1.0-0.editable-py3-none-any.whl size=9860 sha256=9e391fc79db34d302fd519b7cf306eff6c36211dfb7256296e9ba08ccd70d717
+  Stored in directory: {PYTEST_TMP}/pip-ephem-wheel-cache-s3t696jd/wheels/fe/28/d4/c79f38b14ca7b8e1ee0fce9d2fb0f76d52d169a08721ce1d0b
+Successfully built doc-lineage
+Installing collected packages: doc-lineage
+  Attempting uninstall: doc-lineage
+    Found existing installation: doc-lineage 0.1.0
+    Not uninstalling doc-lineage at {REPO}/src, outside environment {VENV}
+    Can't uninstall 'doc-lineage'. No files were found to uninstall.
+Successfully installed doc-lineage-0.1.0
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: {VENV}/bin/python -m pip install --upgrade pip

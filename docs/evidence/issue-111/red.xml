@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.247" timestamp="2026-10-17T06:41:41.352605-05:00" hostname="server.trs.private"><testcase classname="tests.ingest.test_ingest_synthetic_pdf" name="test_tracked_variable_changed_fee_follows_source_text" time="0.118"><failure message="AssertionError: MANAGEMENT_RATE_SOURCE_DISCONNECTION&#10;assert 1.75 == 2.0">tmp_path = PosixPath('{PYTEST_TMP}/pytest-of-teacher/pytest-2391/test_tracked_variable_changed_0')
+
+    def test_tracked_variable_changed_fee_follows_source_text(tmp_path: Path) -&gt; None:
+        from doc_lineage.ingest import extract_variables
+    
+        source = _fee_control_pdf(tmp_path)
+        ingested = ingest_document(
+            source, output_dir=tmp_path / "ingest", allow_docling=False, ocr_enabled=False
+        )
+        result = extract_variables(ingested.output_dir, source=source, entity_ref="fund:alpha_iv")
+        assert not result["unresolved"]
+        (record,) = result["records"]
+        # Independent numeric oracle; this MUST fail if production parsing is disconnected.
+&gt;       assert (
+            record["value_structured"]["schedule"][0]["rate"] == 2.0
+        ), "MANAGEMENT_RATE_SOURCE_DISCONNECTION"
+E       AssertionError: MANAGEMENT_RATE_SOURCE_DISCONNECTION
+E       assert 1.75 == 2.0
+
+tests/ingest/test_ingest_synthetic_pdf.py:640: AssertionError</failure></testcase></testsuite></testsuites>

@@ -74,6 +74,7 @@ def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib
         pathlib.PurePosixPath("tests/export/test_fact_key_map.py"),
         pathlib.PurePosixPath("tests/export/test_fact_key_map_cli.py"),
         fixture_path,
+        pathlib.PurePosixPath("tests/fixtures/synthetic_lpa.pdf"),
     }
     source = tmp_path / "source"
     shutil.copytree(
@@ -139,4 +140,4 @@ def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib
         text=True,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    assert "27 passed" in completed.stdout
+    assert "28 passed" in completed.stdout

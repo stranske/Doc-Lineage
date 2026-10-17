@@ -1,0 +1,32 @@
+from capture import run,root,repo,digest
+import json,runpy,sys
+cli='{VENV}/bin/doc-lineage'
+base=root/'native-final';base.mkdir(exist_ok=True)
+helper=runpy.run_path(str(repo/'tests/ingest/test_ingest_synthetic_pdf.py'))['_fee_control_pdf']
+for name in ('changed','ambiguous'):
+    p=base/f'{name}-input';p.mkdir(exist_ok=True)
+    helper(p,transform=(lambda t:t.replace('2.0%', '2.0% or 3.0%')) if name=='ambiguous' else None)
+for name,source in [('baseline',repo/'tests/fixtures/synthetic_lpa.pdf'),('changed',base/'changed-input/control.pdf'),('ambiguous',base/'ambiguous-input/control.pdf')]:
+    dest=base/name;dest.mkdir(exist_ok=True)
+    assert run(f'native-final-{name}-ingest',[cli,'ingest',str(source),'--no-docling','--no-ocr','--output',str(dest/'ingest')])==0
+    assert run(f'native-final-{name}-extract',[cli,'extract-variables',str(dest/'ingest'),'--source',str(source),'--entity-ref','fund:alpha_iv','--output',str(dest/'extract')])==0
+    records=json.loads((dest/'extract/tracked-variables.json').read_text());unresolved=json.loads((dest/'extract/unresolved.json').read_text())
+    if name=='ambiguous':
+        assert records==[] and unresolved[0]['status']=='unresolved'
+        assert run('native-final-ambiguous-map',[cli,'export-fact-key-map',str(dest/'extract/tracked-variables.json'),'--output',str(dest/'map')])==1
+        assert not (dest/'map').exists()
+    else:
+        record,=records
+        assert record['value_structured']['schedule'][0]['rate']==(2.0 if name=='changed' else 1.75)
+        assert not unresolved
+        assert record['evidence']['source_id']==digest(source)
+        assert record['evidence']['locator']['page']==0
+        assert json.loads((dest/'extract'/record['evidence_ref']).read_text())==record['evidence']
+        assert run(f'native-final-{name}-map',[cli,'export-fact-key-map',str(dest/'extract/tracked-variables.json'),'--output',str(dest/'map')])==0
+        mapping=json.loads((dest/'map/fact_key_map.json').read_text())
+        assert mapping[record['variable_id']]=={'ontology_key':'legal.fees.management_rate','entity_ref':'fund:alpha_iv'}
+    for stage in ('ingest','extract')+(() if name=='ambiguous' else ('map',)):
+        manifest=json.loads((dest/stage/'artifact-manifest.json').read_text())
+        for entry in manifest['artifacts']:
+            p=dest/stage/entry['path'];assert digest(p)==entry['sha256'];assert p.stat().st_size==entry['bytes']
+print('NATIVE_OFFLINE_ACCEPTANCE_PASS: baseline + changed fee + ambiguous with no assertion; all published hashes and consumer joins checked')

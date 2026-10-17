@@ -1,0 +1,20 @@
+import sys,subprocess,pathlib,json,hashlib,datetime,os
+root=pathlib.Path('{RAW}')
+repo=pathlib.Path('{REPO}')
+def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def bindings():
+    paths=[*repo.glob('src/doc_lineage/**/*.py'),*repo.glob('tests/**/*.py'),repo/'MANIFEST.in',repo/'tests/fixtures/synthetic_lpa.pdf',*repo.glob('tests/fixtures/mutations/management_fee_bump/*'),repo/'pyproject.toml',repo/'vocab/legal-clauses.json',*repo.glob('docs/contracts/schemas/*.schema.json')]
+    return {p.relative_to(repo).as_posix():digest(p) for p in sorted(paths) if p.is_file()}
+def run(name,argv,env=None):
+    record={'argv':argv,'cwd':str(repo),'started_at':datetime.datetime.now(datetime.UTC).isoformat(),'hashes_before':bindings(),'pythonpath':str(repo/'src')}
+    with (root/f'{name}.log').open('wb') as f:
+        result=subprocess.run(argv,cwd=repo,env={**os.environ,'PYTHONPATH':str(repo/'src'),**(env or {})},stdout=f,stderr=subprocess.STDOUT)
+    record.update(returncode=result.returncode,finished_at=datetime.datetime.now(datetime.UTC).isoformat(),hashes_after=bindings(),log_sha256=digest(root/f'{name}.log'))
+    for arg in argv:
+        if arg.startswith('--junitxml='):
+            p=pathlib.Path(arg.split('=',1)[1]);record['junit']={'path':str(p),'sha256':digest(p)} if p.exists() else {'missing':str(p)}
+    (root/f'{name}.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps({'name':name,'returncode':result.returncode}),flush=True)
+    return result.returncode
+if __name__=='__main__':
+    raise SystemExit(run(sys.argv[1],sys.argv[2:]))
