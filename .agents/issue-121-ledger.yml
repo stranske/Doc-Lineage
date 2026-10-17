@@ -1,0 +1,57 @@
+version: 1
+issue: 121
+base: main
+branch: muse/issue-121
+tasks:
+  - id: task-01
+    title: 'Create `docs/agents/MUSE_BELT_CANARY.md` containing `# Muse belt canary`
+      and, on its own line, exactly `Muse belt canary: 2026-10-17`.'
+    status: doing
+    started_at: '2026-10-17T02:04:12Z'
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-02
+    title: 'Add `tests/test_muse_belt_canary.py` with `test_muse_belt_canary_file_has_marker`,
+      resolving `docs/agents/MUSE_BELT_CANARY.md` from the test file location and
+      asserting it exists and contains `Muse belt canary: 2026-10-17`.'
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-03
+    title: '`tests/test_muse_belt_canary.py::test_muse_belt_canary_file_has_marker`
+      passes.'
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-04
+    title: Deleting the marker line from `docs/agents/MUSE_BELT_CANARY.md` causes
+      `test_muse_belt_canary_file_has_marker` to fail, and restoring the line causes
+      it to pass.
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-05
+    title: 'Create `docs/agents/MUSE_BELT_CANARY.md` containing the heading `# Muse
+      belt canary` and, on its own line, exactly `Muse belt canary: 2026-10-17`.'
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
+  - id: task-06
+    title: Add `tests/test_muse_belt_canary.py` with one test, `test_muse_belt_canary_file_has_marker`,
+      asserting that `docs/agents/MUSE_BELT_CANARY.md` exists (resolve the path from
+      the test file's location, not the working directory) and contains that exact
+      line.
+    status: todo
+    started_at: null
+    finished_at: null
+    commit: ''
+    notes: []
