@@ -1,0 +1,9 @@
+{
+  "README.md": "153277f6c6089d9e7d65a43afc08d35b3954373ab60eda1a3af66cf6e760b79f",
+  "src/doc_lineage/blackline.py": "d99738ce7c1975b4450c88731cb0773f101f5786bec884fae57f5368f72f5270",
+  "src/doc_lineage/cli.py": "343a5cb865801f8fda1885adb4227b6f208a99e0f8972b882c6d784478998fdd",
+  "tests/test_cli.py": "ccb47dd96e5d13c553986ec41879a3e0547fd9c5693a880134ad6b6a78be1147",
+  "src/doc_lineage/adapters/docling_segmenter.py": "e57b894d9a29ab5419cc1c3badf2a0645ef87fc587da542de1650783352eac87",
+  "tests/test_issue110_review.py": "51fd3682915dabef6ed51087e03dc1f9a9c4fc48c47f88f5c0f49baf4fada37b",
+  "docs/evidence/issue-110/replay.sh": "e46a1a264d4b08204dff79d7df7941ecc526cff1ad34e407efca2f810f64e784"
+}

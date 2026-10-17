@@ -1,0 +1,21 @@
+WARNING: The directory '/Users/teacher/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Obtaining file:///Users/teacher/.codex/orchestrator/worktrees/stranske__Doc-Lineage__127__opener
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: doc-lineage
+  Building editable for doc-lineage (pyproject.toml): started
+  Building editable for doc-lineage (pyproject.toml): finished with status 'done'
+  Created wheel for doc-lineage: filename=doc_lineage-0.1.0-0.editable-py3-none-any.whl size=10444 sha256=b14f55de14221b371f8e6aa8e8249aa86e2e4e8681f7c8a485a113f3fc332321
+  Stored in directory: /Users/teacher/.codex/orchestrator/agent-runtime/codex/tmp/pip-ephem-wheel-cache-cbk13tx8/wheels/45/95/f9/60667742cca354b6786f0e6eb51646f524268bc8747ff7ff62
+Successfully built doc-lineage
+Installing collected packages: doc-lineage
+  Attempting uninstall: doc-lineage
+    Found existing installation: doc-lineage 0.1.0
+    Not uninstalling doc-lineage at /opt/anaconda3/lib/python3.12/site-packages, outside environment /tmp/doc110-integration-venv
+    Can't uninstall 'doc-lineage'. No files were found to uninstall.
+Successfully installed doc-lineage-0.1.0
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: /tmp/doc110-integration-venv/bin/python -m pip install --upgrade pip

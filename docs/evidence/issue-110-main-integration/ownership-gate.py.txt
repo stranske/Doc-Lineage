@@ -1,0 +1,36 @@
+import json,sys,re,base64,subprocess,pathlib,concurrent.futures,datetime
+P=pathlib.Path(sys.argv[1]); P.mkdir(parents=True,exist_ok=True)
+def gh(args):
+ r=subprocess.run(['/Users/teacher/.codex/bin/detached-net.sh','gh',*args],cwd='/tmp',text=True,capture_output=True); assert r.returncode==0,r.stderr; return r.stdout
+records=[]
+for n in [127,110]:
+ for suffix,api in [('comments',f'issues/{n}/comments'),('issue',f'issues/{n}')]+([('reviews','pulls/127/reviews'),('inline','pulls/127/comments')] if n==127 else []):
+  raw=gh(['api',f'repos/stranske/Doc-Lineage/{api}','--paginate','--slurp']); (P/f'{n}-{suffix}.json').write_text(raw)
+  if suffix!='comments':continue
+  for page in json.loads(raw):
+   for c in page:
+    for kind,payload in re.findall(r'<!--\s*(runner-reservation|runner-completion)\s*:(.*?)-->',c['body'],re.S):
+     r=json.loads(base64.b64decode(payload.split('base64:',1)[1])) if 'base64:' in payload else json.loads(payload)
+     records.append({'kind':kind,'record':r.get('record',r),'url':c['html_url']})
+(P/'records.json').write_text(json.dumps(records,indent=2))
+def get(wid):
+ rr,run,attempt=wid.rsplit(':',2)
+ d=json.loads(gh(['run','view',run,'--attempt',attempt,'--repo',rr,'--json','status,conclusion,jobs,headSha,event,url']))
+ (P/f'run-{run}-{attempt}.json').write_text(json.dumps(d,indent=2))
+ reservations=[r['record'] for r in records if r['kind']=='runner-reservation' and r['record']['workflow_attempt_id']==wid]
+ completed={r['record'].get('reservation_id') for r in records if r['kind']=='runner-completion' and r['record'].get('status')=='completed' and not r['record'].get('completion_incomplete')}
+ actual=[j for j in d['jobs'] if re.search(r'keepalive.+/|\(keepalive\)|execute.*agent',j['name'],re.I) and j.get('conclusion','').lower()!='skipped']
+ terminal=bool(actual) and all(j['status']=='completed' and j.get('conclusion') and j.get('completedAt') not in (None,'0001-01-01T00:00:00Z') for j in actual)
+ matched=bool(reservations) and all(r.get('reservation_id') in completed for r in reservations)
+ assert terminal or matched,('pending/absent actual implementation',wid,d)
+ return {'id':wid,'status':d['status'],'conclusion':d['conclusion'],'event':d['event'],'actual_terminal':terminal,'matching_completion':matched}
+keys=sorted({r['record']['workflow_attempt_id'] for r in records if r['record'].get('workflow_attempt_id')})
+with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex: proof=list(ex.map(get,keys))
+d=json.loads(gh(['pr','view','127','--repo','stranske/Doc-Lineage','--json','state,headRefOid,headRefName,isDraft,body'])); (P/'pr.json').write_text(json.dumps(d,indent=2)); assert d['state']=='OPEN' and not d['isDraft'] and d['headRefOid']=='89542e1103330e076ce1afad24091e3428fd56ee',d
+sys.path.insert(0,'/Users/teacher/.codex/orchestrator-mirror');import claims
+held={k:v for k,v in claims.active_claims(include_meta=True).items() if k in ['stranske/Doc-Lineage#110','stranske/Doc-Lineage#127']}
+(P/'claims.json').write_text(json.dumps(held,indent=2))
+assert held.get('stranske/Doc-Lineage#110',{}).get('agent')=='opener1155-source110-guardian',held
+assert held.get('stranske/Doc-Lineage#127',{}).get('run_id')=='stranske__Doc-Lineage_127-codex-1792241243926690000',held
+result={'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'passed':True,'head':d['headRefOid'],'records':len(records),'native':proof,'claims':held}
+(P/'passed.json').write_text(json.dumps(result,indent=2)); print(json.dumps(result,indent=2))

@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from doc_lineage.blackline import (
+    comparison_store_path,
+    load_comparison_record,
+    write_comparison_record,
+)
 from doc_lineage.export import export_docx_redline
 from doc_lineage.export.fact_key_map import export_fact_key_map
 from doc_lineage.extract.variables import publish_variables
@@ -52,8 +58,9 @@ def build_parser() -> argparse.ArgumentParser:
         "export-docx",
         help="Write a DOCX containing native Word tracked changes between two documents.",
     )
-    export.add_argument("--original", type=Path, required=True, help="Baseline DOCX.")
-    export.add_argument("--modified", type=Path, required=True, help="Revised DOCX.")
+    export.add_argument("--original", type=Path, help="Baseline DOCX for file-pair form.")
+    export.add_argument("--modified", type=Path, help="Revised DOCX for file-pair form.")
+    export.add_argument("--comparison-store", type=Path, help="Local comparison record directory.")
     export.add_argument(
         "--output",
         type=Path,
@@ -67,9 +74,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     export.add_argument(
         "--blackline",
-        action="store_true",
-        help="Required acknowledgement that a tracked-changes comparison is being produced.",
+        nargs="?",
+        const=True,
+        default=False,
+        metavar="ID",
+        help="Comparison ID, or bare acknowledgement for the file-pair form.",
     )
+
+    comparison = subparsers.add_parser(
+        "create-comparison", help="Persist ordered DOCX paths and byte hashes; print an opaque ID."
+    )
+    comparison.add_argument("--original", type=Path, required=True)
+    comparison.add_argument("--modified", type=Path, required=True)
+    comparison.add_argument("--comparison-store", type=Path)
 
     fact_map = subparsers.add_parser(
         "export-fact-key-map",
@@ -118,21 +135,41 @@ def _run_export_docx(args: argparse.Namespace) -> int:
         print("doc-lineage export-docx: --blackline is required", file=sys.stderr)
         return 1
     try:
+        protected: list[Path] = []
+        record = None
+        if isinstance(args.blackline, str):
+            if args.original is not None or args.modified is not None:
+                raise ValueError("Comparison ID cannot be combined with --original or --modified")
+            record = load_comparison_record(args.blackline, store=args.comparison_store)
+            args.original, args.modified = record.original_path, record.modified_path
+            protected.append(
+                comparison_store_path(args.comparison_store) / f"{args.blackline}.json"
+            )
+        elif args.original is None or args.modified is None:
+            raise ValueError("File-pair --blackline requires --original and --modified")
         if args.output is not None:
             destination = args.output.resolve()
-            for source in (args.original, args.modified):
+            for source in (args.original, args.modified, *protected):
                 if destination == source.resolve() or (
                     args.output.exists() and os.path.samefile(args.output, source)
                 ):
                     raise ValueError(
                         "--output must not be the same file as --original or --modified"
                     )
-        redline = export_docx_redline(
-            args.original.read_bytes(),
-            args.modified.read_bytes(),
-            author=args.author,
-        )
-    except (FileNotFoundError, ValueError) as exc:
+        original = args.original.read_bytes()
+        modified = args.modified.read_bytes()
+        # Verify the same byte buffers passed to the renderer, avoiding a second file read.
+        if record is not None:
+            for role, content, expected in (
+                ("original", original, record.original_sha256),
+                ("modified", modified, record.modified_sha256),
+            ):
+                if hashlib.sha256(content).hexdigest() != expected:
+                    raise ValueError(
+                        f"SHA-256 mismatch for {role} in comparison {record.comparison_id}"
+                    )
+        redline = export_docx_redline(original, modified, author=args.author)
+    except (OSError, ValueError) as exc:
         print(f"doc-lineage export-docx: {exc}", file=sys.stderr)
         return 1
     if args.output is None:
@@ -162,6 +199,16 @@ def _run_harvest_edgar(args: argparse.Namespace) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "create-comparison":
+        try:
+            comparison_id = write_comparison_record(
+                args.original, args.modified, store=args.comparison_store
+            )
+        except (OSError, ValueError) as exc:
+            print(f"doc-lineage create-comparison: {exc}", file=sys.stderr)
+            return 1
+        print(comparison_id)
+        return 0
     if args.command == "extract-variables":
         try:
             manifest = publish_variables(

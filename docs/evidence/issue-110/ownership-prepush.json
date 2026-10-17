@@ -1,0 +1,18 @@
+{
+  "observed_at": "2026-10-17T11:26:35.525166+00:00",
+  "source": "stranske/Doc-Lineage#110",
+  "source_state": "OPEN",
+  "source_comments_read": 1,
+  "all_state_prs_scanned": 78,
+  "source_linked_prs_all_heads": [],
+  "linked_pr_comments": "No linked PRs existed to inspect",
+  "native_reservations": [],
+  "native_completions": [],
+  "recorded_workflow_attempts": [],
+  "direct_attempt_inspection": "Not applicable: full source body/comments and all linked PR heads contain no native attempt records",
+  "remote_branch": "codex/issue-110-persisted-comparison",
+  "remote_branch_head": null,
+  "fetched_origin_main": "45971929b534d953e1c56ffb42b4bdfc3fd4b994",
+  "source_snapshot_sha256": "243918548f3174764c7a0d04f161d124e3e91c68869c0574e83bf5c2134375ce",
+  "disposition": "FREE; no live incumbent observed"
+}
