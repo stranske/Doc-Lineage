@@ -329,6 +329,14 @@ def test_partly_unreadable_pdf_reports_unreadable_page_identities(
     cache_dir: Path,
     tmp_path: Path,
 ) -> None:
+    """Cold and cache-hit extraction must agree on unreadable page identities.
+
+    Deliberate-break gate: removing ``CoverageStats.unreadable_pages`` from
+    ``src/doc_lineage/extract/models.py`` makes this regression fail (AttributeError
+    or unexpected kwarg) while ``pages_unreadable`` alone would still pass a
+    count-only check. Identities are recomputed from page outcomes; they are not
+    stored in the cache.
+    """
     pdf_path = tmp_path / "partly-unreadable.pdf"
     pdf = canvas.Canvas(str(pdf_path), pagesize=letter)
     pdf.drawString(72, 720, "readable page one")
@@ -344,12 +352,24 @@ def test_partly_unreadable_pdf_reports_unreadable_page_identities(
 
     active_cache = ExtractCache(cache_dir)
     cold = extract(pdf_path, ocr_enabled=False, cache=active_cache)
+    assert cold.coverage.pages_with_text_layer == 1
     assert cold.coverage.pages_unreadable == 1
     assert cold.coverage.unreadable_pages == (2,)
+    assert len(cold.coverage.unreadable_pages) == cold.coverage.pages_unreadable
 
     cached = extract(pdf_path, ocr_enabled=False, cache=active_cache)
     assert cached.coverage.unreadable_pages == cold.coverage.unreadable_pages
     assert cached.coverage.pages_unreadable == cold.coverage.pages_unreadable
+    assert cached.coverage.pages_with_text_layer == cold.coverage.pages_with_text_layer
+
+    # Coverage is recomputed on every read; page cache entries store spans only.
+    for entry in (cache_dir / cold.stable_id).glob("page-*.json"):
+        payload = json.loads(entry.read_text(encoding="utf-8"))
+        assert "coverage" not in payload
+        assert "pages_unreadable" not in payload
+        assert "unreadable_pages" not in payload
+        assert "ocr_mode" in payload
+        assert "spans" in payload
 
 
 def test_coverage_always_reports_all_three_counts(cache_dir: Path, tmp_path: Path) -> None:
