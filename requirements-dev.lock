@@ -57,6 +57,8 @@ pygments==2.19.2
     # via pytest
 pypdf==6.0.0
     # via doc-lineage (pyproject.toml)
+pypdfium2==5.14.0
+    # via doc-lineage (pyproject.toml)
 pytest==9.1.1
     # via
     #   doc-lineage (pyproject.toml)
