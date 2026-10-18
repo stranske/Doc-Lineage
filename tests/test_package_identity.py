@@ -38,7 +38,15 @@ def test_built_wheel_publishes_doc_lineage_project_urls(tmp_path: pathlib.Path) 
         pathlib.Path(__file__).resolve().parents[1],
         source,
         ignore=shutil.ignore_patterns(
-            ".git", ".venv", "build", "dist", "*.egg-info", "__pycache__", ".pytest_cache"
+            ".git",
+            ".venv",
+            "build",
+            "dist",
+            "*.egg-info",
+            "__pycache__",
+            ".pytest_cache",
+            ".coverage",
+            ".coverage.*",
         ),
     )
     (source / "dist").mkdir()
@@ -91,6 +99,8 @@ def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib
             ".pytest_cache",
             ".mypy_cache",
             ".ruff_cache",
+            ".coverage",
+            ".coverage.*",
         ),
     )
     output = source / "dist"
