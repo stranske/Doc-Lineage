@@ -32,14 +32,61 @@ def test_package_imports_and_exposes_a_version() -> None:
     assert mod.__version__
 
 
+def _wheel_copytree_ignore() -> shutil.ignore_patterns:
+    return shutil.ignore_patterns(
+        ".git",
+        ".venv",
+        "build",
+        "dist",
+        "*.egg-info",
+        "__pycache__",
+        ".pytest_cache",
+        ".coverage",
+        ".coverage.*",
+    )
+
+
+def _sdist_copytree_ignore() -> shutil.ignore_patterns:
+    return shutil.ignore_patterns(
+        ".git",
+        ".gitnexus",
+        ".venv",
+        "build",
+        "dist",
+        "*.egg-info",
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".coverage",
+        ".coverage.*",
+    )
+
+
+def test_package_copytree_filters_exclude_coverage_artifacts(tmp_path: pathlib.Path) -> None:
+    """Both wheel and sdist packaging paths must ignore transient coverage worker files."""
+    for label, ignore in (
+        ("wheel", _wheel_copytree_ignore()),
+        ("sdist", _sdist_copytree_ignore()),
+    ):
+        workspace = tmp_path / f"{label}-workspace"
+        workspace.mkdir()
+        (workspace / "pyproject.toml").write_text('[project]\nname = "probe"\n', encoding="utf-8")
+        (workspace / ".coverage").write_text("worker", encoding="utf-8")
+        (workspace / ".coverage.worker").write_text("worker", encoding="utf-8")
+        source = tmp_path / f"{label}-source"
+        shutil.copytree(workspace, source, ignore=ignore)
+        assert not (source / ".coverage").exists()
+        assert not (source / ".coverage.worker").exists()
+        assert (source / "pyproject.toml").exists()
+
+
 def test_built_wheel_publishes_doc_lineage_project_urls(tmp_path: pathlib.Path) -> None:
     source = tmp_path / "source"
     shutil.copytree(
         pathlib.Path(__file__).resolve().parents[1],
         source,
-        ignore=shutil.ignore_patterns(
-            ".git", ".venv", "build", "dist", "*.egg-info", "__pycache__", ".pytest_cache"
-        ),
+        ignore=_wheel_copytree_ignore(),
     )
     (source / "dist").mkdir()
     subprocess.run(
@@ -80,18 +127,7 @@ def test_sdist_includes_fact_key_map_fixture_with_export_tests(tmp_path: pathlib
     shutil.copytree(
         pathlib.Path(__file__).resolve().parents[1],
         source,
-        ignore=shutil.ignore_patterns(
-            ".git",
-            ".gitnexus",
-            ".venv",
-            "build",
-            "dist",
-            "*.egg-info",
-            "__pycache__",
-            ".pytest_cache",
-            ".mypy_cache",
-            ".ruff_cache",
-        ),
+        ignore=_sdist_copytree_ignore(),
     )
     output = source / "dist"
     output.mkdir()
