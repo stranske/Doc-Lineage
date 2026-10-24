@@ -82,13 +82,6 @@ def _create_valid_docx_bytes() -> bytes:
     return buf.getvalue()
 
 
-@pytest.fixture(autouse=True, scope="session")
-def _suppress_isolated_cov_fail_under(pytestconfig: pytest.Config) -> None:
-    cov_plugin = pytestconfig.pluginmanager.get_plugin("_cov")
-    if cov_plugin is not None and hasattr(cov_plugin, "options"):
-        cov_plugin.options.cov_fail_under = None
-
-
 @pytest.fixture
 def valid_ingest(tmp_path: Path) -> Path:
     pdf = tmp_path / "sample.pdf"
