@@ -106,5 +106,30 @@ def test_named_python_matrix_cannot_hide_old_runtime(matrix: dict[str, Any]) -> 
     assert ".strategy.matrix." in offenders[0]
 
 
+@pytest.mark.parametrize("filename, job", [("ci.yml", "python"), ("pr-00-gate.yml", "python-ci")])
+def test_json_matrix_deliberate_break_and_restore(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, filename: str, job: str
+) -> None:
+    """The named guard must reject a restored 3.12 JSON pin in either caller."""
+    for name in ("ci.yml", "pr-00-gate.yml"):
+        (tmp_path / name).write_bytes((WORKFLOWS / name).read_bytes())
+    monkeypatch.setattr(f"{__name__}.WORKFLOWS", tmp_path)
+    test_workflow_python_pins_follow_standard()
+
+    path = tmp_path / filename
+    original = path.read_bytes()
+    workflow = yaml.safe_load(original)
+    workflow["jobs"][job]["with"]["python-versions"] = '["3.12", "3.14"]'
+    path.write_text(yaml.safe_dump(workflow), encoding="utf-8")
+    with pytest.raises(AssertionError, match="Python 3.12 runtime pins remain") as failure:
+        test_workflow_python_pins_follow_standard()
+    assert str(failure.value).splitlines()[0] == (
+        f"Python 3.12 runtime pins remain: ['{filename}.jobs.{job}.with.python-versions']"
+    )
+
+    path.write_bytes(original)
+    test_workflow_python_pins_follow_standard()
+
+
 def test_unrelated_python_metadata_is_not_a_runtime_pin() -> None:
     assert list(_runtime_pins({"metadata": {"python": "3.12"}}, "ci.yml")) == []

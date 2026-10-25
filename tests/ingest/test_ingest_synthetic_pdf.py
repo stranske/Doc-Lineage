@@ -12,6 +12,7 @@ import json
 import shutil
 import subprocess
 import sys
+import venv
 from io import BytesIO
 from pathlib import Path
 
@@ -256,16 +257,34 @@ def test_cli_ingest_reports_a_missing_document(
 def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
     """`doc-lineage ingest <fixture> --output <dir>` exits 0, as the issue requires."""
     project_root = Path(__file__).resolve().parents[2]
+    # Reuse the suite's installed dependencies without downloading build tools or
+    # changing the interpreter running pytest. The console script is still built
+    # and installed from this checkout into its own environment.
+    environment = tmp_path / "venv"
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    scripts = environment / ("Scripts" if sys.platform == "win32" else "bin")
+    python = scripts / ("python.exe" if sys.platform == "win32" else "python")
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-e", str(project_root), "-q"],
+        [
+            str(python),
+            "-m",
+            "pip",
+            "install",
+            "--no-build-isolation",
+            "--no-deps",
+            "--no-index",
+            "-e",
+            str(project_root),
+            "-q",
+        ],
         check=True,
         capture_output=True,
         text=True,
     )
-    script = shutil.which("doc-lineage")
-    assert script is not None, "doc-lineage console script must be installed"
+    script = scripts / ("doc-lineage.exe" if sys.platform == "win32" else "doc-lineage")
+    assert script.is_file(), "doc-lineage console script must be installed"
     command = [
-        script,
+        str(script),
         "ingest",
         str(FIXTURE),
         "--output",
@@ -274,6 +293,7 @@ def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
     ]
     completed = subprocess.run(
         command,
+        cwd=tmp_path,
         check=False,
         capture_output=True,
         text=True,
