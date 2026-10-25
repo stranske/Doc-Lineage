@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import site
 import subprocess
 import sys
 import venv
@@ -254,16 +255,31 @@ def test_cli_ingest_reports_a_missing_document(
     assert "does not exist" in capsys.readouterr().err
 
 
-def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
-    """`doc-lineage ingest <fixture> --output <dir>` exits 0, as the issue requires."""
-    project_root = Path(__file__).resolve().parents[2]
+def _console_script_environment(tmp_path: Path) -> tuple[Path, Path]:
     # Reuse the suite's installed dependencies without downloading build tools or
     # changing the interpreter running pytest. The console script is still built
     # and installed from this checkout into its own environment.
     environment = tmp_path / "venv"
-    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    venv.EnvBuilder(with_pip=True, symlinks=True).create(environment)
     scripts = environment / ("Scripts" if sys.platform == "win32" else "bin")
     python = scripts / ("python.exe" if sys.platform == "win32" else "python")
+    # A nested venv does not inherit its parent's site-packages. Expose the
+    # environment actually running pytest, including build dependencies, rather
+    # than relying on packages installed in the base interpreter.
+    purelib = subprocess.check_output(
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        text=True,
+    ).strip()
+    Path(purelib, "pytest-dependencies.pth").write_text(
+        "\n".join(site.getsitepackages()) + "\n", encoding="utf-8"
+    )
+    return python, scripts
+
+
+def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
+    """`doc-lineage ingest <fixture> --output <dir>` exits 0, as the issue requires."""
+    project_root = Path(__file__).resolve().parents[2]
+    python, scripts = _console_script_environment(tmp_path)
     subprocess.run(
         [
             str(python),
@@ -301,6 +317,30 @@ def test_console_script_runs_the_documented_command(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert (tmp_path / "run" / MANIFEST_FILENAME).is_file()
+
+
+def test_console_script_environment_inherits_parent_only_dependencies(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parent_site = tmp_path / "parent-site"
+    parent_site.mkdir()
+    (parent_site / "parent_only_dependency.py").write_text("VALUE = 'parent-only'\n")
+    monkeypatch.setattr(site, "getsitepackages", lambda: [str(parent_site)])
+
+    python, _ = _console_script_environment(tmp_path)
+    completed = subprocess.run(
+        [
+            str(python),
+            "-I",
+            "-c",
+            "import parent_only_dependency; print(parent_only_dependency.VALUE)",
+        ],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.stdout.strip() == "parent-only"
 
 
 def _sha256(path: Path) -> str:
