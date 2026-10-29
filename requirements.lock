@@ -72,7 +72,7 @@ markupsafe==3.0.3
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-mypy==2.4.0
+mypy==2.4.1
     # via doc-lineage (pyproject.toml)
 mypy-extensions==1.1.0
     # via
@@ -131,7 +131,7 @@ pyrate-limiter==4.5.0
     #   httpxthrottlecache
 pytesseract==0.3.13
     # via doc-lineage (pyproject.toml)
-pytest==9.1.1
+pytest==9.2.0
     # via
     #   doc-lineage (pyproject.toml)
     #   pytest-cov
