@@ -48,12 +48,15 @@ def _assert_classifiers(project: dict) -> None:
 def _assert_tool_targets(tool: dict) -> None:
     # A missing key is not a regression: ruff and black infer the target from requires-python.
     targets = {}
-    if "target-version" in tool.get("ruff", {}):
-        targets["ruff"] = [tool["ruff"]["target-version"]]
-    if "target-version" in tool.get("black", {}):
-        targets["black"] = tool["black"]["target-version"]
-    if "python_version" in tool.get("mypy", {}):
-        targets["mypy"] = [tool["mypy"]["python_version"]]
+    for tool_name, key in [
+        ("ruff", "target-version"),
+        ("black", "target-version"),
+        ("mypy", "python_version"),
+    ]:
+        tool_config = tool.get(tool_name, {})
+        if key in tool_config:
+            val = tool_config[key]
+            targets[tool_name] = [val] if isinstance(val, str) else list(val)
     for name, values in targets.items():
         assert values, f"{name} target list is empty"
         assert all(_version(v) >= FLOOR for v in values), f"{name} targets below 3.13: {values}"
