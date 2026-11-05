@@ -12,7 +12,7 @@ charset-normalizer==3.5.1
     # via reportlab
 click==8.3.1
     # via black
-coverage==7.17.1
+coverage==7.17.2
     # via pytest-cov
 iniconfig==2.3.0
     # via pytest
