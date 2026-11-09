@@ -22,8 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "jsonschema>=4.22.0,<4.27.0",
-    "reportlab==4.4.2",
-    "pypdf==6.0.0",
+    "reportlab==4.5.1",
+    "pypdf==6.21.4",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "pillow>=11.3.0,<13.0.0",
@@ -44,14 +44,14 @@ dev = [
     "pytest-cov==7.1.0",
     "ruff==0.17.4",
     "mypy==2.4.1",
-    "types-jsonschema==4.23.0.20241208",
+    "types-jsonschema==4.26.0.20261006",
     "black==26.10.1",
-    "pypdf==6.0.0",
+    "pypdf==6.21.4",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "pillow>=11.3.0,<13.0.0",
     "pypdfium2>=4.30.0,<6.0.0",
-    "reportlab==4.4.2",
+    "reportlab==4.5.1",
     "PyYAML",
 ]
 
