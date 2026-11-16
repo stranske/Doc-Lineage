@@ -58,6 +58,8 @@ def _mirror_url(root: str, blob: str) -> str:
         raise ValueError("mirror_root must not contain backslashes or traversal")
     if root.startswith("/"):
         return (PurePosixPath(root) / blob).as_uri()
+    if root == ".":
+        return quote(blob, safe="/")
     _relative_path(root.rstrip("/"), "mirror_root")
     return quote(f"{root.rstrip('/')}/{blob}", safe="/")
 

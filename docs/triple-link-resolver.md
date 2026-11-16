@@ -32,7 +32,10 @@ explicit `page_anchor` make the primary document link navigable. The helper
 preserves the supplied page/tool fragment without inferring page numbering from
 `locator.page` or inventing a source-system route.
 
-Relative mirror roots resolve relative to the final HTML file. Absolute POSIX,
+Relative mirror roots resolve relative to the final HTML file. When ingest
+publishes a self-contained claims bundle, `mirror_root` is `"."` and paths
+resolve relative to that claims output directory (the HTML location for the
+bundle). Absolute POSIX,
 Windows drive, and UNC paths become file URIs; local `file:///` roots are also
 accepted. Paths are encoded without resolving them on the build machine. The
 blob path follows `document-mirror/v1`: relative POSIX components with no drive,
@@ -52,5 +55,9 @@ source-system connector is added here.
 
 Acceptance: `python -m pytest tests/render/test_triple_link_resolver.py -q`.
 The named `test_emits_three_hrefs` parses actual generated HTML and checks all
-three destinations. Removing `page_anchor` from the checked-in synthetic fixture
-must fail that test; restore the fixture afterward.
+three destinations. `test_published_legal_variable_resolves_from_claims_dir`
+covers ingest → publish → reload with `mirror_root` `"."` (no `./` href prefix,
+unchanged record JSON, copied source bytes). `test_published_claims_bundle_survives_relocation`
+re-resolves links after the bundle directory is moved. Removing `page_anchor`
+from the checked-in synthetic fixture must fail `test_emits_three_hrefs`; restore
+the fixture afterward.
