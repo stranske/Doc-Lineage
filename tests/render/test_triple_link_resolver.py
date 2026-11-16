@@ -1,15 +1,18 @@
 """Navigation contract for the static triple-link helper."""
 
 import json
+import shutil
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
 import pytest
 
+from doc_lineage.ingest import ingest_document
 from doc_lineage.render import resolve_triple_link
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures/render/tracked_variable.json"
+SYNTHETIC_LPA = Path(__file__).resolve().parents[1] / "fixtures" / "synthetic_lpa.pdf"
 
 
 class Links(HTMLParser):
@@ -36,6 +39,61 @@ def hrefs(variable: dict[str, Any]) -> list[str]:
     parser = Links()
     parser.feed(resolve_triple_link(variable))
     return parser.hrefs
+
+
+def test_published_legal_variable_resolves_from_claims_dir(tmp_path: Path) -> None:
+    from doc_lineage.extract.variables import publish_variables
+
+    ingested = ingest_document(
+        SYNTHETIC_LPA,
+        output_dir=tmp_path / "ingest",
+        allow_docling=False,
+        ocr_enabled=False,
+    )
+    output = tmp_path / "claims"
+    publish_variables(ingested.output_dir, SYNTHETIC_LPA, output, entity_ref="fund:alpha_iv")
+    (record,) = json.loads((output / "tracked-variables.json").read_text(encoding="utf-8"))
+    before = json.dumps(record, sort_keys=True)
+    assert record["provenance"]["mirror"]["mirror_root"] == "."
+    assert record["provenance"]["mirror"]["page_anchor"] == "#page=1"
+    assert hrefs(record)[:2] == [
+        "source/synthetic_lpa.pdf#page=1",
+        "source/synthetic_lpa.pdf",
+    ]
+    assert not hrefs(record)[0].startswith("./")
+    assert (output / "source" / "synthetic_lpa.pdf").read_bytes() == SYNTHETIC_LPA.read_bytes()
+    assert json.dumps(record, sort_keys=True) == before
+
+
+def test_published_claims_bundle_survives_relocation(tmp_path: Path) -> None:
+    from doc_lineage.extract.variables import publish_variables
+
+    ingested = ingest_document(
+        SYNTHETIC_LPA,
+        output_dir=tmp_path / "ingest",
+        allow_docling=False,
+        ocr_enabled=False,
+    )
+    output = tmp_path / "claims"
+    publish_variables(ingested.output_dir, SYNTHETIC_LPA, output, entity_ref="fund:alpha_iv")
+    relocated = tmp_path / "relocated-claims"
+    shutil.copytree(output, relocated)
+    (record,) = json.loads((relocated / "tracked-variables.json").read_text(encoding="utf-8"))
+    assert hrefs(record)[:2] == [
+        "source/synthetic_lpa.pdf#page=1",
+        "source/synthetic_lpa.pdf",
+    ]
+    assert (relocated / "source" / "synthetic_lpa.pdf").read_bytes() == SYNTHETIC_LPA.read_bytes()
+
+
+def test_claims_bundle_mirror_root_dot(variable: dict[str, Any]) -> None:
+    variable["provenance"]["mirror"]["mirror_root"] = "."
+    variable["provenance"]["mirror"]["blob_path"] = "source/synthetic_lpa.pdf"
+    variable["provenance"]["mirror"]["page_anchor"] = "#page=1"
+    assert hrefs(variable)[:2] == [
+        "source/synthetic_lpa.pdf#page=1",
+        "source/synthetic_lpa.pdf",
+    ]
 
 
 def test_emits_three_hrefs(variable: dict[str, Any]) -> None:
@@ -107,6 +165,9 @@ def test_rejects_unsafe_blob_paths(variable: dict[str, Any], path: str) -> None:
 @pytest.mark.parametrize(
     "root",
     [
+        "",
+        "./",
+        "a/./b",
         "javascript:alert(1)",
         "https://host/mirror",
         "../mirror",
