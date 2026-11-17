@@ -33,6 +33,33 @@ jobs:
           sudo apt-get install --yes tesseract-ocr
           python -m pip install --upgrade pip
           python -m pip install '.[ocr,dev]'
+      - name: Prove empty default OCR recovery fails
+        env:
+          DOC_LINEAGE_REAL_TESSERACT: '1'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path("src/doc_lineage/extract/ocr.py")
+          original = source.read_text(encoding="utf-8")
+          needle = "    def recognize(self, image: Image, *, rotation: int = 0) -> str | None:\n        try:\n"
+          replacement = (
+              "    def recognize(self, image: Image, *, rotation: int = 0) -> str | None:\n"
+              "        return None\n"
+          )
+          if original.count(needle) != 1:
+              raise SystemExit("could not apply the #186 deliberate OCR break")
+          source.write_text(original.replace(needle, replacement), encoding="utf-8")
+          PY
+          set +e
+          python -m pytest \
+            tests/ingest/test_ocr_tesseract_smoke.py::test_default_backend_recovers_image_only_pdf -q
+          status=$?
+          git checkout -- src/doc_lineage/extract/ocr.py
+          if [ "$status" -eq 0 ]; then
+            echo "The smoke passed after default Tesseract recovery was forced empty."
+            exit 1
+          fi
       - name: Run the real Tesseract regression
         env:
           DOC_LINEAGE_REAL_TESSERACT: '1'
