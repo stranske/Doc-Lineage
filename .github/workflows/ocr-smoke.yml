@@ -1,0 +1,116 @@
+name: OCR Smoke
+
+# Repository-specific PR smoke for the optional, system-backed Tesseract path.
+# The shared Python CI cannot install an OS package, so this workflow owns the
+# executable installation and verifies that its sole opt-in test actually ran.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/ocr-smoke.yml'
+      - 'pyproject.toml'
+      - 'src/doc_lineage/extract/ocr.py'
+      - 'src/doc_lineage/extract/pdf.py'
+      - 'src/doc_lineage/ingest.py'
+      - 'tests/ingest/test_ocr_tesseract_smoke.py'
+      - 'tests/fixtures/synthetic_lpa.pdf'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-tesseract:
+    name: real Tesseract ingest (Python 3.13)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.13'
+      - name: Install the real OCR executable and opt-in dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes tesseract-ocr
+          python -m pip install --upgrade pip
+          python -m pip install '.[ocr,dev]'
+      - name: Prove empty default OCR recovery fails
+        env:
+          DOC_LINEAGE_REAL_TESSERACT: '1'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path("src/doc_lineage/extract/ocr.py")
+          original = source.read_text(encoding="utf-8")
+          needle = "    def recognize(self, image: Image, *, rotation: int = 0) -> str | None:\n        try:\n"
+          replacement = (
+              "    def recognize(self, image: Image, *, rotation: int = 0) -> str | None:\n"
+              "        return None\n"
+              "        try:\n"
+          )
+          if original.count(needle) != 1:
+              raise SystemExit("could not apply the #186 deliberate OCR break")
+          source.write_text(original.replace(needle, replacement), encoding="utf-8")
+          PY
+          set +e
+          python -m pytest \
+            tests/ingest/test_ocr_tesseract_smoke.py::test_default_backend_recovers_image_only_pdf \
+            -q --junitxml=ocr-smoke-broken.xml
+          status=$?
+          git checkout -- src/doc_lineage/extract/ocr.py
+          set -e
+          if [ "$status" -ne 1 ]; then
+            echo "Expected an executed test failure after forcing empty OCR; got $status."
+            exit 1
+          fi
+          python - <<'PY'
+          from xml.etree import ElementTree
+
+          root = ElementTree.parse("ocr-smoke-broken.xml").getroot()
+          cases = root.findall(".//testcase")
+          if len(cases) != 1:
+              raise SystemExit("Deliberate break must execute exactly one test")
+          case = cases[0]
+          failure = case.find("failure")
+          if (
+              case.get("name") != "test_default_backend_recovers_image_only_pdf"
+              or case.find("error") is not None
+              or case.find("skipped") is not None
+              or failure is None
+              or "no text segments recovered" not in failure.get("message", "")
+          ):
+              raise SystemExit("Deliberate break did not fail on empty OCR ingest")
+          print("Deliberate break verified: empty OCR ingest failed the named test")
+          PY
+      - name: Run the real Tesseract regression
+        env:
+          DOC_LINEAGE_REAL_TESSERACT: '1'
+        run: >-
+          python -m pytest
+          tests/ingest/test_ocr_tesseract_smoke.py::test_default_backend_recovers_image_only_pdf
+          -q --junitxml=ocr-smoke-results.xml
+      - name: Require an executed, passing smoke result
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          report = Path("ocr-smoke-results.xml")
+          if not report.is_file():
+              raise SystemExit("OCR smoke did not produce a JUnit result")
+          root = ElementTree.parse(report).getroot()
+          suites = [root] if root.tag == "testsuite" else root.findall(".//testsuite")
+          totals = {
+              name: sum(int(suite.get(name, "0")) for suite in suites)
+              for name in ("tests", "failures", "errors", "skipped")
+          }
+          if totals != {"tests": 1, "failures": 0, "errors": 0, "skipped": 0}:
+              raise SystemExit(f"OCR smoke must execute and pass exactly once: {totals}")
+          PY
+      - name: Verify the whole smoke file and preserved CLI coverage policy
+        env:
+          DOC_LINEAGE_REAL_TESSERACT: '1'
+        run: |
+          python -m pytest tests/ingest/test_ocr_tesseract_smoke.py -q
+          python -m pytest tests/ingest/test_ingest_synthetic_pdf.py::test_cli_ocr_coverage_and_unrecoverable_failure -q
