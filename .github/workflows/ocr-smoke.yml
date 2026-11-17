@@ -1,0 +1,61 @@
+name: OCR Smoke
+
+# Repository-specific PR smoke for the optional, system-backed Tesseract path.
+# The shared Python CI cannot install an OS package, so this workflow owns the
+# executable installation and verifies that its sole opt-in test actually ran.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/ocr-smoke.yml'
+      - 'pyproject.toml'
+      - 'src/doc_lineage/extract/ocr.py'
+      - 'src/doc_lineage/extract/pdf.py'
+      - 'src/doc_lineage/ingest.py'
+      - 'tests/ingest/test_ocr_tesseract_smoke.py'
+      - 'tests/fixtures/synthetic_lpa.pdf'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-tesseract:
+    name: real Tesseract ingest (Python 3.13)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.13'
+      - name: Install the real OCR executable and opt-in dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes tesseract-ocr
+          python -m pip install --upgrade pip
+          python -m pip install '.[ocr,dev]'
+      - name: Run the real Tesseract regression
+        env:
+          DOC_LINEAGE_REAL_TESSERACT: '1'
+        run: >-
+          python -m pytest
+          tests/ingest/test_ocr_tesseract_smoke.py::test_default_backend_recovers_image_only_pdf
+          -q --junitxml=ocr-smoke-results.xml
+      - name: Require an executed, passing smoke result
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          report = Path("ocr-smoke-results.xml")
+          if not report.is_file():
+              raise SystemExit("OCR smoke did not produce a JUnit result")
+          root = ElementTree.parse(report).getroot()
+          suites = [root] if root.tag == "testsuite" else root.findall(".//testsuite")
+          totals = {
+              name: sum(int(suite.get(name, "0")) for suite in suites)
+              for name in ("tests", "failures", "errors", "skipped")
+          }
+          if totals != {"tests": 1, "failures": 0, "errors": 0, "skipped": 0}:
+              raise SystemExit(f"OCR smoke must execute and pass exactly once: {totals}")
+          PY
