@@ -80,7 +80,7 @@ shared fleet run/manifest schemas. It contains:
 - `identity_sha256`: SHA-256 of canonical identity JSON; `decisions`: existing
   `lineage-edges/v1` pairing records; `runs`: store-relative input locators;
   `unassigned`: per-side (`original`, `modified`) `unassigned_char_count` and
-  `unassigned_segment_ids` (see below).
+  `unassigned_segment_ids` (see *Section heading grammar* above).
 - `record_sha256`: SHA-256 of the canonical record excluding this field.
   Canonical JSON uses sorted keys, compact separators, no NaN, UTF-8 and a
   trailing newline (Python `json.dumps` default ASCII escaping).

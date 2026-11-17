@@ -60,7 +60,7 @@ class Section:
 class DocumentSections:
     source_sha256: str
     sections: tuple[Section, ...]
-    # Non-whitespace-trimmed text before the first recognized heading.
+    # Whitespace-trimmed length of segment text before the first recognized heading.
     unassigned_char_count: int = 0
     unassigned_segment_ids: tuple[str, ...] = ()
 

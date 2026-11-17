@@ -568,6 +568,22 @@ def test_body_enumerations_do_not_split_sections(body: str) -> None:
     assert doc.unassigned_char_count == 0
 
 
+def test_line_start_heading_splits_and_shared_segment_keeps_both_memberships() -> None:
+    # Line-start branch: no sentence end precedes "2. TERM", only a newline.
+    segments = (
+        _segment(1, "1. FEES The fee is fixed\n2. TERM The term runs"),
+        _segment(2, "until year end. 3. NOTICE Notices are written."),
+    )
+    doc = build_section_tree(segments, source_sha256="sha")
+    assert [section.section_id for section in doc.sections] == ["1", "2", "3"]
+    assert doc.sections[0].text == "1. FEES The fee is fixed"
+    # Section 2 continues into segment 2 before section 3 starts inside it.
+    assert doc.sections[1].segment_ids == ("sha-p0001-s0001", "sha-p0001-s0002")
+    assert doc.sections[1].text == "2. TERM The term runs\nuntil year end."
+    assert doc.sections[2].segment_ids == ("sha-p0001-s0002",)
+    assert doc.unassigned_char_count == 0 and doc.unassigned_segment_ids == ()
+
+
 def test_section_id_v1_comparison_records_are_rejected(tmp_path: Path) -> None:
     from tests.blackline.test_comparison_run_cli import make_runs
 
