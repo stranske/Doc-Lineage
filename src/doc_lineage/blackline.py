@@ -32,6 +32,17 @@ from doc_lineage.schema.validation import validate_contract_record
 LINEAGE_EDGES_SCHEMA_VERSION = "lineage-edges/v1"
 DEFAULT_HEADER_CONFIDENCE_THRESHOLD = 0.8
 SECTION_HEADER_RE = re.compile(r"^(\d+)\.\s+((?:[A-Z]{2,}(?:\s+[A-Z]{2,})*))(?:\s+(.*))?$")
+# Bounded inline grammar (section-id/v2): `<int>. <ALL CAPS TITLE>` where every
+# title word has 2+ uppercase letters, starting at a line start or right after a
+# sentence end (`.`, `!`, `?` plus whitespace). Decimals (`1.75`), lowercase
+# titles and mid-clause enumerations (`include 1. FEES`) do not match.
+INLINE_SECTION_HEADER_RE = re.compile(
+    r"(?:^[ \t]*|(?<=[.!?])\s+)(?P<id>\d+)\.[ \t]+"
+    r"(?P<title>[A-Z]{2,}(?:[ \t]+[A-Z]{2,})*)(?![A-Za-z0-9])",
+    re.MULTILINE,
+)
+SECTION_ENGINE = "section-id/v2"
+RETIRED_SECTION_ENGINES = frozenset({"section-id/v1"})
 PairingMethod = Literal["section_id", "manual_review"]
 MANUAL_REVIEW_CONFIDENCE = 0.0
 
@@ -49,6 +60,9 @@ class Section:
 class DocumentSections:
     source_sha256: str
     sections: tuple[Section, ...]
+    # Whitespace-trimmed length of segment text before the first recognized heading.
+    unassigned_char_count: int = 0
+    unassigned_segment_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -77,38 +91,52 @@ def _parse_section_header(text: str) -> tuple[str, str, float] | None:
     return section_id, title, 1.0
 
 
+def _split_inline_headers(text: str) -> tuple[str, list[tuple[str, str, str]]]:
+    """Split one segment into (leading text, [(section_id, title, section text)])."""
+    matches = list(INLINE_SECTION_HEADER_RE.finditer(text))
+    if not matches:
+        return text.strip(), []
+    leading = text[: matches[0].start()].strip()
+    pieces: list[tuple[str, str, str]] = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        body = text[match.start("id") : end].strip()
+        pieces.append((match.group("id"), match.group("title"), body))
+    return leading, pieces
+
+
 def build_section_tree(
     segments: Sequence[Segment],
     *,
     source_sha256: str,
 ) -> DocumentSections:
-    """Group flat ingest segments into numbered sections by header IDs."""
+    """Group flat ingest segments into numbered sections by header IDs.
+
+    Headings inside a segment split it; each resulting section keeps the source
+    segment ID. Text before the first heading is counted as unassigned.
+    """
     sections: list[Section] = []
     current_id: str | None = None
     current_title = ""
     current_confidence = 0.0
     current_segment_ids: list[str] = []
     current_text_parts: list[str] = []
+    unassigned_chars = 0
+    unassigned_segment_ids: list[str] = []
 
     def flush() -> None:
         nonlocal current_id, current_title, current_confidence
         nonlocal current_segment_ids, current_text_parts
-        if current_id is None or not current_segment_ids:
-            current_id = None
-            current_title = ""
-            current_confidence = 0.0
-            current_segment_ids = []
-            current_text_parts = []
-            return
-        sections.append(
-            Section(
-                section_id=current_id,
-                title=current_title,
-                header_confidence=current_confidence,
-                segment_ids=tuple(current_segment_ids),
-                text="\n".join(current_text_parts),
+        if current_id is not None and current_segment_ids:
+            sections.append(
+                Section(
+                    section_id=current_id,
+                    title=current_title,
+                    header_confidence=current_confidence,
+                    segment_ids=tuple(current_segment_ids),
+                    text="\n".join(current_text_parts),
+                )
             )
-        )
         current_id = None
         current_title = ""
         current_confidence = 0.0
@@ -116,20 +144,27 @@ def build_section_tree(
         current_text_parts = []
 
     for segment in segments:
-        parsed = _parse_section_header(segment.text)
-        if parsed is not None:
+        leading, pieces = _split_inline_headers(segment.text)
+        if leading:
+            if current_id is None:
+                unassigned_chars += len(leading)
+                unassigned_segment_ids.append(segment.segment_id)
+            else:
+                current_segment_ids.append(segment.segment_id)
+                current_text_parts.append(leading)
+        for section_id, title, body in pieces:
             flush()
-            current_id, current_title, current_confidence = parsed
+            current_id, current_title, current_confidence = section_id, title, 1.0
             current_segment_ids = [segment.segment_id]
-            current_text_parts = [segment.text]
-            continue
-        if current_id is None:
-            continue
-        current_segment_ids.append(segment.segment_id)
-        current_text_parts.append(segment.text)
+            current_text_parts = [body]
 
     flush()
-    return DocumentSections(source_sha256=source_sha256, sections=tuple(sections))
+    return DocumentSections(
+        source_sha256=source_sha256,
+        sections=tuple(sections),
+        unassigned_char_count=unassigned_chars,
+        unassigned_segment_ids=tuple(unassigned_segment_ids),
+    )
 
 
 def _sections_by_id(sections: Sequence[Section]) -> dict[str, list[Section]]:
@@ -335,9 +370,17 @@ def load_section_ingest(run_dir: Path) -> tuple[dict[str, str], DocumentSections
     return binding, build_section_tree(segments, source_sha256=digest)
 
 
+def unassigned_diagnostics(doc: DocumentSections) -> dict[str, Any]:
+    """Serialize text that no recognized heading claimed (e.g. a preamble)."""
+    return {
+        "unassigned_char_count": doc.unassigned_char_count,
+        "unassigned_segment_ids": list(doc.unassigned_segment_ids),
+    }
+
+
 def _section_comparison(
     original_run: Path, modified_run: Path, threshold: float
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     if isinstance(threshold, bool) or not math.isfinite(threshold) or not 0 <= threshold <= 1:
         raise ValueError("threshold must be finite and between 0 and 1")
     original, left = load_section_ingest(original_run)
@@ -347,12 +390,16 @@ def _section_comparison(
         "mode": SECTION_PAIRING_MODE,
         "original": original,
         "modified": modified,
-        "options": {"header_confidence_threshold": float(threshold), "engine": "section-id/v1"},
+        "options": {"header_confidence_threshold": float(threshold), "engine": SECTION_ENGINE},
     }
     decisions = [
         lineage_edge_for(pair) for pair in align_sections(left, right, threshold=threshold)
     ]
-    return identity, decisions
+    unassigned = {
+        "original": unassigned_diagnostics(left),
+        "modified": unassigned_diagnostics(right),
+    }
+    return identity, decisions, unassigned
 
 
 def create_section_comparison(
@@ -363,7 +410,7 @@ def create_section_comparison(
     threshold: float = DEFAULT_HEADER_CONFIDENCE_THRESHOLD,
 ) -> str:
     """Publish an immutable section-pair artifact after validating both inputs."""
-    identity, decisions = _section_comparison(original_run, modified_run, threshold)
+    identity, decisions, unassigned = _section_comparison(original_run, modified_run, threshold)
     directory = store.expanduser().resolve()
     record = {
         "schema_version": SECTION_COMPARISON_SCHEMA,
@@ -376,6 +423,7 @@ def create_section_comparison(
             "modified": os.path.relpath(modified_run.expanduser().resolve(), directory),
         },
         "decisions": decisions,
+        "unassigned": unassigned,
     }
     record["record_sha256"] = sha256_bytes(_canonical_bytes(record))
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -424,6 +472,14 @@ def load_section_comparison(
         identity = record["identity"]
         if not isinstance(identity, dict) or identity.get("mode") != SECTION_PAIRING_MODE:
             raise ValueError("comparison schema/mode/ID mismatch")
+        engine = identity["options"]["engine"]
+        if engine in RETIRED_SECTION_ENGINES:
+            raise ValueError(
+                f"comparison engine {engine} is retired and is not replayed by "
+                f"{SECTION_ENGINE}; run pair-sections again to create a new comparison"
+            )
+        if engine != SECTION_ENGINE:
+            raise ValueError(f"unsupported comparison engine: {engine!r}")
         recorded_threshold = identity["options"]["header_confidence_threshold"]
         if threshold is not None and threshold != recorded_threshold:
             raise ValueError("pairing options mismatch")
@@ -436,7 +492,9 @@ def load_section_comparison(
             raise ValueError("invalid ingest run locators")
         left = original_run if original_run is not None else directory / runs["original"]
         right = modified_run if modified_run is not None else directory / runs["modified"]
-        current_identity, decisions = _section_comparison(left, right, recorded_threshold)
+        current_identity, decisions, unassigned = _section_comparison(
+            left, right, recorded_threshold
+        )
         if (
             current_identity["original"] == identity["modified"]
             and current_identity["modified"] == identity["original"]
@@ -450,6 +508,8 @@ def load_section_comparison(
             raise ValueError("comparison input tamper: source/segments/manifest/options mismatch")
         if decisions != record["decisions"]:
             raise ValueError("comparison decisions tamper or unsupported engine version")
+        if unassigned != record["unassigned"]:
+            raise ValueError("comparison unassigned-text diagnostics tamper")
     except (KeyError, TypeError, AttributeError) as exc:
         raise ValueError("invalid comparison artifact structure") from exc
     return record

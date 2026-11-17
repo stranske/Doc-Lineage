@@ -225,6 +225,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     args.original_run, args.modified_run, store=args.store, threshold=args.threshold
                 )
                 print(comparison_id)
+                # The record was validated and published by create_section_comparison.
+                published = args.store.expanduser() / f"{comparison_id}.json"
+                record = json.loads(published.read_bytes())
+                for role, diagnostics in record["unassigned"].items():
+                    if diagnostics["unassigned_char_count"] > 0:
+                        print(
+                            f"doc-lineage pair-sections: warning: {role} run has "
+                            f"{diagnostics['unassigned_char_count']} unassigned character(s) "
+                            f"outside any numbered section in segment(s) "
+                            f"{', '.join(diagnostics['unassigned_segment_ids'])}",
+                            file=sys.stderr,
+                        )
             else:
                 record = load_section_comparison(
                     args.comparison_id,
