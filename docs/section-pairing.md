@@ -31,6 +31,39 @@ validated record and has no write operation. Supplying one asserted run requires
 supplying both. Threshold must be finite and within [0, 1]. Omitted lookup
 threshold reuses the recorded threshold.
 
+## Section heading grammar (`section-id/v2`)
+
+The offline text producer flattens a page into one segment, so several numbered
+headings can sit inside a single segment. `build_section_tree` therefore splits
+segments on a **bounded** inline grammar rather than only on segment-start
+headers:
+
+- A heading is `<int>. <TITLE>`, where `<TITLE>` is one or more words of two or
+  more uppercase ASCII letters separated by spaces/tabs, not followed directly by
+  another letter or digit (`2. TERMs` is not a heading).
+- It must start at the beginning of a line, or immediately after sentence-ending
+  punctuation (`.`, `!`, `?`) plus whitespace — e.g. `...L.P. 1. MANAGEMENT FEE`.
+- Rejected: lowercase or mixed-case titles (`1. Management fee`), single-letter
+  words (`3. A notice`), decimals (`1.75%`), and mid-clause enumerations not
+  preceded by a sentence end (`include 1. FEES and 2. TERM`).
+
+Each split section keeps the source `segment_id`; a segment that holds the end
+of one section and the start of another is listed in both sections'
+`segment_ids`. Header confidence is `1.0`. This is not universal PDF section
+recognition: non-uppercase headings, unnumbered headings, `Section 1.` /
+`1.1` styles, and headings mangled by the extraction backend stay unrecognized.
+Semantic fallback is out of scope.
+
+**Unassigned text.** `unassigned_char_count` is the number of characters, after
+trimming surrounding whitespace, of segment text that appears before the first
+recognized heading in the document (for example a title block or recitals).
+`unassigned_segment_ids` lists, in order, each segment contributing such text.
+Text after a heading always belongs to that section, so these values are zero
+exactly when the document begins with a recognized heading. They are recorded
+on `DocumentSections` and in the comparison record, recomputed on lookup, and
+`pair-sections` prints a stderr warning for each side whose count is above
+zero (exit code and stdout are unchanged).
+
 ## Local identity and artifact
 
 `section-pairing-comparison/v1` is a **repo-owned** envelope, independent of the
@@ -41,11 +74,13 @@ shared fleet run/manifest schemas. It contains:
   `89542e1103330e076ce1afad24091e3428fd56ee` (source #110).
 - `identity`: `comparison-identity/v1`, mode `extracted-pdf-sections`, ordered
   `original` and `modified` bindings, and `options` containing
-  `header_confidence_threshold` and engine `section-id/v1`.
+  `header_confidence_threshold` and engine `section-id/v2`.
 - Each binding includes full lowercase SHA-256 digests of the original bytes,
   `segments.json` bytes and `artifact-manifest.json` bytes.
 - `identity_sha256`: SHA-256 of canonical identity JSON; `decisions`: existing
-  `lineage-edges/v1` pairing records; `runs`: store-relative input locators.
+  `lineage-edges/v1` pairing records; `runs`: store-relative input locators;
+  `unassigned`: per-side (`original`, `modified`) `unassigned_char_count` and
+  `unassigned_segment_ids` (see below).
 - `record_sha256`: SHA-256 of the canonical record excluding this field.
   Canonical JSON uses sorted keys, compact separators, no NaN, UTF-8 and a
   trailing newline (Python `json.dumps` default ASCII escaping).
@@ -106,6 +141,13 @@ Checksums detect corruption and accidental modification, not a malicious actor
 rewriting every local record and checksum. These are trusted local records, not
 signed attestations. A future engine change needs explicit version/migration
 policy; a replay decision mismatch fails rather than silently rewriting history.
+
+**`section-id/v1` records are rejected.** v1 recognized only segment-start
+headers, so its decisions cannot be reproduced by v2 replay. Lookup of a record
+whose engine is `section-id/v1` raises `ValueError` naming the retired engine
+(CLI exit 1) before any replay; any other unknown engine is rejected the same
+way. There is no in-place migration: run `pair-sections` again on the retained
+ingest runs to create a new v2 comparison ID.
 
 ### Local filesystem capability boundary
 

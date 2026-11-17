@@ -474,3 +474,165 @@ print(json.dumps({'classes': detect_change_classes(before, after),
         assert "MANAGEMENT FEE" in fee_evidence["excerpt"]
     assert [e["section_id"] for e in replay["edges"]] == ["1", "2"]
     assert all(e["schema_version"] == "lineage-edges/v1" for e in replay["edges"])
+
+
+def _segment(order: int, text: str, *, page: int = 1) -> Segment:
+    return Segment(
+        segment_id=f"sha-p{page:04d}-s{order:04d}",
+        page=page,
+        order=order,
+        text=text,
+        char_count=len(text),
+        word_count=len(text.split()),
+    )
+
+
+def test_offline_synthetic_lpa_yields_sections_1_to_4(tmp_path: Path) -> None:
+    """Issue #185 gate: inline PDF headings in flattened page segments become sections."""
+    from doc_lineage.blackline import create_section_comparison, load_section_comparison
+
+    source = FIXTURES.parent / "synthetic_lpa.pdf"
+    result = ingest_document(
+        source, output_dir=tmp_path / "lpa", allow_docling=False, ocr_enabled=False
+    )
+    assert result.backend == "offline-pdf-text"
+    # The offline producer flattens several headings into one page segment.
+    assert len(result.segments) < 4
+
+    doc = build_section_tree(result.segments, source_sha256=result.source_sha256)
+    assert [section.section_id for section in doc.sections] == ["1", "2", "3", "4"]
+    assert [section.title for section in doc.sections] == [
+        "MANAGEMENT FEE",
+        "CARRIED INTEREST",
+        "KEY PERSON EVENT",
+        "TRANSFER RESTRICTIONS",
+    ]
+    section_3 = doc.sections[2]
+    assert section_3.text.startswith("3. KEY PERSON EVENT")
+    assert "4." not in section_3.text and "TRANSFER RESTRICTIONS" not in section_3.text
+    assert doc.sections[3].text.startswith("4. TRANSFER RESTRICTIONS")
+    assert "1.75%" in doc.sections[0].text and "2. CARRIED" not in doc.sections[0].text
+    # Split sections keep membership of the source segment they came from.
+    segment_ids = [segment.segment_id for segment in result.segments]
+    for section in doc.sections:
+        assert section.segment_ids and set(section.segment_ids) <= set(segment_ids)
+    assert doc.sections[2].segment_ids == doc.sections[3].segment_ids
+
+    store = tmp_path / "comparisons"
+    run = tmp_path / "lpa"
+    cid = create_section_comparison(run, run, store=store)
+    record = load_section_comparison(cid, store=store)
+    assert record["identity"]["options"]["engine"] == "section-id/v2"
+    assert [d["section_id"] for d in record["decisions"]] == ["1", "2", "3", "4"]
+    assert all(d["pairing_method"] == "section_id" for d in record["decisions"])
+    # The title block before "1. MANAGEMENT FEE" is reported, not silently dropped.
+    for role in ("original", "modified"):
+        diagnostics = record["unassigned"][role]
+        assert diagnostics["unassigned_char_count"] == doc.unassigned_char_count > 0
+        assert diagnostics["unassigned_segment_ids"] == [result.segments[0].segment_id]
+
+
+def test_headerless_preamble_is_counted_as_unassigned() -> None:
+    preamble = "LIMITED PARTNERSHIP AGREEMENT of Example Fund, L.P."
+    segments = (
+        _segment(1, preamble),
+        _segment(2, "Dated as of January 1. 1. FEES The fee is fixed."),
+        _segment(3, "2. TERM The term is annual."),
+    )
+    doc = build_section_tree(segments, source_sha256="sha")
+    assert [section.section_id for section in doc.sections] == ["1", "2"]
+    assert doc.sections[0].text == "1. FEES The fee is fixed."
+    assert doc.sections[0].segment_ids == ("sha-p0001-s0002",)
+    assert doc.unassigned_char_count == len(preamble) + len("Dated as of January 1.")
+    assert doc.unassigned_segment_ids == ("sha-p0001-s0001", "sha-p0001-s0002")
+
+    no_preamble = build_section_tree(segments[2:], source_sha256="sha")
+    assert no_preamble.unassigned_char_count == 0
+    assert no_preamble.unassigned_segment_ids == ()
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "The fees include 1. MANAGEMENT FEE and 2. CARRIED INTEREST as defined.",
+        "The fee is 1.75% of commitments. 2. the term is annual.",
+        "Payments are due in 2 installments. 3. A notice is required.",
+        "See clauses 2. TERM and 3. NOTICE below.",
+    ],
+)
+def test_body_enumerations_do_not_split_sections(body: str) -> None:
+    segments = (_segment(1, f"1. FEES {body}"),)
+    doc = build_section_tree(segments, source_sha256="sha")
+    assert [section.section_id for section in doc.sections] == ["1"]
+    assert doc.sections[0].text == f"1. FEES {body}"
+    assert doc.unassigned_char_count == 0
+
+
+def test_section_id_v1_comparison_records_are_rejected(tmp_path: Path) -> None:
+    from tests.blackline.test_comparison_run_cli import make_runs
+
+    from doc_lineage.blackline import (
+        _canonical_bytes,
+        create_section_comparison,
+        load_section_comparison,
+    )
+    from doc_lineage.identity import sha256_bytes
+
+    left, right = make_runs(tmp_path)
+    store = tmp_path / "comparisons"
+    cid = create_section_comparison(left, right, store=store)
+    path = store / f"{cid}.json"
+    record = json.loads(path.read_bytes())
+    # A well-formed legacy record: v1 engine, no unassigned diagnostics.
+    record.pop("record_sha256")
+    record.pop("unassigned")
+    record["identity"]["options"]["engine"] = "section-id/v1"
+    record["identity_sha256"] = sha256_bytes(_canonical_bytes(record["identity"]))
+    record["record_sha256"] = sha256_bytes(_canonical_bytes(record))
+    path.write_bytes(_canonical_bytes(record))
+    with pytest.raises(ValueError, match="section-id/v1 is retired"):
+        load_section_comparison(cid, store=store)
+
+
+def test_unassigned_diagnostics_tamper_is_rejected(tmp_path: Path) -> None:
+    from tests.blackline.test_comparison_run_cli import make_runs
+
+    from doc_lineage.blackline import (
+        _canonical_bytes,
+        create_section_comparison,
+        load_section_comparison,
+    )
+    from doc_lineage.identity import sha256_bytes
+
+    left, right = make_runs(tmp_path)
+    store = tmp_path / "comparisons"
+    cid = create_section_comparison(left, right, store=store)
+    path = store / f"{cid}.json"
+    record = json.loads(path.read_bytes())
+    assert record["unassigned"]["original"] == {
+        "unassigned_char_count": 0,
+        "unassigned_segment_ids": [],
+    }
+    record.pop("record_sha256")
+    record["unassigned"]["original"]["unassigned_char_count"] = 7
+    record["record_sha256"] = sha256_bytes(_canonical_bytes(record))
+    path.write_bytes(_canonical_bytes(record))
+    with pytest.raises(ValueError, match="unassigned-text diagnostics tamper"):
+        load_section_comparison(cid, store=store)
+
+
+def test_pair_sections_cli_warns_on_unassigned_text(tmp_path: Path) -> None:
+    from tests.blackline.test_comparison_run_cli import cli
+
+    run = tmp_path / "lpa"
+    ingest_document(
+        FIXTURES.parent / "synthetic_lpa.pdf",
+        output_dir=run,
+        allow_docling=False,
+        ocr_enabled=False,
+    )
+    result = cli("pair-sections", run, run, "--store", tmp_path / "store", cwd=tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().startswith("cmp_")
+    assert "warning: original run has" in result.stderr
+    assert "warning: modified run has" in result.stderr
