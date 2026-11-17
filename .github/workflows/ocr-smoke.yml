@@ -46,6 +46,7 @@ jobs:
           replacement = (
               "    def recognize(self, image: Image, *, rotation: int = 0) -> str | None:\n"
               "        return None\n"
+              "        try:\n"
           )
           if original.count(needle) != 1:
               raise SystemExit("could not apply the #186 deliberate OCR break")
@@ -53,13 +54,34 @@ jobs:
           PY
           set +e
           python -m pytest \
-            tests/ingest/test_ocr_tesseract_smoke.py::test_default_backend_recovers_image_only_pdf -q
+            tests/ingest/test_ocr_tesseract_smoke.py::test_default_backend_recovers_image_only_pdf \
+            -q --junitxml=ocr-smoke-broken.xml
           status=$?
           git checkout -- src/doc_lineage/extract/ocr.py
-          if [ "$status" -eq 0 ]; then
-            echo "The smoke passed after default Tesseract recovery was forced empty."
+          set -e
+          if [ "$status" -ne 1 ]; then
+            echo "Expected an executed test failure after forcing empty OCR; got $status."
             exit 1
           fi
+          python - <<'PY'
+          from xml.etree import ElementTree
+
+          root = ElementTree.parse("ocr-smoke-broken.xml").getroot()
+          cases = root.findall(".//testcase")
+          if len(cases) != 1:
+              raise SystemExit("Deliberate break must execute exactly one test")
+          case = cases[0]
+          failure = case.find("failure")
+          if (
+              case.get("name") != "test_default_backend_recovers_image_only_pdf"
+              or case.find("error") is not None
+              or case.find("skipped") is not None
+              or failure is None
+              or "no text segments recovered" not in failure.get("message", "")
+          ):
+              raise SystemExit("Deliberate break did not fail on empty OCR ingest")
+          print("Deliberate break verified: empty OCR ingest failed the named test")
+          PY
       - name: Run the real Tesseract regression
         env:
           DOC_LINEAGE_REAL_TESSERACT: '1'
@@ -86,3 +108,9 @@ jobs:
           if totals != {"tests": 1, "failures": 0, "errors": 0, "skipped": 0}:
               raise SystemExit(f"OCR smoke must execute and pass exactly once: {totals}")
           PY
+      - name: Verify the whole smoke file and preserved CLI coverage policy
+        env:
+          DOC_LINEAGE_REAL_TESSERACT: '1'
+        run: |
+          python -m pytest tests/ingest/test_ocr_tesseract_smoke.py -q
+          python -m pytest tests/ingest/test_ingest_synthetic_pdf.py::test_cli_ocr_coverage_and_unrecoverable_failure -q
