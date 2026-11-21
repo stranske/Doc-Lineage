@@ -10,6 +10,7 @@ import pytest
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError
 
+from doc_lineage.cli import main
 from doc_lineage.harvest import edgar_ex10
 from doc_lineage.harvest.edgar_ex10 import (
     MANIFEST_FILENAME,
@@ -155,9 +156,21 @@ def test_parse_ex10_rejects_null_fields(field: str) -> None:
 
 def test_edgar_manifest_has_accurate_filing_provenance(tmp_path: Path) -> None:
     """Named acceptance gate: outer manifest and nested EDGAR provenance match their contracts."""
-    result = harvest_edgar_ex10("0001067983", tmp_path, fixture_path=FIXTURE)
+    output = tmp_path / "harvest-out"
+    exit_code = main(
+        [
+            "harvest-edgar",
+            "--cik",
+            "0001067983",
+            "--output",
+            str(output),
+            "--fixture",
+            str(FIXTURE),
+        ]
+    )
+    assert exit_code == 0
 
-    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    manifest = json.loads((output / MANIFEST_FILENAME).read_text(encoding="utf-8"))
     Draft202012Validator(load_contract_schema("artifact-manifest-v1")).validate(manifest)
     assert manifest["schema_version"] == MANIFEST_SCHEMA_VERSION
 
@@ -181,6 +194,15 @@ def test_edgar_manifest_has_accurate_filing_provenance(tmp_path: Path) -> None:
         validate_contract_record("edgar-filing-provenance-v1", mislabeled)
     with pytest.raises(ValidationError):
         Draft202012Validator(load_contract_schema("document-mirror-v1")).validate(mislabeled)
+
+
+def test_edgar_manifest_deliberate_break_document_mirror_provenance_label(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Deliberate-break gate: the old document-mirror/v1 marker must not publish."""
+    monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", "document-mirror/v1")
+    with pytest.raises(ValidationError):
+        harvest_edgar_ex10("0001067983", tmp_path, fixture_path=FIXTURE)
 
 
 def test_parse_ex10_fixture_deliberate_break_empty_exhibits() -> None:
