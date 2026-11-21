@@ -154,8 +154,10 @@ def test_parse_ex10_rejects_null_fields(field: str) -> None:
         parse_ex10_exhibits(filing)
 
 
-def test_edgar_manifest_has_accurate_filing_provenance(tmp_path: Path) -> None:
-    """Named acceptance gate: outer manifest and nested EDGAR provenance match their contracts."""
+def test_edgar_manifest_has_accurate_filing_provenance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Named acceptance gate: CLI harvest, contracts, compatibility control, and readback."""
     output = tmp_path / "harvest-out"
     exit_code = main(
         [
@@ -195,11 +197,7 @@ def test_edgar_manifest_has_accurate_filing_provenance(tmp_path: Path) -> None:
     with pytest.raises(ValidationError):
         Draft202012Validator(load_contract_schema("document-mirror-v1")).validate(mislabeled)
 
-
-def test_edgar_manifest_deliberate_break_document_mirror_provenance_label(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Deliberate-break gate: the old document-mirror/v1 marker must not publish."""
+    # Deliberate-break gate: the old marker must not publish; CLI readback passes on same fixture.
     broken_out = tmp_path / "broken"
     monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", "document-mirror/v1")
     with pytest.raises(ValidationError):
@@ -207,21 +205,23 @@ def test_edgar_manifest_deliberate_break_document_mirror_provenance_label(
     assert not (broken_out / MANIFEST_FILENAME).exists()
     monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", PROVENANCE_SCHEMA_VERSION)
 
-    passing_out = tmp_path / "passing"
-    exit_code = main(
-        [
-            "harvest-edgar",
-            "--cik",
-            "0001067983",
-            "--output",
-            str(passing_out),
-            "--fixture",
-            str(FIXTURE),
-        ]
+    readback_out = tmp_path / "readback"
+    assert (
+        main(
+            [
+                "harvest-edgar",
+                "--cik",
+                "0001067983",
+                "--output",
+                str(readback_out),
+                "--fixture",
+                str(FIXTURE),
+            ]
+        )
+        == 0
     )
-    assert exit_code == 0
-    manifest = json.loads((passing_out / MANIFEST_FILENAME).read_text(encoding="utf-8"))
-    for artifact in manifest["artifacts"]:
+    readback = json.loads((readback_out / MANIFEST_FILENAME).read_text(encoding="utf-8"))
+    for artifact in readback["artifacts"]:
         validate_contract_record("edgar-filing-provenance-v1", artifact["provenance"])
 
 

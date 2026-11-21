@@ -432,6 +432,16 @@ def test_ingest_subcommand_survived_the_merge() -> None:
     assert "harvest-edgar" in subcommands
 
 
+def test_harvest_edgar_help_describes_artifact_manifest_contract() -> None:
+    from doc_lineage.cli import build_parser
+
+    subparsers = build_parser()._subparsers._group_actions[0]
+    harvest_help = next(
+        action.help for action in subparsers._choices_actions if action.dest == "harvest-edgar"
+    )
+    assert "artifact-manifest/v1" in harvest_help
+
+
 def test_harvest_edgar_cli_offline_fixture(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
