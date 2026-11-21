@@ -20,6 +20,8 @@ from doc_lineage.blackline import (
 from doc_lineage.export import export_docx_redline
 from doc_lineage.export.fact_key_map import export_fact_key_map
 from doc_lineage.extract.variables import publish_variables
+from jsonschema import ValidationError
+
 from doc_lineage.harvest import harvest_edgar_ex10
 from doc_lineage.ingest import ingest_document
 
@@ -206,7 +208,7 @@ def _run_harvest_edgar(args: argparse.Namespace) -> int:
             args.output,
             fixture_path=args.fixture,
         )
-    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+    except (FileNotFoundError, ValueError, RuntimeError, ValidationError) as exc:
         print(f"doc-lineage harvest-edgar: {exc}", file=sys.stderr)
         return 1
     print(
