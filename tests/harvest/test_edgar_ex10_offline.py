@@ -200,9 +200,29 @@ def test_edgar_manifest_deliberate_break_document_mirror_provenance_label(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Deliberate-break gate: the old document-mirror/v1 marker must not publish."""
+    broken_out = tmp_path / "broken"
     monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", "document-mirror/v1")
     with pytest.raises(ValidationError):
-        harvest_edgar_ex10("0001067983", tmp_path, fixture_path=FIXTURE)
+        harvest_edgar_ex10("0001067983", broken_out, fixture_path=FIXTURE)
+    assert not (broken_out / MANIFEST_FILENAME).exists()
+    monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", PROVENANCE_SCHEMA_VERSION)
+
+    passing_out = tmp_path / "passing"
+    exit_code = main(
+        [
+            "harvest-edgar",
+            "--cik",
+            "0001067983",
+            "--output",
+            str(passing_out),
+            "--fixture",
+            str(FIXTURE),
+        ]
+    )
+    assert exit_code == 0
+    manifest = json.loads((passing_out / MANIFEST_FILENAME).read_text(encoding="utf-8"))
+    for artifact in manifest["artifacts"]:
+        validate_contract_record("edgar-filing-provenance-v1", artifact["provenance"])
 
 
 def test_parse_ex10_fixture_deliberate_break_empty_exhibits() -> None:
