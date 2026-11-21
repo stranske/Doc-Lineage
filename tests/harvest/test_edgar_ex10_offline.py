@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import ValidationError
 
 from doc_lineage.harvest import edgar_ex10
 from doc_lineage.harvest.edgar_ex10 import (
@@ -176,9 +177,9 @@ def test_edgar_manifest_has_accurate_filing_provenance(tmp_path: Path) -> None:
     # EDGAR exhibit provenance and must fail readback against its actual schema.
     mislabeled = dict(manifest["artifacts"][0]["provenance"])
     mislabeled["schema_version"] = "document-mirror/v1"
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         validate_contract_record("edgar-filing-provenance-v1", mislabeled)
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         Draft202012Validator(load_contract_schema("document-mirror-v1")).validate(mislabeled)
 
 
