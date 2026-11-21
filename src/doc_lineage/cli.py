@@ -10,6 +10,8 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from jsonschema import ValidationError
+
 from doc_lineage.blackline import (
     comparison_store_path,
     create_section_comparison,
@@ -20,8 +22,6 @@ from doc_lineage.blackline import (
 from doc_lineage.export import export_docx_redline
 from doc_lineage.export.fact_key_map import export_fact_key_map
 from doc_lineage.extract.variables import publish_variables
-from jsonschema import ValidationError
-
 from doc_lineage.harvest import harvest_edgar_ex10
 from doc_lineage.ingest import ingest_document
 
