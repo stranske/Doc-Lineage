@@ -20,6 +20,8 @@ from urllib.parse import urlparse
 
 MANIFEST_SCHEMA_VERSION = "artifact-manifest/v1"
 MANIFEST_SCHEMA_NAME = "artifact-manifest-v1"
+PROVENANCE_SCHEMA_VERSION = "edgar-filing-provenance/v1"
+PROVENANCE_SCHEMA_NAME = "edgar-filing-provenance-v1"
 TOOL_NAME = "doc-lineage-harvest-edgar"
 MANIFEST_FILENAME = "artifact-manifest.json"
 _EX10_TYPE = re.compile(r"^EX-10(?:\.\d+)?$", re.IGNORECASE)
@@ -249,7 +251,7 @@ def _build_manifest(
                 "source_url": exhibit.document_url,
                 "content_sha256": content_digest,
                 "provenance": {
-                    "schema_version": "document-mirror/v1",
+                    "schema_version": PROVENANCE_SCHEMA_VERSION,
                     "cik": cik,
                     "accession_number": exhibit.accession_number,
                     "filing_date": exhibit.filing_date,
@@ -268,6 +270,8 @@ def _build_manifest(
     }
     from doc_lineage.schema.validation import validate_contract_record
 
+    for artifact in artifacts:
+        validate_contract_record(PROVENANCE_SCHEMA_NAME, artifact["provenance"])
     validate_contract_record(MANIFEST_SCHEMA_NAME, manifest)
     return manifest
 
@@ -320,7 +324,7 @@ def harvest_edgar_ex10(
     *,
     fixture_path: Path | None = None,
 ) -> HarvestResult:
-    """Harvest EX-10 exhibits for one CIK and register mirror-compatible artifacts."""
+    """Harvest EX-10 exhibits for one CIK and publish an artifact-manifest/v1 run."""
     if fixture_path is not None:
         filing = json.loads(fixture_path.read_text(encoding="utf-8"))
         fixture_dir = fixture_path.parent

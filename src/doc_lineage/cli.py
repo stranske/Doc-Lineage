@@ -10,6 +10,8 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from jsonschema import ValidationError
+
 from doc_lineage.blackline import (
     comparison_store_path,
     create_section_comparison,
@@ -131,7 +133,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     harvest = subparsers.add_parser(
         "harvest-edgar",
-        help="Harvest SEC EX-10 exhibits for one CIK into a mirror-compatible manifest.",
+        help="Harvest SEC EX-10 exhibits for one CIK into an artifact-manifest/v1 run.",
     )
     harvest.add_argument("--cik", required=True, help="SEC CIK (zero-padded or bare digits).")
     harvest.add_argument(
@@ -206,7 +208,7 @@ def _run_harvest_edgar(args: argparse.Namespace) -> int:
             args.output,
             fixture_path=args.fixture,
         )
-    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+    except (FileNotFoundError, ValueError, RuntimeError, ValidationError) as exc:
         print(f"doc-lineage harvest-edgar: {exc}", file=sys.stderr)
         return 1
     print(

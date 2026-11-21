@@ -8,15 +8,18 @@ from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import ValidationError
 
+from doc_lineage.cli import main
 from doc_lineage.harvest import edgar_ex10
 from doc_lineage.harvest.edgar_ex10 import (
     MANIFEST_FILENAME,
     MANIFEST_SCHEMA_VERSION,
+    PROVENANCE_SCHEMA_VERSION,
     harvest_edgar_ex10,
     parse_ex10_exhibits,
 )
-from doc_lineage.schema.validation import load_contract_schema
+from doc_lineage.schema.validation import load_contract_schema, validate_contract_record
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "harvest" / "edgar_ex10_filing.json"
 FIXTURE_DIR = FIXTURE.parent
@@ -49,7 +52,7 @@ def test_harvest_writes_mirror_compatible_manifest(tmp_path: Path) -> None:
     assert manifest["tool"] == "doc-lineage-harvest-edgar"
     assert len(manifest["artifacts"]) == 2
     provenance = manifest["artifacts"][0]["provenance"]
-    assert provenance["schema_version"] == "document-mirror/v1"
+    assert provenance["schema_version"] == PROVENANCE_SCHEMA_VERSION
     assert provenance["exhibit_type"] == "EX-10.1"
     assert manifest["artifacts"][0]["doc_type_id"] == "edgar_ex10_lpa"
     assert manifest["artifacts"][1]["doc_type_id"] == "edgar_ex10_side_letter"
@@ -149,6 +152,77 @@ def test_parse_ex10_rejects_null_fields(field: str) -> None:
     filing["documents"][1][field] = None
     with pytest.raises(ValueError, match="sequence, description, and document_url"):
         parse_ex10_exhibits(filing)
+
+
+def test_edgar_manifest_has_accurate_filing_provenance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Named acceptance gate: CLI harvest, contracts, compatibility control, and readback."""
+    output = tmp_path / "harvest-out"
+    exit_code = main(
+        [
+            "harvest-edgar",
+            "--cik",
+            "0001067983",
+            "--output",
+            str(output),
+            "--fixture",
+            str(FIXTURE),
+        ]
+    )
+    assert exit_code == 0
+
+    manifest = json.loads((output / MANIFEST_FILENAME).read_text(encoding="utf-8"))
+    Draft202012Validator(load_contract_schema("artifact-manifest-v1")).validate(manifest)
+    assert manifest["schema_version"] == MANIFEST_SCHEMA_VERSION
+
+    filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    expected_accession = filing["accession_number"]
+    expected_filing_date = filing["filing_date"]
+
+    for artifact in manifest["artifacts"]:
+        provenance = artifact["provenance"]
+        validate_contract_record("edgar-filing-provenance-v1", provenance)
+        assert provenance["schema_version"] == PROVENANCE_SCHEMA_VERSION
+        assert provenance["cik"] == "0001067983"
+        assert provenance["accession_number"] == expected_accession
+        assert provenance["filing_date"] == expected_filing_date
+
+    # Compatibility control: the previous document-mirror/v1 marker does not describe
+    # EDGAR exhibit provenance and must fail readback against its actual schema.
+    mislabeled = dict(manifest["artifacts"][0]["provenance"])
+    mislabeled["schema_version"] = "document-mirror/v1"
+    with pytest.raises(ValidationError):
+        validate_contract_record("edgar-filing-provenance-v1", mislabeled)
+    with pytest.raises(ValidationError):
+        Draft202012Validator(load_contract_schema("document-mirror-v1")).validate(mislabeled)
+
+    # Deliberate-break gate: the old marker must not publish; CLI readback passes on same fixture.
+    broken_out = tmp_path / "broken"
+    monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", "document-mirror/v1")
+    with pytest.raises(ValidationError):
+        harvest_edgar_ex10("0001067983", broken_out, fixture_path=FIXTURE)
+    assert not (broken_out / MANIFEST_FILENAME).exists()
+    monkeypatch.setattr(edgar_ex10, "PROVENANCE_SCHEMA_VERSION", PROVENANCE_SCHEMA_VERSION)
+
+    readback_out = tmp_path / "readback"
+    assert (
+        main(
+            [
+                "harvest-edgar",
+                "--cik",
+                "0001067983",
+                "--output",
+                str(readback_out),
+                "--fixture",
+                str(FIXTURE),
+            ]
+        )
+        == 0
+    )
+    readback = json.loads((readback_out / MANIFEST_FILENAME).read_text(encoding="utf-8"))
+    for artifact in readback["artifacts"]:
+        validate_contract_record("edgar-filing-provenance-v1", artifact["provenance"])
 
 
 def test_parse_ex10_fixture_deliberate_break_empty_exhibits() -> None:

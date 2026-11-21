@@ -432,6 +432,16 @@ def test_ingest_subcommand_survived_the_merge() -> None:
     assert "harvest-edgar" in subcommands
 
 
+def test_harvest_edgar_help_describes_artifact_manifest_contract() -> None:
+    from doc_lineage.cli import build_parser
+
+    subparsers = build_parser()._subparsers._group_actions[0]
+    harvest_help = next(
+        action.help for action in subparsers._choices_actions if action.dest == "harvest-edgar"
+    )
+    assert "artifact-manifest/v1" in harvest_help
+
+
 def test_harvest_edgar_cli_offline_fixture(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -487,6 +497,38 @@ def test_harvest_edgar_cli_reports_errors_without_traceback(
 
     assert exit_code == 1
     assert "no EX-10 exhibits found" in capsys.readouterr().err
+
+
+def test_harvest_edgar_cli_reports_provenance_validation_error(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Missing filing_date fails provenance validation through the CLI error path."""
+    fixture = Path(__file__).resolve().parent / "fixtures" / "harvest" / "edgar_ex10_filing.json"
+    fixture_dir = fixture.parent
+    filing = json.loads(fixture.read_text(encoding="utf-8"))
+    filing["filing_date"] = ""
+    bad_fixture = tmp_path / "no_filing_date.json"
+    bad_fixture.write_text(json.dumps(filing), encoding="utf-8")
+    for name in ("exhibit101lpa.htm", "exhibit102sideletter.htm"):
+        (tmp_path / name).write_bytes((fixture_dir / name).read_bytes())
+
+    exit_code = main(
+        [
+            "harvest-edgar",
+            "--cik",
+            "0001067983",
+            "--output",
+            str(tmp_path / "out"),
+            "--fixture",
+            str(bad_fixture),
+        ]
+    )
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert "doc-lineage harvest-edgar:" in captured.err
+    assert "Traceback" not in captured.err
+    assert not (tmp_path / "out" / "artifact-manifest.json").exists()
 
 
 def test_harvest_edgar_cli_reports_truncated_download(
