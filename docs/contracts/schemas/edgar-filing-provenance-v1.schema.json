@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stranske/Workflows/docs/contracts/schemas/edgar-filing-provenance-v1.schema.json",
+  "title": "EDGAR Filing Exhibit Provenance v1",
+  "description": "Nested provenance on artifact-manifest/v1 entries for SEC EDGAR EX-10 exhibits harvested by doc-lineage-harvest-edgar.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "cik",
+    "accession_number",
+    "filing_date",
+    "exhibit_type",
+    "sequence"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "edgar-filing-provenance/v1"
+    },
+    "cik": {
+      "type": "string",
+      "minLength": 1,
+      "description": "SEC Central Index Key for the registrant (may include leading zeros)."
+    },
+    "accession_number": {
+      "type": "string",
+      "minLength": 1,
+      "description": "EDGAR accession number for the filing that contains the exhibit."
+    },
+    "filing_date": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filing date as recorded by the SEC harvest source."
+    },
+    "exhibit_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "EDGAR exhibit type token (e.g. EX-10.1)."
+    },
+    "sequence": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exhibit sequence within the filing."
+    }
+  }
+}

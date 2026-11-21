@@ -131,7 +131,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     harvest = subparsers.add_parser(
         "harvest-edgar",
-        help="Harvest SEC EX-10 exhibits for one CIK into a mirror-compatible manifest.",
+        help="Harvest SEC EX-10 exhibits for one CIK into an artifact-manifest/v1 run.",
     )
     harvest.add_argument("--cik", required=True, help="SEC CIK (zero-padded or bare digits).")
     harvest.add_argument(

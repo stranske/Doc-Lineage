@@ -13,10 +13,11 @@ from doc_lineage.harvest import edgar_ex10
 from doc_lineage.harvest.edgar_ex10 import (
     MANIFEST_FILENAME,
     MANIFEST_SCHEMA_VERSION,
+    PROVENANCE_SCHEMA_VERSION,
     harvest_edgar_ex10,
     parse_ex10_exhibits,
 )
-from doc_lineage.schema.validation import load_contract_schema
+from doc_lineage.schema.validation import load_contract_schema, validate_contract_record
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "harvest" / "edgar_ex10_filing.json"
 FIXTURE_DIR = FIXTURE.parent
@@ -49,7 +50,7 @@ def test_harvest_writes_mirror_compatible_manifest(tmp_path: Path) -> None:
     assert manifest["tool"] == "doc-lineage-harvest-edgar"
     assert len(manifest["artifacts"]) == 2
     provenance = manifest["artifacts"][0]["provenance"]
-    assert provenance["schema_version"] == "document-mirror/v1"
+    assert provenance["schema_version"] == PROVENANCE_SCHEMA_VERSION
     assert provenance["exhibit_type"] == "EX-10.1"
     assert manifest["artifacts"][0]["doc_type_id"] == "edgar_ex10_lpa"
     assert manifest["artifacts"][1]["doc_type_id"] == "edgar_ex10_side_letter"
@@ -149,6 +150,36 @@ def test_parse_ex10_rejects_null_fields(field: str) -> None:
     filing["documents"][1][field] = None
     with pytest.raises(ValueError, match="sequence, description, and document_url"):
         parse_ex10_exhibits(filing)
+
+
+def test_edgar_manifest_has_accurate_filing_provenance(tmp_path: Path) -> None:
+    """Named acceptance gate: outer manifest and nested EDGAR provenance match their contracts."""
+    result = harvest_edgar_ex10("0001067983", tmp_path, fixture_path=FIXTURE)
+
+    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    Draft202012Validator(load_contract_schema("artifact-manifest-v1")).validate(manifest)
+    assert manifest["schema_version"] == MANIFEST_SCHEMA_VERSION
+
+    filing = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    expected_accession = filing["accession_number"]
+    expected_filing_date = filing["filing_date"]
+
+    for artifact in manifest["artifacts"]:
+        provenance = artifact["provenance"]
+        validate_contract_record("edgar-filing-provenance-v1", provenance)
+        assert provenance["schema_version"] == PROVENANCE_SCHEMA_VERSION
+        assert provenance["cik"] == "0001067983"
+        assert provenance["accession_number"] == expected_accession
+        assert provenance["filing_date"] == expected_filing_date
+
+    # Compatibility control: the previous document-mirror/v1 marker does not describe
+    # EDGAR exhibit provenance and must fail readback against its actual schema.
+    mislabeled = dict(manifest["artifacts"][0]["provenance"])
+    mislabeled["schema_version"] = "document-mirror/v1"
+    with pytest.raises(Exception):
+        validate_contract_record("edgar-filing-provenance-v1", mislabeled)
+    with pytest.raises(Exception):
+        Draft202012Validator(load_contract_schema("document-mirror-v1")).validate(mislabeled)
 
 
 def test_parse_ex10_fixture_deliberate_break_empty_exhibits() -> None:
