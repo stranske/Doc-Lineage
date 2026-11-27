@@ -1,6 +1,7 @@
 """Repository-level checks for generated and deliberately vendored trees."""
 
 import argparse
+import re
 import subprocess
 from pathlib import Path
 
@@ -138,3 +139,58 @@ def test_deliberate_break_prose_only_status_fails(
     assert "partial" not in prose
     assert "](" not in prose
     _assert_status_break_fails(tmp_path, monkeypatch, prose)
+
+
+# Pre-correction README sentence used by the DOCX-by-ID deliberate-break gate.
+STALE_DOCX_BY_ID_SENTENCE = (
+    "it does not classify text differences, confirm supersession or complete native\n"
+    "DOCX export by ID. Issue #15 remains pending that separate acceptance."
+)
+NO_DOCX_LIMIT = "section pairing produces no docx output"
+DOCX_BY_ID_DOCS = {
+    "README.md": "](#comparison-records)",
+    "docs/section-pairing.md": "](../README.md#comparison-records)",
+}
+
+
+def _sentences(text: str) -> list[str]:
+    flat = re.sub(r"\s+", " ", text)
+    return re.split(r"(?<=[.!?])\s+", flat)
+
+
+def test_docx_by_id_not_described_as_pending() -> None:
+    """Export by comparison ID shipped; docs must not call it pending (issue #15)."""
+    for relative, link in DOCX_BY_ID_DOCS.items():
+        text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        lowered = text.lower()
+        flat = re.sub(r"\s+", " ", lowered)
+        assert "issue #15 remains pending" not in flat, relative
+        assert "issue #15 completion remain pending" not in flat, relative
+        for sentence in _sentences(lowered):
+            assert not (
+                "#15" in sentence and "pending" in sentence
+            ), f"{relative} describes issue #15 as pending: {sentence!r}"
+        assert NO_DOCX_LIMIT in flat, f"{relative} must state section pairing yields no DOCX"
+        assert link in text, f"{relative} must link to the Comparison records section"
+
+
+def test_deliberate_break_docx_by_id_pending_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Restoring the old 'Issue #15 remains pending' sentence must fail the gate."""
+    original = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    broken = original.replace(
+        "Section pairing produces no DOCX output.", STALE_DOCX_BY_ID_SENTENCE, 1
+    )
+    assert broken != original
+
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "README.md").write_text(broken, encoding="utf-8")
+    (tmp_path / "docs" / "section-pairing.md").write_text(
+        (REPO_ROOT / "docs" / "section-pairing.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(f"{__name__}.REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError):
+        test_docx_by_id_not_described_as_pending()
