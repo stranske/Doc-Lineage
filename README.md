@@ -84,8 +84,9 @@ revalidates original bytes, manifests, segments, order and options before replay
 New ingests retain manifested original snapshots; legacy runs need re-ingest
 into new directories. See [commands, API and replay contract](docs/section-pairing.md).
 This is section alignment with manual review for ambiguous/unmatched sections;
-it does not classify text differences, confirm supersession or complete native
-DOCX export by ID. Issue #15 remains pending that separate acceptance.
+it does not classify text differences, confirm supersession or produce a DOCX
+package. Section pairing produces no DOCX output. DOCX export by comparison ID is
+a separate, shipped mode; see [Comparison records](#comparison-records).
 
 ## Intent
 

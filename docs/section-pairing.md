@@ -91,8 +91,9 @@ an opaque ID, a versioned record, original-byte identity and explicit order.
 The section schema nests these digests beside extraction bindings and carries an
 explicit mode. Neither loader accepts the other schema. Both implementations coexist after merging main at
 `c274b866e695d92a083c182c19f3119cab01e0b0` (including merged PR #127).
-Native DOCX-by-ID acceptance and README issue #15 completion remain pending that
-separate scope. No shared workflow, identity convention or fleet schema changes.
+Section pairing produces no DOCX output. DOCX export by comparison ID is a
+separate, shipped mode; see [Comparison records](../README.md#comparison-records).
+No shared workflow, identity convention or fleet schema changes.
 
 An ingest now retains a content-addressed `source-<sha256>.bin` snapshot and lists
 it in the existing manifest. It uses the same bytes that were parsed. External
