@@ -164,8 +164,12 @@ def test_docx_by_id_not_described_as_pending() -> None:
         text = (REPO_ROOT / relative).read_text(encoding="utf-8")
         lowered = text.lower()
         flat = re.sub(r"\s+", " ", lowered)
-        assert "issue #15 remains pending" not in flat, relative
-        assert "issue #15 completion remain pending" not in flat, relative
+        assert (
+            "issue #15 remains pending" not in flat
+        ), f"{relative} contains stale 'issue #15 remains pending' claim"
+        assert (
+            "issue #15 completion remain pending" not in flat
+        ), f"{relative} contains stale 'issue #15 completion remain pending' claim"
         for sentence in _sentences(lowered):
             assert not (
                 "#15" in sentence and "pending" in sentence
@@ -180,7 +184,9 @@ def test_deliberate_break_docx_by_id_pending_fails(
     """Restoring the old 'Issue #15 remains pending' sentence must fail the gate."""
     original = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     broken = original.replace(
-        "Section pairing produces no DOCX output.", STALE_DOCX_BY_ID_SENTENCE, 1
+        "Section pairing produces no DOCX output.",
+        f"Section pairing produces no DOCX output. {STALE_DOCX_BY_ID_SENTENCE}",
+        1,
     )
     assert broken != original
 
@@ -192,5 +198,5 @@ def test_deliberate_break_docx_by_id_pending_fails(
     )
     monkeypatch.setattr(f"{__name__}.REPO_ROOT", tmp_path)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match=r"issue #15.*pending"):
         test_docx_by_id_not_described_as_pending()
